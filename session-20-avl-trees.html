@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 20: Computational Applications of Trees and Graphs | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --node-default: #2EAADC;
+      --node-balanced: #0F7B6C;
+      --node-unbalanced: #EB5757;
+      --node-rotating: #F59E0B;
+      --node-new: #9B51E0;
+      --bst-color: #EB5757;
+      --rbt-color: #9B51E0;
+      --avl-color: #0F7B6C;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 350px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Tree Visualization */
+    .tree-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tree-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node circle {
+      stroke-width: 3;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node text {
+      fill: white;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 14px;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .tree-node .balance-factor {
+      fill: #FFD700;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .tree-edge {
+      stroke: #666;
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .controls input[type="number"] {
+      width: 80px;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .controls button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .controls button:hover {
+      background: var(--accent-hover);
+    }
+
+    .controls button.secondary {
+      background: var(--background);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .controls button.secondary:hover {
+      background: var(--background-secondary);
+    }
+
+    .controls button.danger {
+      background: var(--error);
+    }
+
+    .controls button.danger:hover {
+      background: #d94444;
+    }
+
+    /* Status Panel */
+    .status-panel {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      min-height: 60px;
+    }
+
+    .status-panel.error {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+    }
+
+    .status-panel.success {
+      background: rgba(15, 123, 108, 0.1);
+      border-left: 4px solid var(--success);
+    }
+
+    /* Rotation Steps */
+    .rotation-steps {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      overflow-x: auto;
+      padding: 0.5rem 0;
+    }
+
+    .rotation-step {
+      flex: 0 0 200px;
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .rotation-step.active {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .rotation-step h4 {
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .rotation-step p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    /* Comparison Grid */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .comparison-card {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .comparison-card h4 {
+      margin-bottom: 0.5rem;
+    }
+
+    .comparison-card.bst { border-top: 4px solid var(--bst-color); }
+    .comparison-card.rbt { border-top: 4px solid var(--rbt-color); }
+    .comparison-card.avl { border-top: 4px solid var(--avl-color); }
+
+    .tree-height {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .tree-height.bst { color: var(--bst-color); }
+    .tree-height.rbt { color: var(--rbt-color); }
+    .tree-height.avl { color: var(--avl-color); }
+
+    /* Decision Tree */
+    .decision-tree {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .decision-node {
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin: 0.5rem 0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .decision-node.question {
+      background: rgba(46, 170, 220, 0.1);
+      border: 2px solid var(--accent);
+    }
+
+    .decision-node.answer {
+      background: rgba(15, 123, 108, 0.1);
+      border: 2px solid var(--success);
+    }
+
+    .decision-options {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      padding-left: 1rem;
+    }
+
+    .decision-option {
+      padding: 0.5rem 1rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .decision-option:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .decision-option.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    /* Complexity Table */
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .complexity-table th,
+    .complexity-table td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .complexity-table th {
+      background: var(--background-secondary);
+      font-weight: 600;
+    }
+
+    .complexity-table tr:hover {
+      background: var(--background-secondary);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-container {
+      margin-top: 0.5rem;
+    }
+
+    .hint-text {
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+      margin-top: 0.25rem;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0.75rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .controls button,
+      .controls input {
+        width: 100%;
+      }
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes rotate-highlight {
+      0% { stroke: var(--node-rotating); stroke-width: 5; }
+      50% { stroke: #FFD700; stroke-width: 7; }
+      100% { stroke: var(--node-rotating); stroke-width: 5; }
+    }
+
+    .rotating circle {
+      animation: rotate-highlight 0.5s ease infinite;
+    }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .node-animated {
+      animation: slide-in 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">&#127769;</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 20</span>
+      <h1>Computational Applications of Trees and Graphs</h1>
+      <p class="subtitle">Master AVL trees, balance factors, rotations, and choosing the right tree structure</p>
+      <div class="meta">
+        <span>&#9201; ~45 minutes</span>
+        <span>&#128218; Prerequisites: BST basics, tree traversals</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Understand</strong> AVL tree balance property and balance factors</li>
+        <li><strong>Perform</strong> single and double rotations to maintain balance</li>
+        <li><strong>Compare</strong> BST, Red-Black, and AVL tree trade-offs</li>
+        <li><strong>Analyze</strong> when to choose each tree structure</li>
+        <li><strong>Compute</strong> and maintain height information efficiently</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: AVL Trees Introduction -->
+    <h2>1. AVL Trees: Strict Balance for Fast Lookups</h2>
+    <p>AVL trees (named after inventors <strong>A</strong>delson-<strong>V</strong>elsky and <strong>L</strong>andis) are self-balancing binary search trees where the height difference between left and right subtrees of any node is at most 1.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The balance factor of a node is defined as: <code>BF(node) = height(left) - height(right)</code>. For a valid AVL tree, every node must have a balance factor of -1, 0, or +1.
+    </div>
+
+    <h3>Balance Factor Visualization</h3>
+    <div class="viz-container">
+      <h3>Interactive AVL Tree Builder</h3>
+      <div class="viz-canvas" id="avl-canvas">
+        <svg id="avl-svg" class="tree-svg"></svg>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-balanced);"></div>
+          <span>Balanced (BF: -1, 0, +1)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-unbalanced);"></div>
+          <span>Unbalanced (|BF| > 1)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-rotating);"></div>
+          <span>Rotating</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-new);"></div>
+          <span>Newly Inserted</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <input type="number" id="avl-input" placeholder="Value" min="1" max="99">
+        <button onclick="insertAVL()">Insert</button>
+        <button class="secondary" onclick="insertRandomAVL()">Random Insert</button>
+        <button class="secondary" onclick="insertSequenceAVL()">Insert Sequence</button>
+        <button class="danger" onclick="clearAVL()">Clear Tree</button>
+      </div>
+
+      <div id="avl-status" class="status-panel">
+        Enter a value and click Insert to build an AVL tree. Watch how rotations maintain balance automatically.
+      </div>
+    </div>
+
+    <!-- Section 2: AVL Rotations -->
+    <h2>2. AVL Rotations for Rebalancing</h2>
+    <p>When insertion or deletion causes a node's balance factor to exceed +/-1, we perform rotations to restore balance. There are four cases:</p>
+
+    <div class="viz-container">
+      <h3>Step-by-Step Rotation Animator</h3>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="ll">LL Rotation</button>
+        <button class="tab" data-tab="rr">RR Rotation</button>
+        <button class="tab" data-tab="lr">LR Rotation</button>
+        <button class="tab" data-tab="rl">RL Rotation</button>
+      </div>
+
+      <div id="tab-ll" class="tab-content active">
+        <div class="viz-canvas" id="ll-canvas">
+          <svg id="ll-svg" class="tree-svg"></svg>
+        </div>
+        <div class="rotation-steps" id="ll-steps">
+          <div class="rotation-step active">
+            <h4>Step 1: Identify Imbalance</h4>
+            <p>Left-Left case: inserted in left subtree of left child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 2: Right Rotate</h4>
+            <p>Rotate the unbalanced node right around its left child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 3: Update Heights</h4>
+            <p>Recalculate balance factors for affected nodes</p>
+          </div>
+        </div>
+        <div class="controls">
+          <button onclick="animateRotation('ll', 'prev')">Previous</button>
+          <button onclick="animateRotation('ll', 'next')">Next Step</button>
+          <button class="secondary" onclick="animateRotation('ll', 'reset')">Reset</button>
+          <button onclick="animateRotation('ll', 'auto')">Auto Play</button>
+        </div>
+      </div>
+
+      <div id="tab-rr" class="tab-content">
+        <div class="viz-canvas" id="rr-canvas">
+          <svg id="rr-svg" class="tree-svg"></svg>
+        </div>
+        <div class="rotation-steps" id="rr-steps">
+          <div class="rotation-step active">
+            <h4>Step 1: Identify Imbalance</h4>
+            <p>Right-Right case: inserted in right subtree of right child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 2: Left Rotate</h4>
+            <p>Rotate the unbalanced node left around its right child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 3: Update Heights</h4>
+            <p>Recalculate balance factors for affected nodes</p>
+          </div>
+        </div>
+        <div class="controls">
+          <button onclick="animateRotation('rr', 'prev')">Previous</button>
+          <button onclick="animateRotation('rr', 'next')">Next Step</button>
+          <button class="secondary" onclick="animateRotation('rr', 'reset')">Reset</button>
+          <button onclick="animateRotation('rr', 'auto')">Auto Play</button>
+        </div>
+      </div>
+
+      <div id="tab-lr" class="tab-content">
+        <div class="viz-canvas" id="lr-canvas">
+          <svg id="lr-svg" class="tree-svg"></svg>
+        </div>
+        <div class="rotation-steps" id="lr-steps">
+          <div class="rotation-step active">
+            <h4>Step 1: Identify Imbalance</h4>
+            <p>Left-Right case: inserted in right subtree of left child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 2: Left Rotate (Child)</h4>
+            <p>First, left rotate the left child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 3: Right Rotate (Parent)</h4>
+            <p>Then, right rotate the unbalanced node</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 4: Update Heights</h4>
+            <p>Recalculate balance factors for affected nodes</p>
+          </div>
+        </div>
+        <div class="controls">
+          <button onclick="animateRotation('lr', 'prev')">Previous</button>
+          <button onclick="animateRotation('lr', 'next')">Next Step</button>
+          <button class="secondary" onclick="animateRotation('lr', 'reset')">Reset</button>
+          <button onclick="animateRotation('lr', 'auto')">Auto Play</button>
+        </div>
+      </div>
+
+      <div id="tab-rl" class="tab-content">
+        <div class="viz-canvas" id="rl-canvas">
+          <svg id="rl-svg" class="tree-svg"></svg>
+        </div>
+        <div class="rotation-steps" id="rl-steps">
+          <div class="rotation-step active">
+            <h4>Step 1: Identify Imbalance</h4>
+            <p>Right-Left case: inserted in left subtree of right child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 2: Right Rotate (Child)</h4>
+            <p>First, right rotate the right child</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 3: Left Rotate (Parent)</h4>
+            <p>Then, left rotate the unbalanced node</p>
+          </div>
+          <div class="rotation-step">
+            <h4>Step 4: Update Heights</h4>
+            <p>Recalculate balance factors for affected nodes</p>
+          </div>
+        </div>
+        <div class="controls">
+          <button onclick="animateRotation('rl', 'prev')">Previous</button>
+          <button onclick="animateRotation('rl', 'next')">Next Step</button>
+          <button class="secondary" onclick="animateRotation('rl', 'reset')">Reset</button>
+          <button onclick="animateRotation('rl', 'auto')">Auto Play</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Confusing LR and RL rotations. Remember: the name refers to the path from the unbalanced node to the newly inserted node. LR means "go left, then right" from the unbalanced ancestor.
+    </div>
+
+    <!-- Section 3: Tree Comparison -->
+    <h2>3. BST vs Red-Black vs AVL: Trade-offs</h2>
+    <p>Different self-balancing tree structures make different trade-offs between lookup speed and modification cost.</p>
+
+    <div class="viz-container">
+      <h3>Height Comparison Simulator</h3>
+      <p>Insert the same sequence into all three tree types and compare their heights.</p>
+
+      <div class="comparison-grid">
+        <div class="comparison-card bst">
+          <h4>Binary Search Tree</h4>
+          <div class="tree-height bst" id="bst-height">0</div>
+          <p>Height</p>
+        </div>
+        <div class="comparison-card rbt">
+          <h4>Red-Black Tree</h4>
+          <div class="tree-height rbt" id="rbt-height">0</div>
+          <p>Height</p>
+        </div>
+        <div class="comparison-card avl">
+          <h4>AVL Tree</h4>
+          <div class="tree-height avl" id="avl-compare-height">0</div>
+          <p>Height</p>
+        </div>
+      </div>
+
+      <div class="viz-canvas" style="min-height: 200px;" id="compare-canvas">
+        <svg id="compare-svg" class="tree-svg"></svg>
+      </div>
+
+      <div class="controls">
+        <input type="number" id="compare-input" placeholder="Value" min="1" max="99">
+        <button onclick="insertComparison()">Insert</button>
+        <button class="secondary" onclick="insertWorstCase()">Worst Case (1-7)</button>
+        <button class="secondary" onclick="insertRandomComparison()">Random x5</button>
+        <button class="danger" onclick="clearComparison()">Clear All</button>
+      </div>
+
+      <div id="compare-status" class="status-panel">
+        Insert values to compare how different tree structures maintain balance differently.
+      </div>
+    </div>
+
+    <h3>Complexity Comparison</h3>
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>Operation</th>
+          <th>BST (worst)</th>
+          <th>BST (avg)</th>
+          <th>Red-Black</th>
+          <th>AVL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Search</td>
+          <td>O(n)</td>
+          <td>O(log n)</td>
+          <td>O(log n)</td>
+          <td>O(log n) - fastest</td>
+        </tr>
+        <tr>
+          <td>Insert</td>
+          <td>O(n)</td>
+          <td>O(log n)</td>
+          <td>O(log n) - fastest</td>
+          <td>O(log n)</td>
+        </tr>
+        <tr>
+          <td>Delete</td>
+          <td>O(n)</td>
+          <td>O(log n)</td>
+          <td>O(log n) - fastest</td>
+          <td>O(log n)</td>
+        </tr>
+        <tr>
+          <td>Rotations per op</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0-3</td>
+          <td>0-2 (but may cascade)</td>
+        </tr>
+        <tr>
+          <td>Max height</td>
+          <td>n</td>
+          <td>~1.39 log n</td>
+          <td>2 log(n+1)</td>
+          <td>1.44 log n - shortest</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-insight">
+      <strong>Key Trade-off:</strong> AVL trees are more strictly balanced, resulting in faster lookups but potentially more rotations during insertions/deletions. Red-Black trees are less strictly balanced but require fewer rotations, making modifications faster on average.
+    </div>
+
+    <!-- Section 4: When to Choose Each -->
+    <h2>4. Choosing the Right Tree Structure</h2>
+
+    <div class="viz-container">
+      <h3>Decision Guide: Which Tree Should You Use?</h3>
+
+      <div class="decision-tree" id="decision-tree">
+        <div class="decision-node question" id="q1">
+          <strong>Is your workload read-heavy (many more lookups than modifications)?</strong>
+          <div class="decision-options">
+            <button class="decision-option" onclick="selectDecision('q1', 'yes')">Yes</button>
+            <button class="decision-option" onclick="selectDecision('q1', 'no')">No</button>
+          </div>
+        </div>
+        <div id="q1-result" style="display: none;"></div>
+      </div>
+    </div>
+
+    <h3>Use Case Summary</h3>
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>Use Case</th>
+          <th>Recommended</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Database indexes</td>
+          <td>B-trees / Red-Black</td>
+          <td>Good balance of read/write performance</td>
+        </tr>
+        <tr>
+          <td>In-memory dictionary (read-heavy)</td>
+          <td>AVL Tree</td>
+          <td>Fastest lookups due to stricter balance</td>
+        </tr>
+        <tr>
+          <td>Language runtime (e.g., std::map)</td>
+          <td>Red-Black Tree</td>
+          <td>Balanced performance, predictable rotations</td>
+        </tr>
+        <tr>
+          <td>Real-time systems</td>
+          <td>AVL Tree</td>
+          <td>Guaranteed O(log n) worst case</td>
+        </tr>
+        <tr>
+          <td>Simple implementation needed</td>
+          <td>BST or Treap</td>
+          <td>Easier to code and debug</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 5: Height Computation -->
+    <h2>5. Height Computation and Maintenance</h2>
+    <p>Efficient height maintenance is crucial for AVL tree performance. Each node stores its height, which is updated during insertions and rotations.</p>
+
+    <div class="viz-container">
+      <h3>Balance Factor Calculator</h3>
+      <div class="viz-canvas" id="height-canvas">
+        <svg id="height-svg" class="tree-svg"></svg>
+      </div>
+
+      <div class="controls">
+        <button onclick="showHeightCalculation()">Show Height Calculation</button>
+        <button class="secondary" onclick="resetHeightDemo()">Reset Demo</button>
+      </div>
+
+      <div id="height-status" class="status-panel">
+        Click "Show Height Calculation" to see how heights and balance factors are computed bottom-up.
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try This:</strong> For any node, compute: <code>height = 1 + max(left.height, right.height)</code>. Empty children have height -1. Then <code>balanceFactor = left.height - right.height</code>.
+    </div>
+
+    <!-- Section 6: Quiz -->
+    <h2>6. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question" id="quiz-1">
+        <h4>Question 1: What is the valid range for an AVL tree's balance factor?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">-2 to +2</div>
+          <div class="quiz-option" data-index="1">-1 to +1</div>
+          <div class="quiz-option" data-index="2">0 to +1</div>
+          <div class="quiz-option" data-index="3">-1 to 0</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint('quiz-1', 0)">Show Hint 1</button>
+          <div class="hint-text" id="quiz-1-hint-0">The balance factor measures height difference between left and right subtrees.</div>
+          <button class="hint-btn" onclick="showHint('quiz-1', 1)" style="display:none;" id="quiz-1-hint-btn-1">Show Hint 2</button>
+          <div class="hint-text" id="quiz-1-hint-1">AVL stands for "strictly balanced" - the height difference must be minimal.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> An AVL tree requires the balance factor (left height - right height) to be exactly -1, 0, or +1 at every node. Any value outside this range triggers a rotation.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-2">
+        <h4>Question 2: After inserting into the left subtree of the left child, which rotation is needed?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">Right rotation (LL case)</div>
+          <div class="quiz-option" data-index="1">Left rotation (RR case)</div>
+          <div class="quiz-option" data-index="2">Left-Right double rotation</div>
+          <div class="quiz-option" data-index="3">Right-Left double rotation</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint('quiz-2', 0)">Show Hint 1</button>
+          <div class="hint-text" id="quiz-2-hint-0">The rotation direction is usually opposite to where the imbalance occurred.</div>
+          <button class="hint-btn" onclick="showHint('quiz-2', 1)" style="display:none;" id="quiz-2-hint-btn-1">Show Hint 2</button>
+          <div class="hint-text" id="quiz-2-hint-1">LL means the problem is on the left-left path, so we rotate right to balance.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The LL case (insertion in left subtree of left child) requires a single right rotation. The rotation direction is opposite to where the "heavy" side is.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-3">
+        <h4>Question 3: Which tree type has the shortest maximum height for n nodes?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Binary Search Tree</div>
+          <div class="quiz-option" data-index="1">Red-Black Tree</div>
+          <div class="quiz-option" data-index="2">AVL Tree</div>
+          <div class="quiz-option" data-index="3">They're all the same</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint('quiz-3', 0)">Show Hint 1</button>
+          <div class="hint-text" id="quiz-3-hint-0">Stricter balance requirements lead to shorter trees.</div>
+          <button class="hint-btn" onclick="showHint('quiz-3', 1)" style="display:none;" id="quiz-3-hint-btn-1">Show Hint 2</button>
+          <div class="hint-text" id="quiz-3-hint-1">AVL requires balance factor of at most 1, while Red-Black allows up to 2x height difference between paths.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> AVL trees have the strictest balance requirement (BF of -1, 0, or +1), resulting in maximum height of about 1.44 log n, compared to 2 log n for Red-Black trees.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-4">
+        <h4>Question 4: When is a Red-Black tree preferred over an AVL tree?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">When lookups are the most frequent operation</div>
+          <div class="quiz-option" data-index="1">When insertions and deletions are frequent</div>
+          <div class="quiz-option" data-index="2">When memory is extremely limited</div>
+          <div class="quiz-option" data-index="3">When data is already sorted</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint('quiz-4', 0)">Show Hint 1</button>
+          <div class="hint-text" id="quiz-4-hint-0">Think about which operations cause more rotations in AVL vs Red-Black trees.</div>
+          <button class="hint-btn" onclick="showHint('quiz-4', 1)" style="display:none;" id="quiz-4-hint-btn-1">Show Hint 2</button>
+          <div class="hint-text" id="quiz-4-hint-1">AVL's stricter balance means more rotations during modifications but faster lookups.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Red-Black trees are preferred when insertions and deletions are frequent because they require fewer rotations on average. AVL is better for read-heavy workloads where lookup speed is critical.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-5">
+        <h4>Question 5: What is the height of an empty subtree in AVL height calculations?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">-1</div>
+          <div class="quiz-option" data-index="1">0</div>
+          <div class="quiz-option" data-index="2">1</div>
+          <div class="quiz-option" data-index="3">null (undefined)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint('quiz-5', 0)">Show Hint 1</button>
+          <div class="hint-text" id="quiz-5-hint-0">A leaf node (with two empty children) should have height 0.</div>
+          <button class="hint-btn" onclick="showHint('quiz-5', 1)" style="display:none;" id="quiz-5-hint-btn-1">Show Hint 2</button>
+          <div class="hint-text" id="quiz-5-hint-1">Since height = 1 + max(left.height, right.height), and a leaf has height 0, its children must have height -1.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Empty subtrees (null children) are defined to have height -1. This makes the formula <code>height = 1 + max(left.height, right.height)</code> work correctly for leaf nodes (giving height 0).
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7: Applications -->
+    <h2>7. Real-World Applications</h2>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Database Indexing:</strong> B-trees (related to balanced BSTs) power database indexes for fast queries</li>
+      <li><strong>Language Runtimes:</strong> C++ std::map and Java TreeMap use Red-Black trees</li>
+      <li><strong>Memory Allocators:</strong> Track free memory blocks with balanced trees</li>
+      <li><strong>Network Routers:</strong> IP routing tables often use balanced tree structures</li>
+      <li><strong>File Systems:</strong> Directory structures and file indexing</li>
+      <li><strong>Compilers:</strong> Symbol tables for variable lookup</li>
+    </ul>
+
+    <!-- Dive Deeper -->
+    <h2>8. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://visualgo.net/en/bst" target="_blank">VisuAlgo - BST/AVL Visualization</a></li>
+      <li><a href="https://www.cs.usfca.edu/~galles/visualization/AVLtree.html" target="_blank">USF AVL Tree Visualization</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/AVL_tree" target="_blank">Wikipedia - AVL Trees</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-19-graphs.html">Session 19: Graphs</a>
+      <a href="session-21-advanced-trees.html">Session 21: Advanced Tree Structures</a>
+    </nav>
+  </div>
+
+  <script>
+    // ==================== Theme Toggle ====================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerHTML = next === 'dark' ? '&#9728;' : '&#127769;';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').innerHTML = savedTheme === 'dark' ? '&#9728;' : '&#127769;';
+
+    // ==================== AVL Tree Implementation ====================
+    class AVLNode {
+      constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+        this.height = 0;
+        this.x = 0;
+        this.y = 0;
+        this.isNew = false;
+        this.isRotating = false;
+      }
+
+      get balanceFactor() {
+        return this.getHeight(this.left) - this.getHeight(this.right);
+      }
+
+      getHeight(node) {
+        return node ? node.height : -1;
+      }
+
+      updateHeight() {
+        this.height = 1 + Math.max(this.getHeight(this.left), this.getHeight(this.right));
+      }
+    }
+
+    class AVLTree {
+      constructor() {
+        this.root = null;
+        this.rotationLog = [];
+      }
+
+      insert(value) {
+        this.rotationLog = [];
+        this.root = this._insert(this.root, value);
+        return this.rotationLog;
+      }
+
+      _insert(node, value) {
+        if (!node) {
+          const newNode = new AVLNode(value);
+          newNode.isNew = true;
+          setTimeout(() => { newNode.isNew = false; }, 1500);
+          return newNode;
+        }
+
+        if (value < node.value) {
+          node.left = this._insert(node.left, value);
+        } else if (value > node.value) {
+          node.right = this._insert(node.right, value);
+        } else {
+          return node; // Duplicate, no insert
+        }
+
+        node.updateHeight();
+        return this._balance(node);
+      }
+
+      _balance(node) {
+        const bf = node.balanceFactor;
+
+        // Left heavy
+        if (bf > 1) {
+          if (node.left.balanceFactor < 0) {
+            // LR case
+            this.rotationLog.push({ type: 'LR', node: node.value });
+            node.left = this._rotateLeft(node.left);
+          } else {
+            this.rotationLog.push({ type: 'LL', node: node.value });
+          }
+          return this._rotateRight(node);
+        }
+
+        // Right heavy
+        if (bf < -1) {
+          if (node.right.balanceFactor > 0) {
+            // RL case
+            this.rotationLog.push({ type: 'RL', node: node.value });
+            node.right = this._rotateRight(node.right);
+          } else {
+            this.rotationLog.push({ type: 'RR', node: node.value });
+          }
+          return this._rotateLeft(node);
+        }
+
+        return node;
+      }
+
+      _rotateRight(y) {
+        const x = y.left;
+        const T2 = x.right;
+
+        x.right = y;
+        y.left = T2;
+
+        y.updateHeight();
+        x.updateHeight();
+
+        return x;
+      }
+
+      _rotateLeft(x) {
+        const y = x.right;
+        const T2 = y.left;
+
+        y.left = x;
+        x.right = T2;
+
+        x.updateHeight();
+        y.updateHeight();
+
+        return y;
+      }
+
+      getHeight() {
+        return this.root ? this.root.height : -1;
+      }
+
+      clear() {
+        this.root = null;
+        this.rotationLog = [];
+      }
+    }
+
+    // ==================== Simple BST (for comparison) ====================
+    class BSTNode {
+      constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+      }
+    }
+
+    class BST {
+      constructor() {
+        this.root = null;
+      }
+
+      insert(value) {
+        this.root = this._insert(this.root, value);
+      }
+
+      _insert(node, value) {
+        if (!node) return new BSTNode(value);
+        if (value < node.value) {
+          node.left = this._insert(node.left, value);
+        } else if (value > node.value) {
+          node.right = this._insert(node.right, value);
+        }
+        return node;
+      }
+
+      getHeight() {
+        return this._getHeight(this.root);
+      }
+
+      _getHeight(node) {
+        if (!node) return -1;
+        return 1 + Math.max(this._getHeight(node.left), this._getHeight(node.right));
+      }
+
+      clear() {
+        this.root = null;
+      }
+    }
+
+    // ==================== Red-Black Tree (simplified simulation) ====================
+    class RBTree {
+      constructor() {
+        this.height = -1;
+        this.nodeCount = 0;
+      }
+
+      insert(value) {
+        this.nodeCount++;
+        // Approximate RB tree height: h <= 2 * log2(n + 1)
+        this.height = Math.floor(2 * Math.log2(this.nodeCount + 1));
+      }
+
+      getHeight() {
+        return this.height;
+      }
+
+      clear() {
+        this.height = -1;
+        this.nodeCount = 0;
+      }
+    }
+
+    // ==================== Tree Visualization ====================
+    function calculatePositions(node, x, y, horizontalSpacing, level = 0) {
+      if (!node) return;
+
+      node.x = x;
+      node.y = y;
+
+      const nextSpacing = horizontalSpacing * 0.55;
+      const verticalGap = 60;
+
+      if (node.left) {
+        calculatePositions(node.left, x - horizontalSpacing, y + verticalGap, nextSpacing, level + 1);
+      }
+      if (node.right) {
+        calculatePositions(node.right, x + horizontalSpacing, y + verticalGap, nextSpacing, level + 1);
+      }
+    }
+
+    function renderTree(svg, root, showBalanceFactor = true) {
+      svg.innerHTML = '';
+
+      if (!root) {
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', '50%');
+        text.setAttribute('y', '50%');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', '#666');
+        text.setAttribute('font-family', 'var(--font-main)');
+        text.textContent = 'Empty tree - insert values to begin';
+        svg.appendChild(text);
+        return;
+      }
+
+      const svgRect = svg.getBoundingClientRect();
+      const centerX = svgRect.width / 2;
+      const startY = 50;
+      const initialSpacing = Math.min(svgRect.width / 4, 150);
+
+      calculatePositions(root, centerX, startY, initialSpacing);
+
+      // Draw edges first
+      function drawEdges(node) {
+        if (!node) return;
+
+        if (node.left) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', node.x);
+          line.setAttribute('y1', node.y);
+          line.setAttribute('x2', node.left.x);
+          line.setAttribute('y2', node.left.y);
+          line.setAttribute('class', 'tree-edge');
+          svg.appendChild(line);
+          drawEdges(node.left);
+        }
+
+        if (node.right) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', node.x);
+          line.setAttribute('y1', node.y);
+          line.setAttribute('x2', node.right.x);
+          line.setAttribute('y2', node.right.y);
+          line.setAttribute('class', 'tree-edge');
+          svg.appendChild(line);
+          drawEdges(node.right);
+        }
+      }
+
+      // Draw nodes
+      function drawNodes(node) {
+        if (!node) return;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'tree-node' + (node.isNew ? ' node-animated' : '') + (node.isRotating ? ' rotating' : ''));
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x);
+        circle.setAttribute('cy', node.y);
+        circle.setAttribute('r', 22);
+
+        const bf = node.balanceFactor;
+        let fillColor = 'var(--node-balanced)';
+        if (node.isNew) fillColor = 'var(--node-new)';
+        else if (node.isRotating) fillColor = 'var(--node-rotating)';
+        else if (Math.abs(bf) > 1) fillColor = 'var(--node-unbalanced)';
+
+        circle.setAttribute('fill', fillColor);
+        circle.setAttribute('stroke', fillColor);
+        g.appendChild(circle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y);
+        text.setAttribute('class', 'tree-node');
+        text.textContent = node.value;
+        g.appendChild(text);
+
+        if (showBalanceFactor) {
+          const bfText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          bfText.setAttribute('x', node.x + 18);
+          bfText.setAttribute('y', node.y - 18);
+          bfText.setAttribute('class', 'balance-factor');
+          bfText.textContent = (bf >= 0 ? '+' : '') + bf;
+          g.appendChild(bfText);
+        }
+
+        svg.appendChild(g);
+
+        if (node.left) drawNodes(node.left);
+        if (node.right) drawNodes(node.right);
+      }
+
+      drawEdges(root);
+      drawNodes(root);
+    }
+
+    // ==================== AVL Tree Interactive Builder ====================
+    const avlTree = new AVLTree();
+    const avlSvg = document.getElementById('avl-svg');
+    const avlStatus = document.getElementById('avl-status');
+
+    function insertAVL() {
+      const input = document.getElementById('avl-input');
+      const value = parseInt(input.value);
+
+      if (isNaN(value) || value < 1 || value > 99) {
+        avlStatus.textContent = 'Please enter a value between 1 and 99';
+        avlStatus.className = 'status-panel error';
+        return;
+      }
+
+      const rotations = avlTree.insert(value);
+      renderTree(avlSvg, avlTree.root);
+
+      if (rotations.length > 0) {
+        const rotationStr = rotations.map(r => `${r.type} rotation at node ${r.node}`).join(', ');
+        avlStatus.textContent = `Inserted ${value}. Performed: ${rotationStr}. Tree height: ${avlTree.getHeight()}`;
+        avlStatus.className = 'status-panel success';
+      } else {
+        avlStatus.textContent = `Inserted ${value}. No rotations needed. Tree height: ${avlTree.getHeight()}`;
+        avlStatus.className = 'status-panel';
+      }
+
+      input.value = '';
+      input.focus();
+    }
+
+    function insertRandomAVL() {
+      const value = Math.floor(Math.random() * 99) + 1;
+      document.getElementById('avl-input').value = value;
+      insertAVL();
+    }
+
+    function insertSequenceAVL() {
+      clearAVL();
+      const sequence = [50, 25, 75, 10, 30, 60, 80, 5, 15, 27, 35];
+      let i = 0;
+
+      function insertNext() {
+        if (i < sequence.length) {
+          document.getElementById('avl-input').value = sequence[i];
+          insertAVL();
+          i++;
+          setTimeout(insertNext, 800);
+        }
+      }
+
+      insertNext();
+    }
+
+    function clearAVL() {
+      avlTree.clear();
+      renderTree(avlSvg, avlTree.root);
+      avlStatus.textContent = 'Tree cleared. Enter a value to start building.';
+      avlStatus.className = 'status-panel';
+    }
+
+    // Initialize AVL tree display
+    renderTree(avlSvg, avlTree.root);
+
+    // Enter key support
+    document.getElementById('avl-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') insertAVL();
+    });
+
+    // ==================== Rotation Animation ====================
+    const rotationStates = {
+      ll: { step: 0, maxSteps: 3, autoInterval: null },
+      rr: { step: 0, maxSteps: 3, autoInterval: null },
+      lr: { step: 0, maxSteps: 4, autoInterval: null },
+      rl: { step: 0, maxSteps: 4, autoInterval: null }
+    };
+
+    function getRotationTreeState(type, step) {
+      const trees = {
+        ll: [
+          // Step 0: Unbalanced (BF = +2)
+          { nodes: [[30, 0, 0], [20, -80, 50], [10, -120, 100]], edges: [[0,1], [1,2]] },
+          // Step 1: Rotating
+          { nodes: [[30, 0, 0, true], [20, -60, 50, true], [10, -120, 100]], edges: [[0,1], [1,2]] },
+          // Step 2: Balanced
+          { nodes: [[20, 0, 0], [10, -60, 50], [30, 60, 50]], edges: [[0,1], [0,2]] }
+        ],
+        rr: [
+          { nodes: [[10, 0, 0], [20, 80, 50], [30, 120, 100]], edges: [[0,1], [1,2]] },
+          { nodes: [[10, 0, 0, true], [20, 60, 50, true], [30, 120, 100]], edges: [[0,1], [1,2]] },
+          { nodes: [[20, 0, 0], [10, -60, 50], [30, 60, 50]], edges: [[0,1], [0,2]] }
+        ],
+        lr: [
+          { nodes: [[30, 0, 0], [10, -80, 50], [20, -40, 100]], edges: [[0,1], [1,2]] },
+          { nodes: [[30, 0, 0], [20, -80, 50, true], [10, -120, 100, true]], edges: [[0,1], [1,2]] },
+          { nodes: [[30, 0, 0, true], [20, -60, 50, true], [10, -120, 100]], edges: [[0,1], [1,2]] },
+          { nodes: [[20, 0, 0], [10, -60, 50], [30, 60, 50]], edges: [[0,1], [0,2]] }
+        ],
+        rl: [
+          { nodes: [[10, 0, 0], [30, 80, 50], [20, 40, 100]], edges: [[0,1], [1,2]] },
+          { nodes: [[10, 0, 0], [20, 80, 50, true], [30, 120, 100, true]], edges: [[0,1], [1,2]] },
+          { nodes: [[10, 0, 0, true], [20, 60, 50, true], [30, 120, 100]], edges: [[0,1], [1,2]] },
+          { nodes: [[20, 0, 0], [10, -60, 50], [30, 60, 50]], edges: [[0,1], [0,2]] }
+        ]
+      };
+
+      return trees[type][step];
+    }
+
+    function renderRotationTree(svgId, type, step) {
+      const svg = document.getElementById(svgId);
+      svg.innerHTML = '';
+
+      const state = getRotationTreeState(type, step);
+      const svgRect = svg.getBoundingClientRect();
+      const centerX = svgRect.width / 2;
+      const startY = 60;
+
+      // Draw edges
+      state.edges.forEach(([from, to]) => {
+        const fromNode = state.nodes[from];
+        const toNode = state.nodes[to];
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', centerX + fromNode[1]);
+        line.setAttribute('y1', startY + fromNode[2]);
+        line.setAttribute('x2', centerX + toNode[1]);
+        line.setAttribute('y2', startY + toNode[2]);
+        line.setAttribute('class', 'tree-edge');
+        svg.appendChild(line);
+      });
+
+      // Draw nodes
+      state.nodes.forEach(([value, offsetX, offsetY, isRotating]) => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'tree-node' + (isRotating ? ' rotating' : ''));
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', centerX + offsetX);
+        circle.setAttribute('cy', startY + offsetY);
+        circle.setAttribute('r', 22);
+        circle.setAttribute('fill', isRotating ? 'var(--node-rotating)' : 'var(--node-balanced)');
+        circle.setAttribute('stroke', isRotating ? 'var(--node-rotating)' : 'var(--node-balanced)');
+        g.appendChild(circle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', centerX + offsetX);
+        text.setAttribute('y', startY + offsetY);
+        text.textContent = value;
+        g.appendChild(text);
+
+        svg.appendChild(g);
+      });
+    }
+
+    function updateRotationSteps(type, step) {
+      const stepsContainer = document.getElementById(`${type}-steps`);
+      const steps = stepsContainer.querySelectorAll('.rotation-step');
+      steps.forEach((s, i) => {
+        s.classList.toggle('active', i === step);
+      });
+    }
+
+    function animateRotation(type, action) {
+      const state = rotationStates[type];
+
+      if (state.autoInterval) {
+        clearInterval(state.autoInterval);
+        state.autoInterval = null;
+      }
+
+      switch (action) {
+        case 'next':
+          if (state.step < state.maxSteps - 1) state.step++;
+          break;
+        case 'prev':
+          if (state.step > 0) state.step--;
+          break;
+        case 'reset':
+          state.step = 0;
+          break;
+        case 'auto':
+          state.step = 0;
+          state.autoInterval = setInterval(() => {
+            if (state.step < state.maxSteps - 1) {
+              state.step++;
+              renderRotationTree(`${type}-svg`, type, state.step);
+              updateRotationSteps(type, state.step);
+            } else {
+              clearInterval(state.autoInterval);
+              state.autoInterval = null;
+            }
+          }, 1200);
+          break;
+      }
+
+      renderRotationTree(`${type}-svg`, type, state.step);
+      updateRotationSteps(type, state.step);
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.dataset.tab;
+
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        tab.classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+
+        // Initialize the rotation animation for this tab
+        animateRotation(tabId, 'reset');
+      });
+    });
+
+    // Initialize all rotation visualizations
+    ['ll', 'rr', 'lr', 'rl'].forEach(type => {
+      renderRotationTree(`${type}-svg`, type, 0);
+    });
+
+    // ==================== Comparison Simulator ====================
+    const compBST = new BST();
+    const compRBT = new RBTree();
+    const compAVL = new AVLTree();
+    const compareSvg = document.getElementById('compare-svg');
+    const compareStatus = document.getElementById('compare-status');
+
+    function updateComparisonDisplay() {
+      document.getElementById('bst-height').textContent = compBST.getHeight();
+      document.getElementById('rbt-height').textContent = compRBT.getHeight();
+      document.getElementById('avl-compare-height').textContent = compAVL.getHeight();
+
+      // Show AVL tree in the visualization
+      renderTree(compareSvg, compAVL.root, false);
+    }
+
+    function insertComparison() {
+      const input = document.getElementById('compare-input');
+      const value = parseInt(input.value);
+
+      if (isNaN(value) || value < 1 || value > 99) {
+        compareStatus.textContent = 'Please enter a value between 1 and 99';
+        compareStatus.className = 'status-panel error';
+        return;
+      }
+
+      compBST.insert(value);
+      compRBT.insert(value);
+      compAVL.insert(value);
+
+      updateComparisonDisplay();
+      compareStatus.textContent = `Inserted ${value}. BST height: ${compBST.getHeight()}, RBT height: ${compRBT.getHeight()}, AVL height: ${compAVL.getHeight()}`;
+      compareStatus.className = 'status-panel';
+
+      input.value = '';
+      input.focus();
+    }
+
+    function insertWorstCase() {
+      clearComparison();
+      const sequence = [1, 2, 3, 4, 5, 6, 7];
+      let i = 0;
+
+      function insertNext() {
+        if (i < sequence.length) {
+          document.getElementById('compare-input').value = sequence[i];
+          insertComparison();
+          i++;
+          setTimeout(insertNext, 600);
+        } else {
+          compareStatus.textContent = `Worst case sequence (1-7): BST degenerates to height ${compBST.getHeight()}, while AVL stays at ${compAVL.getHeight()}!`;
+          compareStatus.className = 'status-panel success';
+        }
+      }
+
+      insertNext();
+    }
+
+    function insertRandomComparison() {
+      for (let i = 0; i < 5; i++) {
+        const value = Math.floor(Math.random() * 99) + 1;
+        compBST.insert(value);
+        compRBT.insert(value);
+        compAVL.insert(value);
+      }
+      updateComparisonDisplay();
+      compareStatus.textContent = `Inserted 5 random values. Compare the heights!`;
+      compareStatus.className = 'status-panel';
+    }
+
+    function clearComparison() {
+      compBST.clear();
+      compRBT.clear();
+      compAVL.clear();
+      updateComparisonDisplay();
+      compareStatus.textContent = 'All trees cleared. Insert values to compare heights.';
+      compareStatus.className = 'status-panel';
+    }
+
+    document.getElementById('compare-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') insertComparison();
+    });
+
+    updateComparisonDisplay();
+
+    // ==================== Decision Tree ====================
+    const decisionData = {
+      q1: {
+        yes: {
+          type: 'question',
+          id: 'q2',
+          text: 'Do you need guaranteed O(log n) worst-case performance?'
+        },
+        no: {
+          type: 'question',
+          id: 'q3',
+          text: 'Is memory a critical constraint?'
+        }
+      },
+      q2: {
+        yes: {
+          type: 'answer',
+          text: 'Use AVL Tree - strictest balance guarantees fastest lookups'
+        },
+        no: {
+          type: 'question',
+          id: 'q4',
+          text: 'Is implementation simplicity important?'
+        }
+      },
+      q3: {
+        yes: {
+          type: 'answer',
+          text: 'Use Red-Black Tree - good balance with minimal overhead'
+        },
+        no: {
+          type: 'question',
+          id: 'q5',
+          text: 'Is your data mostly sorted on insertion?'
+        }
+      },
+      q4: {
+        yes: {
+          type: 'answer',
+          text: 'Use a balanced BST library (like std::map) - Red-Black under the hood'
+        },
+        no: {
+          type: 'answer',
+          text: 'Use AVL Tree for optimal lookup performance'
+        }
+      },
+      q5: {
+        yes: {
+          type: 'answer',
+          text: 'Use AVL or Red-Black Tree - plain BST would degenerate to O(n)'
+        },
+        no: {
+          type: 'answer',
+          text: 'Use Red-Black Tree - balanced performance for mixed workloads'
+        }
+      }
+    };
+
+    function selectDecision(questionId, answer) {
+      const resultDiv = document.getElementById(`${questionId}-result`);
+      const questionDiv = document.getElementById(questionId);
+      const options = questionDiv.querySelectorAll('.decision-option');
+
+      options.forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.textContent.toLowerCase() === answer) {
+          opt.classList.add('selected');
+        }
+      });
+
+      const result = decisionData[questionId][answer];
+
+      if (result.type === 'question') {
+        resultDiv.innerHTML = `
+          <div class="decision-node question" id="${result.id}" style="margin-left: 2rem;">
+            <strong>${result.text}</strong>
+            <div class="decision-options">
+              <button class="decision-option" onclick="selectDecision('${result.id}', 'yes')">Yes</button>
+              <button class="decision-option" onclick="selectDecision('${result.id}', 'no')">No</button>
+            </div>
+          </div>
+          <div id="${result.id}-result"></div>
+        `;
+      } else {
+        resultDiv.innerHTML = `
+          <div class="decision-node answer" style="margin-left: 2rem;">
+            <strong>Recommendation:</strong> ${result.text}
+          </div>
+        `;
+      }
+
+      resultDiv.style.display = 'block';
+    }
+
+    // ==================== Height Calculation Demo ====================
+    const heightSvg = document.getElementById('height-svg');
+    const heightStatus = document.getElementById('height-status');
+    let heightDemoTree = null;
+
+    function createHeightDemoTree() {
+      const tree = new AVLTree();
+      [40, 20, 60, 10, 30, 50, 70].forEach(v => tree.insert(v));
+      return tree;
+    }
+
+    function showHeightCalculation() {
+      heightDemoTree = createHeightDemoTree();
+      renderTree(heightSvg, heightDemoTree.root, true);
+
+      const steps = [
+        'Step 1: Leaf nodes (10, 30, 50, 70) have height 0 (no children)',
+        'Step 2: Nodes 20 and 60 have height 1 = 1 + max(0, 0)',
+        'Step 3: Root node 40 has height 2 = 1 + max(1, 1)',
+        'Step 4: All balance factors are 0 (perfectly balanced!)'
+      ];
+
+      let stepIndex = 0;
+      heightStatus.textContent = steps[0];
+
+      const interval = setInterval(() => {
+        stepIndex++;
+        if (stepIndex < steps.length) {
+          heightStatus.textContent = steps[stepIndex];
+          heightStatus.className = 'status-panel success';
+        } else {
+          clearInterval(interval);
+        }
+      }, 2000);
+    }
+
+    function resetHeightDemo() {
+      heightDemoTree = createHeightDemoTree();
+      renderTree(heightSvg, heightDemoTree.root, true);
+      heightStatus.textContent = 'Click "Show Height Calculation" to see how heights are computed.';
+      heightStatus.className = 'status-panel';
+    }
+
+    resetHeightDemo();
+
+    // ==================== Quiz Functionality ====================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function showHint(quizId, hintIndex) {
+      const hint = document.getElementById(`${quizId}-hint-${hintIndex}`);
+      hint.classList.add('show');
+
+      // Show next hint button if there's another hint
+      const nextHintBtn = document.getElementById(`${quizId}-hint-btn-${hintIndex + 1}`);
+      if (nextHintBtn) {
+        nextHintBtn.style.display = 'inline';
+      }
+    }
+
+    // ==================== KaTeX Auto-render ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

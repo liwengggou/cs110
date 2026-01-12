@@ -1,0 +1,2463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 9: Deterministic Quicksort | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --pivot: #EB5757;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: 'x';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* Array Visualization */
+    .array-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 4px;
+      width: 100%;
+      min-height: 200px;
+    }
+
+    .array-element {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .array-bar {
+      width: 45px;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      min-height: 30px;
+    }
+
+    .array-bar .value {
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.25rem;
+    }
+
+    .array-bar.comparing {
+      background: var(--comparing);
+      box-shadow: 0 0 10px var(--comparing);
+    }
+
+    .array-bar.swapping {
+      background: var(--swapping);
+      animation: pulse 0.5s ease;
+    }
+
+    .array-bar.sorted {
+      background: var(--sorted);
+    }
+
+    .array-bar.pivot {
+      background: var(--pivot);
+      box-shadow: 0 0 20px var(--pivot), 0 0 40px rgba(235, 87, 87, 0.5);
+      animation: pivot-glow 1s ease-in-out infinite;
+    }
+
+    .array-bar.current {
+      background: var(--current-focus);
+      box-shadow: 0 0 10px var(--current-focus);
+    }
+
+    .array-bar.less-region {
+      background: #27AE60;
+    }
+
+    .array-bar.greater-region {
+      background: #E74C3C;
+    }
+
+    .array-index {
+      font-size: 0.75rem;
+      color: #9B9B9B;
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    .pointer-label {
+      font-size: 0.75rem;
+      color: var(--current-focus);
+      font-family: var(--font-mono);
+      margin-top: 0.25rem;
+      font-weight: 600;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes pivot-glow {
+      0%, 100% { box-shadow: 0 0 20px var(--pivot), 0 0 40px rgba(235, 87, 87, 0.5); }
+      50% { box-shadow: 0 0 30px var(--pivot), 0 0 60px rgba(235, 87, 87, 0.7); }
+    }
+
+    /* Subarray Boundaries */
+    .subarray-indicator {
+      position: absolute;
+      bottom: 0;
+      height: 4px;
+      background: var(--purple);
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .subarray-label {
+      position: absolute;
+      font-size: 0.625rem;
+      color: var(--purple);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    /* Recursion Tree */
+    .recursion-viz {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: var(--border-radius);
+      width: 100%;
+    }
+
+    .recursion-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .recursion-level {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .recursion-node {
+      background: rgba(46, 170, 220, 0.2);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .recursion-node.active {
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .recursion-node.completed {
+      background: rgba(15, 123, 108, 0.3);
+      border-color: var(--success);
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Partition Scheme Toggle */
+    .scheme-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .scheme-btn {
+      padding: 0.5rem 1rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      color: var(--text-primary);
+    }
+
+    .scheme-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .scheme-btn:hover:not(.active) {
+      background: var(--code-bg);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+      white-space: pre;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .try-this-input {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .try-this-input input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .try-this-input button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-box h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .complexity-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+    }
+
+    .complexity-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .complexity-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Statistics Display */
+    .stats-display {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .array-bar { width: 35px; }
+      .complexity-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .array-bar { width: 28px; }
+      .array-bar .value { font-size: 0.7rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">*</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 9</span>
+      <h1>Deterministic Quicksort</h1>
+      <p class="subtitle">Master the divide-and-conquer sorting algorithm with in-place partitioning</p>
+      <div class="meta">
+        <span>About 30 minutes</span>
+        <span>Prerequisites: Session 6-7 (Recursion), Session 8 (Merge Sort)</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Trace</strong> quicksort execution through partitioning and recursive calls</li>
+        <li><strong>Compare</strong> Lomuto and Hoare partition schemes</li>
+        <li><strong>Analyze</strong> why quicksort achieves O(n log n) average case but O(n^2) worst case</li>
+        <li><strong>Identify</strong> how pivot selection affects performance</li>
+        <li><strong>Implement</strong> in-place quicksort with proper partition logic</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: What is Quicksort? -->
+    <h2>1. What is Quicksort?</h2>
+    <p>Quicksort is a divide-and-conquer algorithm that sorts by selecting a <strong>pivot</strong> element and <strong>partitioning</strong> the array so that elements smaller than the pivot come before it, and elements greater come after. The algorithm then recursively sorts the subarrays.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Unlike merge sort which does the work during the "combine" phase, quicksort does the work during the "divide" phase (partitioning). After partitioning, the pivot is in its final sorted position!
+    </div>
+
+    <!-- Section 2: Interactive Quicksort Animation -->
+    <h2>2. Quicksort Step-by-Step Animator</h2>
+    <p>Watch how quicksort partitions the array around pivot elements (shown with red glow) and recursively sorts subarrays.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Quicksort Visualization</h3>
+
+          <div class="scheme-toggle">
+            <button class="scheme-btn active" data-scheme="lomuto">Lomuto Partition</button>
+            <button class="scheme-btn" data-scheme="hoare">Hoare Partition</button>
+          </div>
+
+          <div class="step-description" id="qs-description">
+            Press Play to watch quicksort in action
+          </div>
+
+          <div class="viz-canvas" id="qs-canvas">
+            <div class="array-container" id="qs-array">
+              <!-- Generated by JavaScript -->
+            </div>
+            <div class="recursion-viz" id="recursion-viz">
+              <div style="color: #9B9B9B; font-size: 0.75rem; margin-bottom: 0.5rem;">Recursion Stack:</div>
+              <div class="recursion-tree" id="recursion-tree">
+                <!-- Generated by JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-display">
+            <div class="stat-item">
+              <span class="stat-label">Comparisons:</span>
+              <span class="stat-value" id="stat-comparisons">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Swaps:</span>
+              <span class="stat-value" id="stat-swaps">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Recursion Depth:</span>
+              <span class="stat-value" id="stat-depth">0</span>
+            </div>
+          </div>
+
+          <div class="step-controls">
+            <button id="qs-reset" title="Reset">|<</button>
+            <button id="qs-back" title="Step Back"><<</button>
+            <button id="qs-play" title="Play/Pause">Play</button>
+            <button id="qs-forward" title="Step Forward">>></button>
+            <span class="step-indicator" id="qs-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="qs-speed">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container" id="qs-progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="qs-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="keyboard-hints">
+            <span class="keyboard-hint"><span class="key">Space</span> Play/Pause</span>
+            <span class="keyboard-hint"><span class="key"><-</span> Step Back</span>
+            <span class="keyboard-hint"><span class="key">-></span> Step Forward</span>
+            <span class="keyboard-hint"><span class="key">R</span> Reset</span>
+          </div>
+        </div>
+
+        <div class="try-this">
+          <strong>Try This:</strong> Enter your own array to sort (comma-separated numbers):
+          <div class="try-this-input">
+            <input type="text" id="custom-array" placeholder="e.g., 8, 3, 1, 7, 0, 10, 2" value="8, 3, 1, 7, 0, 10, 2">
+            <button onclick="loadCustomArray()">Sort</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+            <span id="code-scheme-label">Lomuto Partition</span>
+          </div>
+          <div class="code-content" id="qs-code">
+            <!-- Lomuto code - shown by default -->
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">quicksort</span>(arr, low, high):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> low < high:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        <span class="comment"># Partition and get pivot index</span></span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">        pi = <span class="function">partition</span>(arr, low, high)</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="function">quicksort</span>(arr, low, pi - <span class="number">1</span>)</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">        <span class="function">quicksort</span>(arr, pi + <span class="number">1</span>, high)</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">partition</span>(arr, low, high):</span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">    pivot = arr[high]  <span class="comment"># Last element as pivot</span></span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">    i = low - <span class="number">1</span>  <span class="comment"># Index of smaller element</span></span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(low, high):</span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">        <span class="keyword">if</span> arr[j] <= pivot:</span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">            i = i + <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="15">
+              <span class="line-number">15</span>
+              <span class="line-content">            arr[i], arr[j] = arr[j], arr[i]</span>
+            </div>
+            <div class="code-line" data-line="16">
+              <span class="line-number">16</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="17">
+              <span class="line-number">17</span>
+              <span class="line-content">    arr[i+<span class="number">1</span>], arr[high] = arr[high], arr[i+<span class="number">1</span>]</span>
+            </div>
+            <div class="code-line" data-line="18">
+              <span class="line-number">18</span>
+              <span class="line-content">    <span class="keyword">return</span> i + <span class="number">1</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Variables</h4>
+          <div class="variable-list" id="qs-variables">
+            <div class="variable-item">
+              <span class="variable-name">low</span>
+              <span class="variable-value" id="var-low">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">high</span>
+              <span class="variable-value" id="var-high">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">pivot</span>
+              <span class="variable-value" id="var-pivot">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">i</span>
+              <span class="variable-value" id="var-i">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">j</span>
+              <span class="variable-value" id="var-j">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Partition Schemes -->
+    <h2>3. Partition Schemes Compared</h2>
+
+    <h3>Lomuto Partition Scheme</h3>
+    <p>Uses the <strong>last element</strong> as pivot. Maintains one pointer <code>i</code> that tracks the boundary between elements less than or equal to the pivot and elements greater than the pivot. Pointer <code>j</code> scans through the array.</p>
+
+    <h3>Hoare Partition Scheme</h3>
+    <p>Uses the <strong>first element</strong> as pivot. Uses two pointers that start at opposite ends and move toward each other, swapping elements that are on the wrong side of the pivot.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Hoare's partition typically performs fewer swaps than Lomuto's (about 3x fewer on average), but Lomuto's is easier to understand and implement correctly.
+    </div>
+
+    <!-- Section 4: Complexity Analysis -->
+    <h2>4. Complexity Analysis</h2>
+
+    <div class="complexity-box">
+      <h4>Time and Space Complexity</h4>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-label">Best Case</div>
+          <div class="complexity-value">O(n log n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Average Case</div>
+          <div class="complexity-value">O(n log n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Worst Case</div>
+          <div class="complexity-value">O(n^2)</div>
+        </div>
+      </div>
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+        <div class="complexity-grid">
+          <div class="complexity-item">
+            <div class="complexity-label">Space (Best/Avg)</div>
+            <div class="complexity-value">O(log n)</div>
+          </div>
+          <div class="complexity-item">
+            <div class="complexity-label">Space (Worst)</div>
+            <div class="complexity-value">O(n)</div>
+          </div>
+          <div class="complexity-item">
+            <div class="complexity-label">In-Place?</div>
+            <div class="complexity-value">Yes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p>The recurrence relation for quicksort depends on the pivot selection:</p>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Best/Average case:</strong> $T(n) = 2T(n/2) + \Theta(n)$ which gives $\Theta(n \log n)$</li>
+      <li><strong>Worst case:</strong> $T(n) = T(n-1) + \Theta(n)$ which gives $\Theta(n^2)$</li>
+    </ul>
+
+    <!-- Section 5: Worst Case Demonstration -->
+    <h2>5. Worst Case: Already Sorted Array</h2>
+    <p>When the array is already sorted and we always pick the first (or last) element as pivot, quicksort degrades to O(n^2). Try it yourself!</p>
+
+    <div class="viz-container">
+      <h3>Worst Case Demo</h3>
+      <div class="step-description" id="worst-description">
+        Watch how sorted input causes unbalanced partitions
+      </div>
+
+      <div class="viz-canvas" id="worst-canvas">
+        <div class="array-container" id="worst-array">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="stats-display">
+        <div class="stat-item">
+          <span class="stat-label">Comparisons:</span>
+          <span class="stat-value" id="worst-comparisons">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Optimal would be:</span>
+          <span class="stat-value" id="worst-optimal">~17</span>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="worst-reset">|<</button>
+        <button id="worst-back"><<</button>
+        <button id="worst-play">Play</button>
+        <button id="worst-forward">>></button>
+        <span class="step-indicator" id="worst-step-indicator">Step 0 of 0</span>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="worst-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Assuming quicksort is always fast. With a sorted or nearly-sorted array and a naive pivot selection (first or last element), quicksort becomes as slow as bubble sort!
+    </div>
+
+    <!-- Section 6: Common Mistakes -->
+    <h2>6. Common Mistakes</h2>
+
+    <div class="common-mistake">
+      <strong>Off-by-one in partition bounds:</strong> Remember that in Lomuto partition, the pivot ends up at index <code>i+1</code>, not <code>i</code>. The recursive calls should be <code>quicksort(arr, low, pi-1)</code> and <code>quicksort(arr, pi+1, high)</code>, excluding the pivot.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Forgetting the base case:</strong> Always check <code>if low < high</code> before partitioning. Without this, you'll get infinite recursion when the subarray has 0 or 1 elements.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Modifying array during iteration:</strong> When implementing partition, be careful about when you increment <code>i</code> vs when you swap. In Lomuto, increment <code>i</code> BEFORE swapping, not after.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Poor pivot selection:</strong> Always choosing the first or last element as pivot leads to O(n^2) on sorted arrays. Consider using median-of-three or randomized pivot selection for better average performance.
+    </div>
+
+    <!-- Section 7: Why Quicksort? -->
+    <h2>7. Why Do We Care?</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Standard Library Sorting:</strong> Many language implementations (like C's qsort) use quicksort or hybrid algorithms based on it</li>
+      <li><strong>Cache Efficiency:</strong> Quicksort's in-place nature and sequential access patterns make it very cache-friendly</li>
+      <li><strong>Low Overhead:</strong> Compared to merge sort, quicksort has lower constant factors and doesn't require auxiliary space</li>
+      <li><strong>Partial Sorting:</strong> Quickselect (a variant) can find the k-th smallest element in O(n) average time</li>
+    </ul>
+
+    <!-- Section 8: Quiz -->
+    <h2>8. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question">
+        <h4>Question 1: In Lomuto partition with last element as pivot, where does the pivot end up after partitioning?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">At the first position</div>
+          <div class="quiz-option" data-index="1">At its final sorted position</div>
+          <div class="quiz-option" data-index="2">At the last position</div>
+          <div class="quiz-option" data-index="3">It stays in place</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">After partition, all elements to the left of pivot are smaller, all to the right are larger.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> After partitioning, the pivot is moved to index i+1, which is exactly where it belongs in the final sorted array. This is why we don't include it in the recursive calls.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 2: What causes quicksort's worst-case O(n^2) behavior?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Using too much memory</div>
+          <div class="quiz-option" data-index="1">Having duplicate elements</div>
+          <div class="quiz-option" data-index="2">Consistently picking the smallest or largest element as pivot</div>
+          <div class="quiz-option" data-index="3">Using recursion instead of iteration</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about what happens to partition sizes when the pivot is extreme.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> When the pivot is always the smallest or largest element, partitioning creates one subarray of size n-1 and one of size 0, leading to n levels of recursion instead of log n.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 3: After running partition on [3, 8, 2, 5, 1, 4, 7, 6] with 6 as pivot (Lomuto), what is the array?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">[3, 2, 5, 1, 4, 6, 7, 8]</div>
+          <div class="quiz-option" data-index="1">[1, 2, 3, 4, 5, 6, 7, 8]</div>
+          <div class="quiz-option" data-index="2">[3, 8, 2, 5, 1, 4, 6, 7]</div>
+          <div class="quiz-option" data-index="3">[3, 2, 1, 4, 5, 6, 8, 7]</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Elements <= 6 go to the left, elements > 6 go to the right, then pivot is placed between them.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Lomuto moves elements <= pivot to the left side. 3, 2, 5, 1, 4 are all <= 6, then 6 is placed after them. 7 and 8 are > 6 and stay on the right.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 4: What is the space complexity of quicksort in the average case?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(1)</div>
+          <div class="quiz-option" data-index="1">O(log n)</div>
+          <div class="quiz-option" data-index="2">O(n)</div>
+          <div class="quiz-option" data-index="3">O(n log n)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Consider the recursion depth and what's stored on the call stack.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> While quicksort is in-place, the recursion uses O(log n) stack space on average (the recursion depth). In the worst case, it's O(n) due to unbalanced partitions.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 5: Why is quicksort often preferred over merge sort in practice?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">It has better worst-case complexity</div>
+          <div class="quiz-option" data-index="1">It is stable (preserves order of equal elements)</div>
+          <div class="quiz-option" data-index="2">It is in-place and has good cache performance</div>
+          <div class="quiz-option" data-index="3">It is easier to parallelize</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about memory usage and how modern CPUs access memory.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Quicksort doesn't require auxiliary space like merge sort's O(n), and its sequential memory access pattern makes it very cache-friendly. Note: quicksort is NOT stable and merge sort is easier to parallelize.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Dive Deeper -->
+    <h2>9. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://visualgo.net/en/sorting" target="_blank">VisuAlgo - Sorting Algorithms</a></li>
+      <li><a href="https://www.cs.usfca.edu/~galles/visualization/ComparisonSort.html" target="_blank">USFCA - Comparison Sorting Visualizations</a></li>
+      <li><a href="https://leetcode.com/problems/sort-an-array/" target="_blank">LeetCode 912: Sort an Array</a></li>
+      <li><a href="https://leetcode.com/problems/kth-largest-element-in-an-array/" target="_blank">LeetCode 215: Kth Largest Element (uses Quickselect)</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-08-merge-sort.html"><- Session 8: Merge Sort</a>
+      <a href="session-10-analysis-sorting.html">Session 10: Analysis of Sorting -></a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'O' : '*';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'O' : '*';
+
+    // Quicksort Animator Class
+    class QuicksortAnimator {
+      constructor(config) {
+        this.container = document.getElementById(config.containerId);
+        this.codePanel = document.getElementById(config.codeId);
+        this.progressBar = document.getElementById(config.progressId);
+        this.stepIndicator = document.getElementById(config.stepIndicatorId);
+        this.description = document.getElementById(config.descriptionId);
+        this.recursionTree = document.getElementById(config.recursionTreeId);
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+        this.scheme = 'lomuto';
+        this.originalArray = [8, 3, 1, 7, 0, 10, 2];
+        this.comparisons = 0;
+        this.swaps = 0;
+        this.maxDepth = 0;
+
+        this.generateSteps();
+        this.render();
+      }
+
+      setArray(arr) {
+        this.originalArray = [...arr];
+        this.reset();
+        this.generateSteps();
+        this.render();
+      }
+
+      setScheme(scheme) {
+        this.scheme = scheme;
+        document.getElementById('code-scheme-label').textContent =
+          scheme === 'lomuto' ? 'Lomuto Partition' : 'Hoare Partition';
+        this.updateCodePanel();
+        this.reset();
+        this.generateSteps();
+        this.render();
+      }
+
+      updateCodePanel() {
+        const codeContent = document.getElementById('qs-code');
+        if (this.scheme === 'hoare') {
+          codeContent.innerHTML = `
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">quicksort</span>(arr, low, high):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> low < high:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        pi = <span class="function">partition</span>(arr, low, high)</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">        <span class="function">quicksort</span>(arr, low, pi)</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="function">quicksort</span>(arr, pi + <span class="number">1</span>, high)</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">partition</span>(arr, low, high):</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">    pivot = arr[low]  <span class="comment"># First element as pivot</span></span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">    i = low - <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">    j = high + <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">    <span class="keyword">while</span> <span class="keyword">True</span>:</span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">        i = i + <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">        <span class="keyword">while</span> arr[i] < pivot: i += <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="15">
+              <span class="line-number">15</span>
+              <span class="line-content">        j = j - <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="16">
+              <span class="line-number">16</span>
+              <span class="line-content">        <span class="keyword">while</span> arr[j] > pivot: j -= <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="17">
+              <span class="line-number">17</span>
+              <span class="line-content">        <span class="keyword">if</span> i >= j: <span class="keyword">return</span> j</span>
+            </div>
+            <div class="code-line" data-line="18">
+              <span class="line-number">18</span>
+              <span class="line-content">        arr[i], arr[j] = arr[j], arr[i]</span>
+            </div>
+          `;
+        } else {
+          codeContent.innerHTML = `
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">quicksort</span>(arr, low, high):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> low < high:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        <span class="comment"># Partition and get pivot index</span></span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">        pi = <span class="function">partition</span>(arr, low, high)</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="function">quicksort</span>(arr, low, pi - <span class="number">1</span>)</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">        <span class="function">quicksort</span>(arr, pi + <span class="number">1</span>, high)</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">partition</span>(arr, low, high):</span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">    pivot = arr[high]  <span class="comment"># Last element as pivot</span></span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">    i = low - <span class="number">1</span>  <span class="comment"># Index of smaller element</span></span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(low, high):</span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">        <span class="keyword">if</span> arr[j] <= pivot:</span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">            i = i + <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="15">
+              <span class="line-number">15</span>
+              <span class="line-content">            arr[i], arr[j] = arr[j], arr[i]</span>
+            </div>
+            <div class="code-line" data-line="16">
+              <span class="line-number">16</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="17">
+              <span class="line-number">17</span>
+              <span class="line-content">    arr[i+<span class="number">1</span>], arr[high] = arr[high], arr[i+<span class="number">1</span>]</span>
+            </div>
+            <div class="code-line" data-line="18">
+              <span class="line-number">18</span>
+              <span class="line-content">    <span class="keyword">return</span> i + <span class="number">1</span></span>
+            </div>
+          `;
+        }
+      }
+
+      generateSteps() {
+        this.steps = [];
+        this.comparisons = 0;
+        this.swaps = 0;
+        this.maxDepth = 0;
+        const arr = [...this.originalArray];
+        const n = arr.length;
+
+        // Initial state
+        this.steps.push({
+          type: 'init',
+          array: [...arr],
+          description: `Starting array: [${arr.join(', ')}]`,
+          line: 1,
+          vars: { low: 0, high: n - 1, pivot: '-', i: '-', j: '-' },
+          sortedIndices: [],
+          recursionStack: [],
+          comparisons: 0,
+          swaps: 0,
+          depth: 0
+        });
+
+        if (this.scheme === 'lomuto') {
+          this.generateLomutoSteps(arr, 0, n - 1, 0, []);
+        } else {
+          this.generateHoareSteps(arr, 0, n - 1, 0, []);
+        }
+
+        // Final state
+        this.steps.push({
+          type: 'complete',
+          array: [...arr],
+          description: 'Array is now sorted!',
+          line: 1,
+          vars: { low: '-', high: '-', pivot: '-', i: '-', j: '-' },
+          sortedIndices: arr.map((_, i) => i),
+          recursionStack: [],
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth: 0
+        });
+      }
+
+      generateLomutoSteps(arr, low, high, depth, stack) {
+        if (low >= high) {
+          if (low === high) {
+            this.steps.push({
+              type: 'base-case',
+              array: [...arr],
+              description: `Base case: subarray [${low}] has single element ${arr[low]}`,
+              line: 2,
+              vars: { low, high, pivot: '-', i: '-', j: '-' },
+              sortedIndices: this.getSortedIndices(arr),
+              pivotIndex: low,
+              recursionStack: [...stack],
+              comparisons: this.comparisons,
+              swaps: this.swaps,
+              depth
+            });
+          }
+          return;
+        }
+
+        this.maxDepth = Math.max(this.maxDepth, depth);
+        const newStack = [...stack, { low, high, status: 'active' }];
+
+        // Select pivot
+        const pivotValue = arr[high];
+        this.steps.push({
+          type: 'pivot-select',
+          array: [...arr],
+          description: `Select pivot: arr[${high}] = ${pivotValue}`,
+          line: 9,
+          vars: { low, high, pivot: pivotValue, i: low - 1, j: '-' },
+          pivotIndex: high,
+          range: { low, high },
+          sortedIndices: this.getSortedIndices(arr),
+          recursionStack: newStack,
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth
+        });
+
+        let i = low - 1;
+
+        for (let j = low; j < high; j++) {
+          // Compare
+          this.comparisons++;
+          this.steps.push({
+            type: 'compare',
+            array: [...arr],
+            description: `Compare arr[${j}]=${arr[j]} with pivot ${pivotValue}: ${arr[j]} <= ${pivotValue}? ${arr[j] <= pivotValue ? 'Yes' : 'No'}`,
+            line: 13,
+            vars: { low, high, pivot: pivotValue, i, j },
+            pivotIndex: high,
+            comparing: [j],
+            range: { low, high },
+            sortedIndices: this.getSortedIndices(arr),
+            recursionStack: newStack,
+            comparisons: this.comparisons,
+            swaps: this.swaps,
+            depth
+          });
+
+          if (arr[j] <= pivotValue) {
+            i++;
+            this.steps.push({
+              type: 'increment-i',
+              array: [...arr],
+              description: `${arr[j]} <= ${pivotValue}, increment i to ${i}`,
+              line: 14,
+              vars: { low, high, pivot: pivotValue, i, j },
+              pivotIndex: high,
+              iIndex: i,
+              jIndex: j,
+              range: { low, high },
+              sortedIndices: this.getSortedIndices(arr),
+              recursionStack: newStack,
+              comparisons: this.comparisons,
+              swaps: this.swaps,
+              depth
+            });
+
+            if (i !== j) {
+              this.swaps++;
+              [arr[i], arr[j]] = [arr[j], arr[i]];
+              this.steps.push({
+                type: 'swap',
+                array: [...arr],
+                description: `Swap arr[${i}]=${arr[j]} with arr[${j}]=${arr[i]}`,
+                line: 15,
+                vars: { low, high, pivot: pivotValue, i, j },
+                pivotIndex: high,
+                swapping: [i, j],
+                range: { low, high },
+                sortedIndices: this.getSortedIndices(arr),
+                recursionStack: newStack,
+                comparisons: this.comparisons,
+                swaps: this.swaps,
+                depth
+              });
+            }
+          }
+        }
+
+        // Place pivot in correct position
+        this.swaps++;
+        [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+        const pivotFinalIndex = i + 1;
+
+        this.steps.push({
+          type: 'pivot-place',
+          array: [...arr],
+          description: `Place pivot ${pivotValue} at index ${pivotFinalIndex}`,
+          line: 17,
+          vars: { low, high, pivot: pivotValue, i, j: '-' },
+          pivotIndex: pivotFinalIndex,
+          swapping: [i + 1, high],
+          range: { low, high },
+          sortedIndices: [...this.getSortedIndices(arr), pivotFinalIndex],
+          recursionStack: newStack,
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth
+        });
+
+        // Update stack to show this partition is done
+        const updatedStack = stack.map(s => ({...s}));
+        updatedStack.push({ low, high, status: 'completed', pivot: pivotFinalIndex });
+
+        // Recurse left
+        this.steps.push({
+          type: 'recurse',
+          array: [...arr],
+          description: `Recurse on left subarray: [${low}..${pivotFinalIndex - 1}]`,
+          line: 5,
+          vars: { low, high: pivotFinalIndex - 1, pivot: '-', i: '-', j: '-' },
+          pivotIndex: pivotFinalIndex,
+          range: { low, high: pivotFinalIndex - 1 },
+          sortedIndices: this.getSortedIndices(arr),
+          recursionStack: updatedStack,
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth
+        });
+        this.generateLomutoSteps(arr, low, pivotFinalIndex - 1, depth + 1, updatedStack);
+
+        // Recurse right
+        this.steps.push({
+          type: 'recurse',
+          array: [...arr],
+          description: `Recurse on right subarray: [${pivotFinalIndex + 1}..${high}]`,
+          line: 6,
+          vars: { low: pivotFinalIndex + 1, high, pivot: '-', i: '-', j: '-' },
+          pivotIndex: pivotFinalIndex,
+          range: { low: pivotFinalIndex + 1, high },
+          sortedIndices: this.getSortedIndices(arr),
+          recursionStack: updatedStack,
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth
+        });
+        this.generateLomutoSteps(arr, pivotFinalIndex + 1, high, depth + 1, updatedStack);
+      }
+
+      generateHoareSteps(arr, low, high, depth, stack) {
+        if (low >= high) {
+          if (low === high) {
+            this.steps.push({
+              type: 'base-case',
+              array: [...arr],
+              description: `Base case: subarray [${low}] has single element ${arr[low]}`,
+              line: 2,
+              vars: { low, high, pivot: '-', i: '-', j: '-' },
+              sortedIndices: this.getSortedIndices(arr),
+              pivotIndex: low,
+              recursionStack: [...stack],
+              comparisons: this.comparisons,
+              swaps: this.swaps,
+              depth
+            });
+          }
+          return;
+        }
+
+        this.maxDepth = Math.max(this.maxDepth, depth);
+        const newStack = [...stack, { low, high, status: 'active' }];
+
+        // Select pivot (first element for Hoare)
+        const pivotValue = arr[low];
+        this.steps.push({
+          type: 'pivot-select',
+          array: [...arr],
+          description: `Select pivot: arr[${low}] = ${pivotValue}`,
+          line: 8,
+          vars: { low, high, pivot: pivotValue, i: low - 1, j: high + 1 },
+          pivotIndex: low,
+          range: { low, high },
+          sortedIndices: this.getSortedIndices(arr),
+          recursionStack: newStack,
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth
+        });
+
+        let i = low - 1;
+        let j = high + 1;
+
+        while (true) {
+          // Move i right
+          do {
+            i++;
+            this.comparisons++;
+          } while (arr[i] < pivotValue);
+
+          this.steps.push({
+            type: 'find-i',
+            array: [...arr],
+            description: `Move i right until arr[i] >= pivot: i = ${i}, arr[${i}] = ${arr[i]}`,
+            line: 14,
+            vars: { low, high, pivot: pivotValue, i, j },
+            pivotIndex: low,
+            iIndex: i,
+            jIndex: j,
+            range: { low, high },
+            sortedIndices: this.getSortedIndices(arr),
+            recursionStack: newStack,
+            comparisons: this.comparisons,
+            swaps: this.swaps,
+            depth
+          });
+
+          // Move j left
+          do {
+            j--;
+            this.comparisons++;
+          } while (arr[j] > pivotValue);
+
+          this.steps.push({
+            type: 'find-j',
+            array: [...arr],
+            description: `Move j left until arr[j] <= pivot: j = ${j}, arr[${j}] = ${arr[j]}`,
+            line: 16,
+            vars: { low, high, pivot: pivotValue, i, j },
+            pivotIndex: low,
+            iIndex: i,
+            jIndex: j,
+            range: { low, high },
+            sortedIndices: this.getSortedIndices(arr),
+            recursionStack: newStack,
+            comparisons: this.comparisons,
+            swaps: this.swaps,
+            depth
+          });
+
+          if (i >= j) {
+            this.steps.push({
+              type: 'partition-done',
+              array: [...arr],
+              description: `i >= j (${i} >= ${j}), partition complete. Return j = ${j}`,
+              line: 17,
+              vars: { low, high, pivot: pivotValue, i, j },
+              pivotIndex: j,
+              range: { low, high },
+              sortedIndices: this.getSortedIndices(arr),
+              recursionStack: newStack,
+              comparisons: this.comparisons,
+              swaps: this.swaps,
+              depth
+            });
+            break;
+          }
+
+          // Swap
+          this.swaps++;
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+          this.steps.push({
+            type: 'swap',
+            array: [...arr],
+            description: `Swap arr[${i}]=${arr[j]} with arr[${j}]=${arr[i]}`,
+            line: 18,
+            vars: { low, high, pivot: pivotValue, i, j },
+            pivotIndex: low,
+            swapping: [i, j],
+            range: { low, high },
+            sortedIndices: this.getSortedIndices(arr),
+            recursionStack: newStack,
+            comparisons: this.comparisons,
+            swaps: this.swaps,
+            depth
+          });
+        }
+
+        const partitionIndex = j;
+
+        // Update stack
+        const updatedStack = stack.map(s => ({...s}));
+        updatedStack.push({ low, high, status: 'completed', pivot: partitionIndex });
+
+        // Recurse left
+        this.steps.push({
+          type: 'recurse',
+          array: [...arr],
+          description: `Recurse on left subarray: [${low}..${partitionIndex}]`,
+          line: 4,
+          vars: { low, high: partitionIndex, pivot: '-', i: '-', j: '-' },
+          range: { low, high: partitionIndex },
+          sortedIndices: this.getSortedIndices(arr),
+          recursionStack: updatedStack,
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth
+        });
+        this.generateHoareSteps(arr, low, partitionIndex, depth + 1, updatedStack);
+
+        // Recurse right
+        this.steps.push({
+          type: 'recurse',
+          array: [...arr],
+          description: `Recurse on right subarray: [${partitionIndex + 1}..${high}]`,
+          line: 5,
+          vars: { low: partitionIndex + 1, high, pivot: '-', i: '-', j: '-' },
+          range: { low: partitionIndex + 1, high },
+          sortedIndices: this.getSortedIndices(arr),
+          recursionStack: updatedStack,
+          comparisons: this.comparisons,
+          swaps: this.swaps,
+          depth
+        });
+        this.generateHoareSteps(arr, partitionIndex + 1, high, depth + 1, updatedStack);
+      }
+
+      getSortedIndices(arr) {
+        // Find indices that are in their final sorted position
+        const sorted = [...arr].sort((a, b) => a - b);
+        const indices = [];
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i] === sorted[i]) {
+            // Check if all occurrences match
+            indices.push(i);
+          }
+        }
+        return indices;
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        // Render array
+        this.container.innerHTML = '';
+        const maxVal = Math.max(...step.array);
+
+        step.array.forEach((val, idx) => {
+          const elem = document.createElement('div');
+          elem.className = 'array-element';
+
+          const bar = document.createElement('div');
+          bar.className = 'array-bar';
+          bar.style.height = `${(val / maxVal) * 150 + 30}px`;
+
+          // Apply styles based on state
+          if (step.pivotIndex === idx) {
+            bar.classList.add('pivot');
+          } else if (step.swapping && step.swapping.includes(idx)) {
+            bar.classList.add('swapping');
+          } else if (step.comparing && step.comparing.includes(idx)) {
+            bar.classList.add('comparing');
+          } else if (step.iIndex === idx || step.jIndex === idx) {
+            bar.classList.add('current');
+          } else if (step.sortedIndices && step.sortedIndices.includes(idx)) {
+            bar.classList.add('sorted');
+          }
+
+          const valueSpan = document.createElement('span');
+          valueSpan.className = 'value';
+          valueSpan.textContent = val;
+          bar.appendChild(valueSpan);
+
+          elem.appendChild(bar);
+
+          // Index label
+          const indexLabel = document.createElement('div');
+          indexLabel.className = 'array-index';
+          indexLabel.textContent = idx;
+          elem.appendChild(indexLabel);
+
+          // Pointer labels
+          if (step.iIndex === idx) {
+            const iLabel = document.createElement('div');
+            iLabel.className = 'pointer-label';
+            iLabel.textContent = 'i';
+            elem.appendChild(iLabel);
+          }
+          if (step.jIndex === idx) {
+            const jLabel = document.createElement('div');
+            jLabel.className = 'pointer-label';
+            jLabel.textContent = 'j';
+            jLabel.style.color = '#E74C3C';
+            elem.appendChild(jLabel);
+          }
+
+          this.container.appendChild(elem);
+        });
+
+        // Render recursion tree
+        this.renderRecursionTree(step.recursionStack || []);
+
+        // Update code highlighting
+        if (this.codePanel) {
+          this.codePanel.querySelectorAll('.code-line').forEach(line => {
+            line.classList.remove('highlighted', 'executed');
+            const lineNum = parseInt(line.dataset.line);
+            if (lineNum === step.line) {
+              line.classList.add('highlighted');
+            }
+          });
+        }
+
+        // Update variables
+        document.getElementById('var-low').textContent = step.vars.low;
+        document.getElementById('var-high').textContent = step.vars.high;
+        document.getElementById('var-pivot').textContent = step.vars.pivot;
+        document.getElementById('var-i').textContent = step.vars.i;
+        document.getElementById('var-j').textContent = step.vars.j;
+
+        // Update stats
+        document.getElementById('stat-comparisons').textContent = step.comparisons;
+        document.getElementById('stat-swaps').textContent = step.swaps;
+        document.getElementById('stat-depth').textContent = step.depth;
+
+        // Update description
+        this.description.textContent = step.description;
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        this.progressBar.style.width = `${progress}%`;
+        this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      renderRecursionTree(stack) {
+        if (!this.recursionTree) return;
+
+        this.recursionTree.innerHTML = '';
+        if (stack.length === 0) {
+          this.recursionTree.innerHTML = '<div style="color: #9B9B9B; font-size: 0.75rem;">No active calls</div>';
+          return;
+        }
+
+        stack.forEach((call, idx) => {
+          const node = document.createElement('div');
+          node.className = 'recursion-node';
+          if (call.status === 'active') {
+            node.classList.add('active');
+          } else if (call.status === 'completed') {
+            node.classList.add('completed');
+          }
+          node.textContent = `qs(${call.low}, ${call.high})`;
+          this.recursionTree.appendChild(node);
+        });
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('qs-play').textContent = 'Pause';
+        document.getElementById('qs-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1000 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('qs-play').textContent = 'Play';
+        document.getElementById('qs-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    // Initialize main animator
+    const qsAnimator = new QuicksortAnimator({
+      containerId: 'qs-array',
+      codeId: 'qs-code',
+      progressId: 'qs-progress',
+      stepIndicatorId: 'qs-step-indicator',
+      descriptionId: 'qs-description',
+      recursionTreeId: 'recursion-tree'
+    });
+
+    // Main controls
+    document.getElementById('qs-play').addEventListener('click', () => {
+      qsAnimator.isPlaying ? qsAnimator.pause() : qsAnimator.play();
+    });
+    document.getElementById('qs-reset').addEventListener('click', () => qsAnimator.reset());
+    document.getElementById('qs-back').addEventListener('click', () => qsAnimator.stepBackward());
+    document.getElementById('qs-forward').addEventListener('click', () => qsAnimator.stepForward());
+    document.getElementById('qs-speed').addEventListener('change', (e) => {
+      qsAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // Scheme toggle
+    document.querySelectorAll('.scheme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.scheme-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        qsAnimator.setScheme(btn.dataset.scheme);
+      });
+    });
+
+    // Custom array input
+    function loadCustomArray() {
+      const input = document.getElementById('custom-array').value;
+      const arr = input.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+      if (arr.length > 0 && arr.length <= 15) {
+        qsAnimator.setArray(arr);
+      } else {
+        alert('Please enter 1-15 comma-separated numbers');
+      }
+    }
+
+    // Worst Case Animator
+    class WorstCaseAnimator {
+      constructor() {
+        this.container = document.getElementById('worst-array');
+        this.progressBar = document.getElementById('worst-progress');
+        this.stepIndicator = document.getElementById('worst-step-indicator');
+        this.description = document.getElementById('worst-description');
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.intervalId = null;
+        this.originalArray = [1, 2, 3, 4, 5, 6, 7];
+        this.comparisons = 0;
+
+        this.generateSteps();
+        this.render();
+
+        // Update optimal comparison count
+        const n = this.originalArray.length;
+        document.getElementById('worst-optimal').textContent = `~${Math.floor(n * Math.log2(n))}`;
+      }
+
+      generateSteps() {
+        this.steps = [];
+        this.comparisons = 0;
+        const arr = [...this.originalArray];
+
+        this.steps.push({
+          array: [...arr],
+          description: 'Sorted array - worst case for first-element pivot!',
+          pivotIndex: -1,
+          sortedIndices: [],
+          comparisons: 0
+        });
+
+        this.generateWorstSteps(arr, 0, arr.length - 1);
+
+        this.steps.push({
+          array: [...arr],
+          description: `Done! Used ${this.comparisons} comparisons (optimal: ~${Math.floor(arr.length * Math.log2(arr.length))})`,
+          pivotIndex: -1,
+          sortedIndices: arr.map((_, i) => i),
+          comparisons: this.comparisons
+        });
+      }
+
+      generateWorstSteps(arr, low, high) {
+        if (low >= high) return;
+
+        const pivotValue = arr[low]; // First element - causes worst case
+
+        this.steps.push({
+          array: [...arr],
+          description: `Pivot = ${pivotValue} (first element). All other elements are larger!`,
+          pivotIndex: low,
+          range: { low, high },
+          sortedIndices: this.steps[this.steps.length - 1]?.sortedIndices || [],
+          comparisons: this.comparisons
+        });
+
+        // Simulate partition - all elements are larger, so we compare each one
+        for (let j = low + 1; j <= high; j++) {
+          this.comparisons++;
+        }
+
+        this.steps.push({
+          array: [...arr],
+          description: `Made ${high - low} comparisons. Left subarray: empty. Right: [${low + 1}..${high}]`,
+          pivotIndex: low,
+          range: { low, high },
+          sortedIndices: [...(this.steps[this.steps.length - 1]?.sortedIndices || []), low],
+          comparisons: this.comparisons
+        });
+
+        this.generateWorstSteps(arr, low + 1, high);
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        this.container.innerHTML = '';
+        const maxVal = Math.max(...step.array);
+
+        step.array.forEach((val, idx) => {
+          const elem = document.createElement('div');
+          elem.className = 'array-element';
+
+          const bar = document.createElement('div');
+          bar.className = 'array-bar';
+          bar.style.height = `${(val / maxVal) * 120 + 30}px`;
+
+          if (step.pivotIndex === idx) {
+            bar.classList.add('pivot');
+          } else if (step.sortedIndices && step.sortedIndices.includes(idx)) {
+            bar.classList.add('sorted');
+          }
+
+          const valueSpan = document.createElement('span');
+          valueSpan.className = 'value';
+          valueSpan.textContent = val;
+          bar.appendChild(valueSpan);
+
+          elem.appendChild(bar);
+
+          const indexLabel = document.createElement('div');
+          indexLabel.className = 'array-index';
+          indexLabel.textContent = idx;
+          elem.appendChild(indexLabel);
+
+          this.container.appendChild(elem);
+        });
+
+        this.description.textContent = step.description;
+        document.getElementById('worst-comparisons').textContent = step.comparisons;
+
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        this.progressBar.style.width = `${progress}%`;
+        this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('worst-play').textContent = 'Pause';
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.currentStep++;
+            this.render();
+          } else {
+            this.pause();
+          }
+        }, 1200);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('worst-play').textContent = 'Play';
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    const worstAnimator = new WorstCaseAnimator();
+
+    document.getElementById('worst-play').addEventListener('click', () => {
+      worstAnimator.isPlaying ? worstAnimator.pause() : worstAnimator.play();
+    });
+    document.getElementById('worst-reset').addEventListener('click', () => worstAnimator.reset());
+    document.getElementById('worst-back').addEventListener('click', () => worstAnimator.stepBackward());
+    document.getElementById('worst-forward').addEventListener('click', () => worstAnimator.stepForward());
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          qsAnimator.isPlaying ? qsAnimator.pause() : qsAnimator.play();
+          break;
+        case 'ArrowRight':
+          qsAnimator.stepForward();
+          break;
+        case 'ArrowLeft':
+          qsAnimator.stepBackward();
+          break;
+        case 'r':
+        case 'R':
+          qsAnimator.reset();
+          break;
+      }
+    });
+
+    // Quiz functionality
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn) {
+      const hint = btn.nextElementSibling;
+      hint.classList.toggle('show');
+      btn.textContent = hint.classList.contains('show') ? 'Hide Hint' : 'Show Hint';
+    }
+
+    // KaTeX auto-render
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

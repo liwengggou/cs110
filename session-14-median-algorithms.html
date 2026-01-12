@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 14: Algorithms for Computing the Median | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --pivot: #F1C40F;
+      --left-partition: #3498DB;
+      --right-partition: #E74C3C;
+      --target: #2ECC71;
+      --comparing: #9B59B6;
+      --sorted: #0F7B6C;
+      --median-group: #E67E22;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 200px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 1rem;
+    }
+
+    /* Array Visualization */
+    .array-viz {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .array-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .array-value {
+      min-width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .array-item.pivot .array-value {
+      background: var(--pivot);
+      color: #000;
+      transform: scale(1.15);
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+    }
+
+    .array-item.left .array-value {
+      background: var(--left-partition);
+    }
+
+    .array-item.right .array-value {
+      background: var(--right-partition);
+    }
+
+    .array-item.target .array-value {
+      background: var(--target);
+      transform: scale(1.2);
+      box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+    }
+
+    .array-item.comparing .array-value {
+      background: var(--comparing);
+      transform: scale(1.1);
+    }
+
+    .array-item.sorted .array-value {
+      background: var(--sorted);
+    }
+
+    .array-item.group .array-value {
+      background: var(--median-group);
+    }
+
+    .array-item.dimmed .array-value {
+      opacity: 0.3;
+    }
+
+    .index-label {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 0.25rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .complexity-item {
+      background: var(--background);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+    }
+
+    .complexity-item h4 {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .complexity-item .value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--accent);
+    }
+
+    /* Comparison Panel */
+    .comparison-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .comparison-side {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      border: 1px solid var(--border);
+    }
+
+    .comparison-side h4 {
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    /* Input Controls */
+    .input-controls {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .input-group label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .input-group input, .input-group select {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      min-width: 120px;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--background-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    /* Groups visualization for median of medians */
+    .groups-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .group-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .group-box.highlighted {
+      border-color: var(--pivot);
+      background: rgba(241, 196, 15, 0.2);
+    }
+
+    .group-label {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.25rem;
+    }
+
+    .group-items {
+      display: flex;
+      gap: 2px;
+    }
+
+    .group-item {
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 3px;
+    }
+
+    .group-item.median {
+      background: var(--pivot);
+      color: #000;
+    }
+
+    .group-item.mom {
+      background: var(--success);
+      transform: scale(1.1);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+      margin-right: 1rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.3);
+      border-radius: var(--border-radius);
+      margin-top: 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
+
+    /* Code Panel */
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--pivot);
+      margin-left: -3px;
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .comparison-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .array-value { min-width: 35px; height: 35px; font-size: 0.875rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">M</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 14</span>
+      <h1>Algorithms for Computing the Median</h1>
+      <p class="subtitle">Master selection algorithms: from sorting-based to linear-time Quickselect and Median of Medians</p>
+      <div class="meta">
+        <span>~35 minutes</span>
+        <span>Prerequisites: Sorting algorithms, Recursion, Partitioning</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Define</strong> the selection problem and order statistics</li>
+        <li><strong>Implement</strong> the Quickselect algorithm for finding the k-th smallest element</li>
+        <li><strong>Analyze</strong> expected vs worst-case time complexity of selection algorithms</li>
+        <li><strong>Explain</strong> how Median of Medians guarantees O(n) worst-case time</li>
+        <li><strong>Compare</strong> sorting-based vs selection-based approaches for finding medians</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: The Selection Problem -->
+    <h2>1. The Selection Problem</h2>
+    <p>Given an unsorted array of n elements, the <strong>selection problem</strong> asks us to find the k-th smallest (or largest) element. The <strong>median</strong> is a special case where k = n/2 (middle element when sorted).</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The naive approach sorts the array first (O(n log n)), then returns the element at index k. But do we really need to sort the entire array just to find one element? Selection algorithms can do better!
+    </div>
+
+    <h3>Order Statistics</h3>
+    <p>The k-th <strong>order statistic</strong> of a set is the k-th smallest element. Special cases include:</p>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Minimum:</strong> 1st order statistic (k = 1)</li>
+      <li><strong>Maximum:</strong> n-th order statistic (k = n)</li>
+      <li><strong>Median:</strong> Middle order statistic (k = (n+1)/2 for odd n)</li>
+    </ul>
+
+    <div class="viz-container">
+      <h3>Order Statistics Explorer</h3>
+      <div class="input-controls">
+        <div class="input-group">
+          <label>Array (comma-separated)</label>
+          <input type="text" id="os-input" value="7, 2, 9, 4, 1, 8, 3, 6, 5" style="min-width: 200px;">
+        </div>
+        <div class="input-group">
+          <label>Find k-th smallest</label>
+          <input type="number" id="os-k" value="5" min="1" max="20">
+        </div>
+        <button class="btn" id="os-find-btn">Find Element</button>
+        <button class="btn btn-secondary" id="os-random-btn">Random Array</button>
+      </div>
+
+      <div class="step-description" id="os-description">
+        Enter an array and value of k to find the k-th smallest element
+      </div>
+
+      <div class="viz-canvas" id="os-canvas">
+        <div class="array-viz" id="os-viz"></div>
+      </div>
+
+      <div style="padding: 1rem; text-align: center;">
+        <div id="os-result" style="font-family: var(--font-mono); font-size: 1.25rem;"></div>
+      </div>
+    </div>
+
+    <!-- Section 2: Quickselect Algorithm -->
+    <h2>2. Quickselect Algorithm</h2>
+    <p>Quickselect is based on the same partitioning idea as Quicksort, but instead of recursing on both sides, it only recurses on the side containing the target element. This gives us <strong>O(n) expected time</strong>.</p>
+
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="language-badge">Python</span>
+      </div>
+      <div class="code-content">
+        <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">quickselect</span>(arr, k):</span></div>
+        <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="keyword">if</span> <span class="function">len</span>(arr) == <span class="number">1</span>:</span></div>
+        <div class="code-line"><span class="line-number">3</span><span class="line-content">        <span class="keyword">return</span> arr[<span class="number">0</span>]</span></div>
+        <div class="code-line"><span class="line-number">4</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">5</span><span class="line-content">    pivot = arr[<span class="function">len</span>(arr) // <span class="number">2</span>]  <span class="comment"># Choose pivot</span></span></div>
+        <div class="code-line"><span class="line-number">6</span><span class="line-content">    left = [x <span class="keyword">for</span> x <span class="keyword">in</span> arr <span class="keyword">if</span> x < pivot]</span></div>
+        <div class="code-line"><span class="line-number">7</span><span class="line-content">    middle = [x <span class="keyword">for</span> x <span class="keyword">in</span> arr <span class="keyword">if</span> x == pivot]</span></div>
+        <div class="code-line"><span class="line-number">8</span><span class="line-content">    right = [x <span class="keyword">for</span> x <span class="keyword">in</span> arr <span class="keyword">if</span> x > pivot]</span></div>
+        <div class="code-line"><span class="line-number">9</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">10</span><span class="line-content">    <span class="keyword">if</span> k <= <span class="function">len</span>(left):</span></div>
+        <div class="code-line"><span class="line-number">11</span><span class="line-content">        <span class="keyword">return</span> <span class="function">quickselect</span>(left, k)</span></div>
+        <div class="code-line"><span class="line-number">12</span><span class="line-content">    <span class="keyword">elif</span> k <= <span class="function">len</span>(left) + <span class="function">len</span>(middle):</span></div>
+        <div class="code-line"><span class="line-number">13</span><span class="line-content">        <span class="keyword">return</span> pivot</span></div>
+        <div class="code-line"><span class="line-number">14</span><span class="line-content">    <span class="keyword">else</span>:</span></div>
+        <div class="code-line"><span class="line-number">15</span><span class="line-content">        <span class="keyword">return</span> <span class="function">quickselect</span>(right, k - <span class="function">len</span>(left) - <span class="function">len</span>(middle))</span></div>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Step-by-Step Quickselect Animator</h3>
+      <div class="input-controls">
+        <div class="input-group">
+          <label>Array</label>
+          <input type="text" id="qs-input" value="7, 2, 9, 4, 1, 8, 3, 6, 5" style="min-width: 200px;">
+        </div>
+        <div class="input-group">
+          <label>Find k-th smallest</label>
+          <input type="number" id="qs-k" value="5" min="1" max="20">
+        </div>
+        <button class="btn" id="qs-start-btn">Start Animation</button>
+      </div>
+
+      <div class="step-description" id="qs-description">
+        Click "Start Animation" to see Quickselect in action
+      </div>
+
+      <div class="viz-canvas" id="qs-canvas">
+        <div class="array-viz" id="qs-viz"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color" style="background: var(--pivot);"></div> Pivot</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--left-partition);"></div> Left (< pivot)</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--right-partition);"></div> Right (> pivot)</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--target);"></div> Found Target</div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="qs-reset" title="Reset">Reset</button>
+        <button id="qs-back" title="Step Back">Back</button>
+        <button id="qs-play" title="Play/Pause">Play</button>
+        <button id="qs-forward" title="Step Forward">Next</button>
+        <span class="step-indicator" id="qs-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="qs-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="qs-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Why O(n) Expected Time?</strong> On average, the pivot splits the array roughly in half, eliminating about half the elements each iteration. The expected work is: n + n/2 + n/4 + ... = 2n = O(n). This is the key insight: we only recurse on ONE side!
+    </div>
+
+    <!-- Section 3: Comparison -->
+    <h2>3. Sorting vs Quickselect Comparison</h2>
+    <p>Let's compare the naive sorting approach with Quickselect to see the efficiency difference in practice.</p>
+
+    <div class="viz-container">
+      <h3>Interactive Comparison: Find Median</h3>
+      <div class="input-controls">
+        <div class="input-group">
+          <label>Array Size</label>
+          <select id="comp-size">
+            <option value="10">10 elements</option>
+            <option value="20" selected>20 elements</option>
+            <option value="50">50 elements</option>
+            <option value="100">100 elements</option>
+          </select>
+        </div>
+        <button class="btn" id="comp-run-btn">Run Comparison</button>
+        <button class="btn btn-secondary" id="comp-reset-btn">Reset</button>
+      </div>
+
+      <div class="comparison-panel">
+        <div class="comparison-side">
+          <h4>Sorting Approach</h4>
+          <div class="stat-row">
+            <span class="stat-label">Method</span>
+            <span class="stat-value">Sort then access [n/2]</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Comparisons</span>
+            <span class="stat-value" id="sort-comparisons">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Swaps/Copies</span>
+            <span class="stat-value" id="sort-swaps">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Time Complexity</span>
+            <span class="stat-value">O(n log n)</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Result</span>
+            <span class="stat-value" id="sort-result">-</span>
+          </div>
+        </div>
+
+        <div class="comparison-side">
+          <h4>Quickselect Approach</h4>
+          <div class="stat-row">
+            <span class="stat-label">Method</span>
+            <span class="stat-value">Partition and recurse</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Comparisons</span>
+            <span class="stat-value" id="qs-comparisons">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Partition Operations</span>
+            <span class="stat-value" id="qs-partitions">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Time Complexity</span>
+            <span class="stat-value">O(n) expected</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Result</span>
+            <span class="stat-value" id="qs-result">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="comp-summary" style="padding: 1rem; text-align: center; color: var(--text-secondary);"></div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Assuming Quickselect is always faster. While the expected time is O(n), the worst case (bad pivot choices) is O(n^2). For guaranteed performance, use Median of Medians.
+    </div>
+
+    <!-- Section 4: Worst Case Analysis -->
+    <h2>4. Worst-Case Linear Time: Median of Medians</h2>
+    <p>The Median of Medians algorithm guarantees O(n) worst-case time by cleverly choosing a pivot that ensures good partitioning. The idea: divide the array into groups of 5, find the median of each group, then recursively find the median of those medians.</p>
+
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="language-badge">Python</span>
+      </div>
+      <div class="code-content">
+        <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">median_of_medians</span>(arr, k):</span></div>
+        <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="keyword">if</span> <span class="function">len</span>(arr) <= <span class="number">5</span>:</span></div>
+        <div class="code-line"><span class="line-number">3</span><span class="line-content">        <span class="keyword">return</span> <span class="function">sorted</span>(arr)[k - <span class="number">1</span>]</span></div>
+        <div class="code-line"><span class="line-number">4</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">5</span><span class="line-content">    <span class="comment"># Divide into groups of 5</span></span></div>
+        <div class="code-line"><span class="line-number">6</span><span class="line-content">    groups = [arr[i:i+<span class="number">5</span>] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">0</span>, <span class="function">len</span>(arr), <span class="number">5</span>)]</span></div>
+        <div class="code-line"><span class="line-number">7</span><span class="line-content">    medians = [<span class="function">sorted</span>(g)[<span class="function">len</span>(g)//<span class="number">2</span>] <span class="keyword">for</span> g <span class="keyword">in</span> groups]</span></div>
+        <div class="code-line"><span class="line-number">8</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">9</span><span class="line-content">    <span class="comment"># Find median of medians</span></span></div>
+        <div class="code-line"><span class="line-number">10</span><span class="line-content">    pivot = <span class="function">median_of_medians</span>(medians, <span class="function">len</span>(medians)//<span class="number">2</span> + <span class="number">1</span>)</span></div>
+        <div class="code-line"><span class="line-number">11</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">12</span><span class="line-content">    <span class="comment"># Partition around pivot</span></span></div>
+        <div class="code-line"><span class="line-number">13</span><span class="line-content">    left = [x <span class="keyword">for</span> x <span class="keyword">in</span> arr <span class="keyword">if</span> x < pivot]</span></div>
+        <div class="code-line"><span class="line-number">14</span><span class="line-content">    middle = [x <span class="keyword">for</span> x <span class="keyword">in</span> arr <span class="keyword">if</span> x == pivot]</span></div>
+        <div class="code-line"><span class="line-number">15</span><span class="line-content">    right = [x <span class="keyword">for</span> x <span class="keyword">in</span> arr <span class="keyword">if</span> x > pivot]</span></div>
+        <div class="code-line"><span class="line-number">16</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">17</span><span class="line-content">    <span class="keyword">if</span> k <= <span class="function">len</span>(left):</span></div>
+        <div class="code-line"><span class="line-number">18</span><span class="line-content">        <span class="keyword">return</span> <span class="function">median_of_medians</span>(left, k)</span></div>
+        <div class="code-line"><span class="line-number">19</span><span class="line-content">    <span class="keyword">elif</span> k <= <span class="function">len</span>(left) + <span class="function">len</span>(middle):</span></div>
+        <div class="code-line"><span class="line-number">20</span><span class="line-content">        <span class="keyword">return</span> pivot</span></div>
+        <div class="code-line"><span class="line-number">21</span><span class="line-content">    <span class="keyword">else</span>:</span></div>
+        <div class="code-line"><span class="line-number">22</span><span class="line-content">        <span class="keyword">return</span> <span class="function">median_of_medians</span>(right, k - <span class="function">len</span>(left) - <span class="function">len</span>(middle))</span></div>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Median of Medians Visualization</h3>
+      <div class="input-controls">
+        <div class="input-group">
+          <label>Array (15+ elements recommended)</label>
+          <input type="text" id="mom-input" value="3, 8, 1, 6, 9, 2, 7, 4, 5, 12, 11, 15, 13, 14, 10" style="min-width: 300px;">
+        </div>
+        <button class="btn" id="mom-start-btn">Visualize Groups</button>
+      </div>
+
+      <div class="step-description" id="mom-description">
+        Click "Visualize Groups" to see how Median of Medians finds a good pivot
+      </div>
+
+      <div class="viz-canvas" id="mom-canvas">
+        <div class="groups-container" id="mom-viz"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color" style="background: var(--accent);"></div> Array Elements</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--pivot);"></div> Group Median</div>
+          <div class="legend-item"><div class="legend-color" style="background: var(--success);"></div> Median of Medians (Pivot)</div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="mom-reset" title="Reset">Reset</button>
+        <button id="mom-back" title="Step Back">Back</button>
+        <button id="mom-play" title="Play/Pause">Play</button>
+        <button id="mom-forward" title="Step Forward">Next</button>
+        <span class="step-indicator" id="mom-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="mom-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="mom-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h3>Complexity Analysis</h3>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <h4>Sorting-Based Selection</h4>
+          <div class="value">O(n log n)</div>
+        </div>
+        <div class="complexity-item">
+          <h4>Quickselect (Expected)</h4>
+          <div class="value">O(n)</div>
+        </div>
+        <div class="complexity-item">
+          <h4>Quickselect (Worst)</h4>
+          <div class="value">O(n^2)</div>
+        </div>
+        <div class="complexity-item">
+          <h4>Median of Medians</h4>
+          <div class="value">O(n)</div>
+        </div>
+      </div>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
+        Median of Medians guarantees that at least 30% of elements are on each side of the pivot, ensuring O(n) worst-case.
+        The recurrence T(n) = T(n/5) + T(7n/10) + O(n) solves to O(n).
+      </p>
+    </div>
+
+    <div class="key-insight">
+      <strong>Why Groups of 5?</strong> Groups of 5 provide the optimal balance. Smaller groups (like 3) don't guarantee enough elements on each side. Larger groups (like 7) work but have higher constant factors. 5 is the sweet spot for theoretical and practical efficiency.
+    </div>
+
+    <!-- Section 5: Practical Applications -->
+    <h2>5. Practical Applications</h2>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Statistics:</strong> Finding median income, test scores, or any central tendency measure</li>
+      <li><strong>Image Processing:</strong> Median filtering for noise reduction</li>
+      <li><strong>Databases:</strong> Computing percentiles for query optimization</li>
+      <li><strong>Machine Learning:</strong> Feature scaling using median normalization</li>
+      <li><strong>Network Analysis:</strong> Finding median latency or response times</li>
+    </ul>
+
+    <div class="try-this">
+      <strong>Try This:</strong> In the Order Statistics Explorer above, try finding the 1st smallest (minimum), n-th smallest (maximum), and (n+1)/2-th smallest (median) to see how Quickselect handles these special cases.
+    </div>
+
+    <!-- Quiz Section -->
+    <h2>6. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question">
+        <h4>Question 1: What is the expected time complexity of Quickselect?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(n log n)</div>
+          <div class="quiz-option" data-index="1">O(n)</div>
+          <div class="quiz-option" data-index="2">O(n^2)</div>
+          <div class="quiz-option" data-index="3">O(log n)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text" data-hint="0">Think about how many elements are eliminated on average after each partition.</div>
+        <div class="hint-text" data-hint="1">If we eliminate half the elements each time, work is n + n/2 + n/4 + ... What does this sum to?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Quickselect has O(n) expected time because, on average, each partition eliminates about half the elements. The total work is approximately 2n = O(n). This is much better than sorting!
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 2: Why might Quickselect have O(n^2) worst-case time?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">The array is already sorted</div>
+          <div class="quiz-option" data-index="1">The array contains duplicates</div>
+          <div class="quiz-option" data-index="2">Poor pivot choices consistently pick extreme values</div>
+          <div class="quiz-option" data-index="3">The target element is at the beginning</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text" data-hint="0">Consider what happens if the pivot is always the smallest or largest element.</div>
+        <div class="hint-text" data-hint="1">If the pivot only eliminates 1 element per iteration, how many iterations do we need?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> If the pivot is consistently an extreme value (min or max), we only eliminate one element per partition. This leads to n + (n-1) + (n-2) + ... = O(n^2) comparisons. This is why Median of Medians was developed!
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 3: In Median of Medians, why do we divide into groups of 5?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">5 is a prime number</div>
+          <div class="quiz-option" data-index="1">Groups of 5 are easier to sort</div>
+          <div class="quiz-option" data-index="2">5 minimizes memory usage</div>
+          <div class="quiz-option" data-index="3">5 guarantees at least 30% of elements on each side of the pivot</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text" data-hint="0">The key property is how many elements are guaranteed to be less than or greater than the pivot.</div>
+        <div class="hint-text" data-hint="1">Half the group medians are >= the median of medians, and each such group contributes at least 3 elements >= pivot.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> With groups of 5, the median of medians guarantees that at least 3n/10 elements are on each side of the pivot. This ensures the recursion depth is O(log n) and total work is O(n). Groups of 3 don't provide enough guarantee, while larger groups work but are less efficient in practice.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 4: To find the median of [5, 2, 8, 1, 9], which k value should we use?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">k = 2</div>
+          <div class="quiz-option" data-index="1">k = 3</div>
+          <div class="quiz-option" data-index="2">k = 4</div>
+          <div class="quiz-option" data-index="3">k = 2.5</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text" data-hint="0">For an array of n elements, the median is the ((n+1)/2)-th smallest for odd n.</div>
+        <div class="hint-text" data-hint="1">With 5 elements, the median is the 3rd smallest (middle element when sorted).</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> For an array of 5 elements, the median is the 3rd smallest element (k=3). Sorted: [1, 2, 5, 8, 9], so the median is 5.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 5: Which statement about selection algorithms is FALSE?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Quickselect is based on the partitioning idea from Quicksort</div>
+          <div class="quiz-option" data-index="1">Finding the minimum or maximum can be done in O(n) time</div>
+          <div class="quiz-option" data-index="2">Sorting is always necessary to find the k-th smallest element</div>
+          <div class="quiz-option" data-index="3">Median of Medians guarantees O(n) worst-case time</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text" data-hint="0">Think about what Quickselect and Median of Medians achieve without fully sorting.</div>
+        <div class="hint-text" data-hint="1">Selection algorithms can find the k-th smallest in O(n) time, which is faster than O(n log n) sorting.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Statement C is FALSE. Sorting is NOT necessary to find the k-th smallest element. Quickselect and Median of Medians can find it in O(n) time without sorting the entire array. This is the key advantage of selection algorithms!
+        </div>
+      </div>
+    </div>
+
+    <!-- Dive Deeper -->
+    <h2>7. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://en.wikipedia.org/wiki/Quickselect" target="_blank">Wikipedia: Quickselect Algorithm</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Median_of_medians" target="_blank">Wikipedia: Median of Medians</a></li>
+      <li><a href="https://www.geeksforgeeks.org/kth-smallestlargest-element-unsorted-array/" target="_blank">GeeksforGeeks: K-th Smallest Element</a></li>
+      <li>CLRS Chapter 9: Medians and Order Statistics</li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-13-quicksort.html">Session 13: Quicksort</a>
+      <a href="session-15-hash-tables.html">Session 15: Hash Tables</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle with localStorage persistence
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'L' : 'M';
+      localStorage.setItem('cs110-theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('cs110-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'L' : 'M';
+
+    // Helper function to parse array input
+    function parseArrayInput(input) {
+      return input.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    }
+
+    // Helper function to generate random array
+    function generateRandomArray(size, min = 1, max = 99) {
+      const arr = [];
+      for (let i = 0; i < size; i++) {
+        arr.push(Math.floor(Math.random() * (max - min + 1)) + min);
+      }
+      return arr;
+    }
+
+    // ==================== ORDER STATISTICS EXPLORER ====================
+    const osInput = document.getElementById('os-input');
+    const osK = document.getElementById('os-k');
+    const osFindBtn = document.getElementById('os-find-btn');
+    const osRandomBtn = document.getElementById('os-random-btn');
+    const osViz = document.getElementById('os-viz');
+    const osDescription = document.getElementById('os-description');
+    const osResult = document.getElementById('os-result');
+
+    function renderOsArray(arr, highlightIndex = -1, targetValue = null) {
+      osViz.innerHTML = '';
+      const sorted = [...arr].sort((a, b) => a - b);
+
+      arr.forEach((val, i) => {
+        const item = document.createElement('div');
+        item.className = 'array-item';
+        if (targetValue !== null && val === targetValue) {
+          item.classList.add('target');
+        }
+        item.innerHTML = `
+          <div class="array-value">${val}</div>
+          <div class="index-label">${i}</div>
+        `;
+        osViz.appendChild(item);
+      });
+    }
+
+    function findKthSmallest(arr, k) {
+      const sorted = [...arr].sort((a, b) => a - b);
+      return sorted[k - 1];
+    }
+
+    osFindBtn.addEventListener('click', () => {
+      const arr = parseArrayInput(osInput.value);
+      const k = parseInt(osK.value);
+
+      if (arr.length === 0) {
+        osDescription.textContent = 'Please enter a valid array';
+        return;
+      }
+
+      if (k < 1 || k > arr.length) {
+        osDescription.textContent = `k must be between 1 and ${arr.length}`;
+        return;
+      }
+
+      const result = findKthSmallest(arr, k);
+      renderOsArray(arr, -1, result);
+
+      const ordinal = k === 1 ? '1st' : k === 2 ? '2nd' : k === 3 ? '3rd' : `${k}th`;
+      osDescription.textContent = `Finding the ${ordinal} smallest element in the array`;
+
+      const sorted = [...arr].sort((a, b) => a - b);
+      osResult.innerHTML = `
+        <div>Sorted: [${sorted.join(', ')}]</div>
+        <div style="margin-top: 0.5rem; color: var(--success); font-size: 1.5rem;">
+          The ${ordinal} smallest element is <strong>${result}</strong>
+        </div>
+      `;
+    });
+
+    osRandomBtn.addEventListener('click', () => {
+      const arr = generateRandomArray(9);
+      osInput.value = arr.join(', ');
+      osK.value = Math.ceil(arr.length / 2);
+      renderOsArray(arr);
+      osDescription.textContent = 'New random array generated. Click "Find Element" to search.';
+      osResult.innerHTML = '';
+    });
+
+    // Initialize
+    renderOsArray(parseArrayInput(osInput.value));
+
+    // ==================== QUICKSELECT ANIMATOR ====================
+    class QuickselectAnimator {
+      constructor() {
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.viz = document.getElementById('qs-viz');
+        this.description = document.getElementById('qs-description');
+        this.stepIndicator = document.getElementById('qs-step-indicator');
+        this.progressBar = document.getElementById('qs-progress');
+
+        this.setupControls();
+      }
+
+      setupControls() {
+        document.getElementById('qs-start-btn').addEventListener('click', () => this.start());
+        document.getElementById('qs-reset').addEventListener('click', () => this.reset());
+        document.getElementById('qs-back').addEventListener('click', () => this.stepBack());
+        document.getElementById('qs-forward').addEventListener('click', () => this.stepForward());
+        document.getElementById('qs-play').addEventListener('click', () => this.togglePlay());
+        document.getElementById('qs-speed').addEventListener('change', (e) => {
+          this.speed = parseFloat(e.target.value);
+          if (this.isPlaying) {
+            this.pause();
+            this.play();
+          }
+        });
+      }
+
+      generateSteps(arr, k, depth = 0, prefix = '') {
+        if (arr.length === 0) return;
+
+        if (arr.length === 1) {
+          this.steps.push({
+            array: [...arr],
+            states: [{ value: arr[0], state: 'target' }],
+            description: `${prefix}Found! The element ${arr[0]} is our answer.`,
+            depth
+          });
+          return;
+        }
+
+        const pivotIndex = Math.floor(arr.length / 2);
+        const pivot = arr[pivotIndex];
+
+        // Step 1: Show array with pivot selected
+        this.steps.push({
+          array: [...arr],
+          states: arr.map((v, i) => ({ value: v, state: i === pivotIndex ? 'pivot' : '' })),
+          description: `${prefix}Choose pivot = ${pivot} (middle element)`,
+          depth
+        });
+
+        // Partition
+        const left = arr.filter(x => x < pivot);
+        const middle = arr.filter(x => x === pivot);
+        const right = arr.filter(x => x > pivot);
+
+        // Step 2: Show partitioned array
+        const partitionedStates = [];
+        arr.forEach(v => {
+          if (v < pivot) partitionedStates.push({ value: v, state: 'left' });
+          else if (v === pivot) partitionedStates.push({ value: v, state: 'pivot' });
+          else partitionedStates.push({ value: v, state: 'right' });
+        });
+
+        this.steps.push({
+          array: [...arr],
+          states: partitionedStates,
+          description: `${prefix}Partition: ${left.length} elements < ${pivot} (blue), ${right.length} elements > ${pivot} (red)`,
+          depth
+        });
+
+        // Step 3: Decide which partition to recurse on
+        if (k <= left.length) {
+          this.steps.push({
+            array: [...arr],
+            states: partitionedStates,
+            description: `${prefix}k=${k} <= ${left.length} (left size), so recurse on LEFT partition`,
+            depth
+          });
+          this.generateSteps(left, k, depth + 1, `[Depth ${depth + 1}] `);
+        } else if (k <= left.length + middle.length) {
+          this.steps.push({
+            array: [...arr],
+            states: arr.map(v => ({ value: v, state: v === pivot ? 'target' : 'dimmed' })),
+            description: `${prefix}k=${k} is in the middle partition. Pivot ${pivot} is the answer!`,
+            depth
+          });
+        } else {
+          const newK = k - left.length - middle.length;
+          this.steps.push({
+            array: [...arr],
+            states: partitionedStates,
+            description: `${prefix}k=${k} > ${left.length + middle.length}, so recurse on RIGHT partition with k=${newK}`,
+            depth
+          });
+          this.generateSteps(right, newK, depth + 1, `[Depth ${depth + 1}] `);
+        }
+      }
+
+      start() {
+        const arr = parseArrayInput(document.getElementById('qs-input').value);
+        const k = parseInt(document.getElementById('qs-k').value);
+
+        if (arr.length === 0) {
+          this.description.textContent = 'Please enter a valid array';
+          return;
+        }
+
+        if (k < 1 || k > arr.length) {
+          this.description.textContent = `k must be between 1 and ${arr.length}`;
+          return;
+        }
+
+        this.steps = [];
+        this.currentStep = 0;
+
+        // Initial step
+        this.steps.push({
+          array: [...arr],
+          states: arr.map(v => ({ value: v, state: '' })),
+          description: `Starting Quickselect to find the ${k}${k === 1 ? 'st' : k === 2 ? 'nd' : k === 3 ? 'rd' : 'th'} smallest element`,
+          depth: 0
+        });
+
+        this.generateSteps(arr, k, 0, '');
+        this.render();
+      }
+
+      render() {
+        if (this.steps.length === 0) {
+          this.viz.innerHTML = '<div style="color: rgba(255,255,255,0.5);">Click "Start Animation" to begin</div>';
+          return;
+        }
+
+        const step = this.steps[this.currentStep];
+
+        this.viz.innerHTML = '';
+        const arrayDiv = document.createElement('div');
+        arrayDiv.className = 'array-viz';
+
+        step.states.forEach((s, i) => {
+          const item = document.createElement('div');
+          item.className = `array-item ${s.state}`;
+          item.innerHTML = `
+            <div class="array-value">${s.value}</div>
+            <div class="index-label">${i}</div>
+          `;
+          arrayDiv.appendChild(item);
+        });
+
+        this.viz.appendChild(arrayDiv);
+
+        this.description.textContent = step.description;
+
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        this.progressBar.style.width = `${progress}%`;
+        this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBack() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        if (this.steps.length > 0) {
+          this.render();
+        }
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('qs-play').textContent = 'Pause';
+        document.getElementById('qs-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1500 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('qs-play').textContent = 'Play';
+        document.getElementById('qs-play').classList.remove('playing');
+      }
+
+      togglePlay() {
+        if (this.isPlaying) {
+          this.pause();
+        } else {
+          this.play();
+        }
+      }
+    }
+
+    const qsAnimator = new QuickselectAnimator();
+
+    // ==================== COMPARISON ====================
+    const compSizeSelect = document.getElementById('comp-size');
+    const compRunBtn = document.getElementById('comp-run-btn');
+    const compResetBtn = document.getElementById('comp-reset-btn');
+    const compSummary = document.getElementById('comp-summary');
+
+    function countSortOperations(arr) {
+      let comparisons = 0;
+      let swaps = 0;
+      const a = [...arr];
+
+      // Simple merge sort counting
+      function mergeSort(arr) {
+        if (arr.length <= 1) return arr;
+
+        const mid = Math.floor(arr.length / 2);
+        const left = mergeSort(arr.slice(0, mid));
+        const right = mergeSort(arr.slice(mid));
+
+        const result = [];
+        let i = 0, j = 0;
+
+        while (i < left.length && j < right.length) {
+          comparisons++;
+          if (left[i] <= right[j]) {
+            result.push(left[i++]);
+          } else {
+            result.push(right[j++]);
+          }
+          swaps++;
+        }
+
+        while (i < left.length) { result.push(left[i++]); swaps++; }
+        while (j < right.length) { result.push(right[j++]); swaps++; }
+
+        return result;
+      }
+
+      const sorted = mergeSort(a);
+      return { comparisons, swaps, median: sorted[Math.floor(sorted.length / 2)] };
+    }
+
+    function countQuickselectOperations(arr, k) {
+      let comparisons = 0;
+      let partitions = 0;
+
+      function qs(a, target) {
+        if (a.length === 1) return a[0];
+        if (a.length === 0) return null;
+
+        partitions++;
+        const pivot = a[Math.floor(a.length / 2)];
+
+        const left = [];
+        const middle = [];
+        const right = [];
+
+        for (const x of a) {
+          comparisons++;
+          if (x < pivot) left.push(x);
+          else if (x === pivot) middle.push(x);
+          else right.push(x);
+        }
+
+        if (target <= left.length) {
+          return qs(left, target);
+        } else if (target <= left.length + middle.length) {
+          return pivot;
+        } else {
+          return qs(right, target - left.length - middle.length);
+        }
+      }
+
+      const median = qs([...arr], k);
+      return { comparisons, partitions, median };
+    }
+
+    compRunBtn.addEventListener('click', () => {
+      const size = parseInt(compSizeSelect.value);
+      const arr = generateRandomArray(size);
+      const k = Math.ceil(size / 2);
+
+      const sortResult = countSortOperations(arr);
+      const qsResult = countQuickselectOperations(arr, k);
+
+      document.getElementById('sort-comparisons').textContent = sortResult.comparisons;
+      document.getElementById('sort-swaps').textContent = sortResult.swaps;
+      document.getElementById('sort-result').textContent = sortResult.median;
+
+      document.getElementById('qs-comparisons').textContent = qsResult.comparisons;
+      document.getElementById('qs-partitions').textContent = qsResult.partitions;
+      document.getElementById('qs-result').textContent = qsResult.median;
+
+      const savings = ((1 - qsResult.comparisons / sortResult.comparisons) * 100).toFixed(1);
+      compSummary.innerHTML = `
+        <strong>Quickselect used ${savings}% fewer comparisons!</strong><br>
+        Array: [${arr.slice(0, 10).join(', ')}${size > 10 ? ', ...' : ''}] (${size} elements)
+      `;
+    });
+
+    compResetBtn.addEventListener('click', () => {
+      document.getElementById('sort-comparisons').textContent = '-';
+      document.getElementById('sort-swaps').textContent = '-';
+      document.getElementById('sort-result').textContent = '-';
+      document.getElementById('qs-comparisons').textContent = '-';
+      document.getElementById('qs-partitions').textContent = '-';
+      document.getElementById('qs-result').textContent = '-';
+      compSummary.innerHTML = '';
+    });
+
+    // ==================== MEDIAN OF MEDIANS ANIMATOR ====================
+    class MedianOfMediansAnimator {
+      constructor() {
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.viz = document.getElementById('mom-viz');
+        this.description = document.getElementById('mom-description');
+        this.stepIndicator = document.getElementById('mom-step-indicator');
+        this.progressBar = document.getElementById('mom-progress');
+
+        this.setupControls();
+      }
+
+      setupControls() {
+        document.getElementById('mom-start-btn').addEventListener('click', () => this.start());
+        document.getElementById('mom-reset').addEventListener('click', () => this.reset());
+        document.getElementById('mom-back').addEventListener('click', () => this.stepBack());
+        document.getElementById('mom-forward').addEventListener('click', () => this.stepForward());
+        document.getElementById('mom-play').addEventListener('click', () => this.togglePlay());
+        document.getElementById('mom-speed').addEventListener('change', (e) => {
+          this.speed = parseFloat(e.target.value);
+          if (this.isPlaying) {
+            this.pause();
+            this.play();
+          }
+        });
+      }
+
+      generateSteps(arr) {
+        // Step 1: Show original array
+        this.steps.push({
+          type: 'array',
+          data: arr.map(v => ({ value: v, state: '' })),
+          description: `Original array of ${arr.length} elements`
+        });
+
+        // Step 2: Divide into groups of 5
+        const groups = [];
+        for (let i = 0; i < arr.length; i += 5) {
+          groups.push(arr.slice(i, i + 5));
+        }
+
+        this.steps.push({
+          type: 'groups',
+          groups: groups.map(g => ({ items: g.map(v => ({ value: v, state: '' })), highlighted: false })),
+          description: `Divide into ${groups.length} groups of 5 (last group may have fewer)`
+        });
+
+        // Step 3: Sort each group and find median
+        const medians = [];
+        const sortedGroups = groups.map(g => [...g].sort((a, b) => a - b));
+
+        for (let i = 0; i < groups.length; i++) {
+          const sorted = sortedGroups[i];
+          const medianIndex = Math.floor(sorted.length / 2);
+          const median = sorted[medianIndex];
+          medians.push(median);
+
+          this.steps.push({
+            type: 'groups',
+            groups: sortedGroups.map((g, j) => ({
+              items: g.map((v, k) => ({
+                value: v,
+                state: j < i ? (k === Math.floor(g.length / 2) ? 'median' : '') :
+                       j === i ? (k === medianIndex ? 'median' : '') : ''
+              })),
+              highlighted: j === i
+            })),
+            description: `Group ${i + 1}: Sort [${groups[i].join(', ')}] -> [${sorted.join(', ')}], median = ${median}`
+          });
+        }
+
+        // Step 4: Show all medians
+        this.steps.push({
+          type: 'groups',
+          groups: sortedGroups.map((g, i) => ({
+            items: g.map((v, k) => ({
+              value: v,
+              state: k === Math.floor(g.length / 2) ? 'median' : ''
+            })),
+            highlighted: false
+          })),
+          description: `Medians of all groups: [${medians.join(', ')}]`
+        });
+
+        // Step 5: Find median of medians
+        const sortedMedians = [...medians].sort((a, b) => a - b);
+        const momIndex = Math.floor(sortedMedians.length / 2);
+        const mom = sortedMedians[momIndex];
+
+        this.steps.push({
+          type: 'groups',
+          groups: sortedGroups.map((g, i) => ({
+            items: g.map((v, k) => ({
+              value: v,
+              state: v === mom ? 'mom' : (k === Math.floor(g.length / 2) ? 'median' : '')
+            })),
+            highlighted: false
+          })),
+          description: `Median of medians [${medians.join(', ')}] -> sorted [${sortedMedians.join(', ')}] -> MoM = ${mom}`
+        });
+
+        // Step 6: Show final result
+        this.steps.push({
+          type: 'groups',
+          groups: sortedGroups.map((g, i) => ({
+            items: g.map((v, k) => ({
+              value: v,
+              state: v === mom ? 'mom' : (k === Math.floor(g.length / 2) ? 'median' : '')
+            })),
+            highlighted: false
+          })),
+          description: `Pivot selected: ${mom}. This guarantees at least 30% of elements on each side!`
+        });
+      }
+
+      start() {
+        const arr = parseArrayInput(document.getElementById('mom-input').value);
+
+        if (arr.length < 5) {
+          this.description.textContent = 'Please enter at least 5 elements';
+          return;
+        }
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.generateSteps(arr);
+        this.render();
+      }
+
+      render() {
+        if (this.steps.length === 0) {
+          this.viz.innerHTML = '<div style="color: rgba(255,255,255,0.5);">Click "Visualize Groups" to begin</div>';
+          return;
+        }
+
+        const step = this.steps[this.currentStep];
+        this.viz.innerHTML = '';
+
+        if (step.type === 'array') {
+          const arrayDiv = document.createElement('div');
+          arrayDiv.className = 'array-viz';
+          step.data.forEach((item, i) => {
+            const elem = document.createElement('div');
+            elem.className = `array-item ${item.state}`;
+            elem.innerHTML = `<div class="array-value">${item.value}</div>`;
+            arrayDiv.appendChild(elem);
+          });
+          this.viz.appendChild(arrayDiv);
+        } else if (step.type === 'groups') {
+          step.groups.forEach((group, i) => {
+            const groupBox = document.createElement('div');
+            groupBox.className = `group-box ${group.highlighted ? 'highlighted' : ''}`;
+            groupBox.innerHTML = `<div class="group-label">Group ${i + 1}</div>`;
+
+            const itemsDiv = document.createElement('div');
+            itemsDiv.className = 'group-items';
+
+            group.items.forEach(item => {
+              const elem = document.createElement('div');
+              elem.className = `group-item ${item.state}`;
+              elem.textContent = item.value;
+              itemsDiv.appendChild(elem);
+            });
+
+            groupBox.appendChild(itemsDiv);
+            this.viz.appendChild(groupBox);
+          });
+        }
+
+        this.description.textContent = step.description;
+
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        this.progressBar.style.width = `${progress}%`;
+        this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBack() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        if (this.steps.length > 0) {
+          this.render();
+        }
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('mom-play').textContent = 'Pause';
+        document.getElementById('mom-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 2000 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('mom-play').textContent = 'Play';
+        document.getElementById('mom-play').classList.remove('playing');
+      }
+
+      togglePlay() {
+        if (this.isPlaying) {
+          this.pause();
+        } else {
+          this.play();
+        }
+      }
+    }
+
+    const momAnimator = new MedianOfMediansAnimator();
+
+    // ==================== QUIZ FUNCTIONALITY ====================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          // Prevent re-answering
+          if (optionsContainer.classList.contains('answered')) return;
+          optionsContainer.classList.add('answered');
+
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintIndex) {
+      const hints = btn.parentElement.querySelectorAll('.hint-text');
+      const hint = hints[hintIndex];
+
+      if (hint) {
+        hint.classList.toggle('show');
+
+        // Update button text
+        const hintBtns = btn.parentElement.querySelectorAll('.hint-btn');
+        const isShowing = hint.classList.contains('show');
+        hintBtns[hintIndex].textContent = isShowing ? `Hide Hint ${hintIndex + 1}` : `Show Hint ${hintIndex + 1}`;
+      }
+    }
+
+    // KaTeX auto-render
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          if (qsAnimator.steps.length > 0) {
+            qsAnimator.togglePlay();
+          }
+          break;
+        case 'ArrowRight':
+          if (qsAnimator.steps.length > 0) {
+            qsAnimator.stepForward();
+          }
+          break;
+        case 'ArrowLeft':
+          if (qsAnimator.steps.length > 0) {
+            qsAnimator.stepBack();
+          }
+          break;
+        case 'r':
+        case 'R':
+          if (qsAnimator.steps.length > 0) {
+            qsAnimator.reset();
+          }
+          break;
+      }
+    });
+  </script>
+</body>
+</html>

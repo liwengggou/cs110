@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 2: Fundamentals of Algorithms | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --init-phase: #3498DB;
+      --maint-phase: #9B59B6;
+      --term-phase: #27AE60;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 200px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* Pseudocode/Python Converter */
+    .converter-container {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .converter-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .converter-header {
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .converter-content {
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.8;
+      min-height: 200px;
+    }
+
+    .converter-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--accent);
+    }
+
+    .pseudo-line, .python-line {
+      padding: 0.25rem 0;
+      transition: all 0.3s ease;
+      border-radius: 4px;
+      padding-left: 0.5rem;
+      margin-left: -0.5rem;
+    }
+
+    .pseudo-line.highlight, .python-line.highlight {
+      background: rgba(241, 196, 15, 0.3);
+    }
+
+    .pseudo-line.mapped, .python-line.mapped {
+      background: rgba(46, 170, 220, 0.2);
+    }
+
+    /* Array Visualization */
+    .array-viz {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .array-element {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .array-bar {
+      width: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 0.75rem 0;
+      transition: all 0.3s ease;
+    }
+
+    .array-bar.init { background: var(--init-phase); }
+    .array-bar.maint { background: var(--maint-phase); }
+    .array-bar.term { background: var(--term-phase); }
+    .array-bar.current {
+      background: var(--current-focus);
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+      transform: scale(1.1);
+    }
+    .array-bar.sorted { background: var(--sorted); }
+    .array-bar.comparing { background: var(--comparing); }
+
+    .array-index {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    .pointer-label {
+      font-size: 0.75rem;
+      color: var(--current-focus);
+      margin-bottom: 0.25rem;
+      font-family: var(--font-mono);
+      height: 1.25rem;
+    }
+
+    /* Loop Invariant Phases */
+    .phase-indicator {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .phase-badge {
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      opacity: 0.5;
+      transition: all 0.3s ease;
+    }
+
+    .phase-badge.active {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .phase-badge.init { background: var(--init-phase); color: white; }
+    .phase-badge.maint { background: var(--maint-phase); color: white; }
+    .phase-badge.term { background: var(--term-phase); color: white; }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Invariant Box */
+    .invariant-box {
+      background: linear-gradient(135deg, rgba(155, 81, 224, 0.1), rgba(46, 170, 220, 0.1));
+      border: 2px solid var(--purple);
+      border-radius: var(--border-radius);
+      padding: 1rem 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .invariant-box h4 {
+      color: var(--purple);
+      margin-bottom: 0.5rem;
+    }
+
+    .invariant-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+
+    .invariant-status.valid {
+      background: rgba(15, 123, 108, 0.2);
+      color: var(--success);
+    }
+
+    .invariant-status.checking {
+      background: rgba(241, 196, 15, 0.2);
+      color: var(--warning);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Problem Decomposition */
+    .decomposition-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 2rem;
+    }
+
+    .decomp-node {
+      background: var(--accent);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .decomp-node:hover {
+      transform: scale(1.05);
+    }
+
+    .decomp-node.root {
+      background: var(--purple);
+      font-size: 1.1rem;
+    }
+
+    .decomp-node.sub {
+      background: var(--comparing);
+    }
+
+    .decomp-node.leaf {
+      background: var(--success);
+    }
+
+    .decomp-children {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .decomp-connector {
+      width: 2px;
+      height: 20px;
+      background: var(--text-secondary);
+    }
+
+    .decomp-branch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Correctness Checker */
+    .checker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .checker-card {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .checker-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .checker-card h4 {
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .checker-result {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .checker-result.show {
+      display: block;
+    }
+
+    .checker-result.correct {
+      background: rgba(15, 123, 108, 0.2);
+      border: 1px solid var(--success);
+    }
+
+    .checker-result.incorrect {
+      background: rgba(235, 87, 87, 0.2);
+      border: 1px solid var(--error);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+    }
+
+    .tab-btn:hover {
+      background: var(--code-bg);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+
+      .converter-container {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .converter-arrow {
+        transform: rotate(90deg);
+        padding: 0.5rem 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .array-bar { width: 40px; padding: 0.5rem 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">M</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 2</span>
+      <h1>Fundamentals of Algorithms</h1>
+      <p class="subtitle">Master algorithmic problem solving, pseudocode, and proving correctness with loop invariants</p>
+      <div class="meta">
+        <span>T ~30 minutes</span>
+        <span>P Prerequisites: Session 1 (Python Basics)</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Translate</strong> between pseudocode and Python implementations</li>
+        <li><strong>Prove</strong> algorithm correctness using loop invariants</li>
+        <li><strong>Apply</strong> the three phases: initialization, maintenance, termination</li>
+        <li><strong>Specify</strong> precise input/output requirements for algorithms</li>
+        <li><strong>Decompose</strong> complex problems into smaller subproblems</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: What is an Algorithm? -->
+    <h2>1. What is an Algorithm?</h2>
+    <p>An <strong>algorithm</strong> is a well-defined computational procedure that takes some value(s) as <strong>input</strong> and produces some value(s) as <strong>output</strong>. Think of it as a recipe: a sequence of steps that transforms ingredients (input) into a dish (output).</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> An algorithm must be <em>precise</em> (no ambiguity), <em>finite</em> (terminates eventually), and <em>effective</em> (each step can be performed in finite time).
+    </div>
+
+    <!-- Section 2: Pseudocode to Python -->
+    <h2>2. From Pseudocode to Python</h2>
+    <p>Pseudocode is a way to describe algorithms in plain language that resembles code but isn't tied to any specific programming language. Let's see how pseudocode maps to actual Python code.</p>
+
+    <div class="viz-container">
+      <h3>Interactive Pseudocode Converter</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">Hover over each line to see the mapping between pseudocode and Python.</p>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="find-max">Find Maximum</button>
+        <button class="tab-btn" data-tab="linear-search">Linear Search</button>
+        <button class="tab-btn" data-tab="sum-array">Sum Array</button>
+      </div>
+
+      <div class="tab-content active" id="tab-find-max">
+        <div class="converter-container">
+          <div class="converter-panel">
+            <div class="converter-header">
+              <span>Pseudocode</span>
+            </div>
+            <div class="converter-content" id="pseudo-find-max">
+              <div class="pseudo-line" data-line="1"><strong>FIND-MAXIMUM</strong>(A)</div>
+              <div class="pseudo-line" data-line="2">  max = A[0]</div>
+              <div class="pseudo-line" data-line="3">  <strong>for</strong> i = 1 <strong>to</strong> length(A) - 1</div>
+              <div class="pseudo-line" data-line="4">    <strong>if</strong> A[i] > max</div>
+              <div class="pseudo-line" data-line="5">      max = A[i]</div>
+              <div class="pseudo-line" data-line="6">  <strong>return</strong> max</div>
+            </div>
+          </div>
+
+          <div class="converter-arrow">
+            =
+          </div>
+
+          <div class="converter-panel">
+            <div class="converter-header">
+              <span>Python</span>
+              <span class="language-badge">Python</span>
+            </div>
+            <div class="converter-content" id="python-find-max">
+              <div class="python-line" data-line="1"><span class="keyword">def</span> <span class="function">find_maximum</span>(A):</div>
+              <div class="python-line" data-line="2">    max_val = A[<span class="number">0</span>]</div>
+              <div class="python-line" data-line="3">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="function">len</span>(A)):</div>
+              <div class="python-line" data-line="4">        <span class="keyword">if</span> A[i] > max_val:</div>
+              <div class="python-line" data-line="5">            max_val = A[i]</div>
+              <div class="python-line" data-line="6">    <span class="keyword">return</span> max_val</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-linear-search">
+        <div class="converter-container">
+          <div class="converter-panel">
+            <div class="converter-header">
+              <span>Pseudocode</span>
+            </div>
+            <div class="converter-content" id="pseudo-linear">
+              <div class="pseudo-line" data-line="1"><strong>LINEAR-SEARCH</strong>(A, target)</div>
+              <div class="pseudo-line" data-line="2">  <strong>for</strong> i = 0 <strong>to</strong> length(A) - 1</div>
+              <div class="pseudo-line" data-line="3">    <strong>if</strong> A[i] == target</div>
+              <div class="pseudo-line" data-line="4">      <strong>return</strong> i</div>
+              <div class="pseudo-line" data-line="5">  <strong>return</strong> -1 <span class="comment">// not found</span></div>
+            </div>
+          </div>
+
+          <div class="converter-arrow">
+            =
+          </div>
+
+          <div class="converter-panel">
+            <div class="converter-header">
+              <span>Python</span>
+              <span class="language-badge">Python</span>
+            </div>
+            <div class="converter-content" id="python-linear">
+              <div class="python-line" data-line="1"><span class="keyword">def</span> <span class="function">linear_search</span>(A, target):</div>
+              <div class="python-line" data-line="2">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="function">len</span>(A)):</div>
+              <div class="python-line" data-line="3">        <span class="keyword">if</span> A[i] == target:</div>
+              <div class="python-line" data-line="4">            <span class="keyword">return</span> i</div>
+              <div class="python-line" data-line="5">    <span class="keyword">return</span> -<span class="number">1</span>  <span class="comment"># not found</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-sum-array">
+        <div class="converter-container">
+          <div class="converter-panel">
+            <div class="converter-header">
+              <span>Pseudocode</span>
+            </div>
+            <div class="converter-content" id="pseudo-sum">
+              <div class="pseudo-line" data-line="1"><strong>SUM-ARRAY</strong>(A)</div>
+              <div class="pseudo-line" data-line="2">  total = 0</div>
+              <div class="pseudo-line" data-line="3">  <strong>for</strong> i = 0 <strong>to</strong> length(A) - 1</div>
+              <div class="pseudo-line" data-line="4">    total = total + A[i]</div>
+              <div class="pseudo-line" data-line="5">  <strong>return</strong> total</div>
+            </div>
+          </div>
+
+          <div class="converter-arrow">
+            =
+          </div>
+
+          <div class="converter-panel">
+            <div class="converter-header">
+              <span>Python</span>
+              <span class="language-badge">Python</span>
+            </div>
+            <div class="converter-content" id="python-sum">
+              <div class="python-line" data-line="1"><span class="keyword">def</span> <span class="function">sum_array</span>(A):</div>
+              <div class="python-line" data-line="2">    total = <span class="number">0</span></div>
+              <div class="python-line" data-line="3">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="function">len</span>(A)):</div>
+              <div class="python-line" data-line="4">        total = total + A[i]</div>
+              <div class="python-line" data-line="5">    <span class="keyword">return</span> total</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Hover over any line of pseudocode or Python to see the corresponding line highlighted in the other panel.
+      </div>
+    </div>
+
+    <!-- Section 3: Loop Invariants -->
+    <h2>3. Loop Invariants: Proving Correctness</h2>
+    <p>A <strong>loop invariant</strong> is a property that is true before and after each iteration of a loop. We use loop invariants to prove that an algorithm is correct by showing three things:</p>
+
+    <div class="invariant-box">
+      <h4>The Three Phases of Loop Invariants</h4>
+      <ul style="padding-left: 1.5rem; margin-top: 0.5rem;">
+        <li><strong style="color: var(--init-phase);">Initialization:</strong> The invariant is true before the first iteration</li>
+        <li><strong style="color: var(--maint-phase);">Maintenance:</strong> If true before an iteration, it remains true after</li>
+        <li><strong style="color: var(--term-phase);">Termination:</strong> When the loop ends, the invariant gives us our desired result</li>
+      </ul>
+    </div>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Loop Invariant Animator: Find Maximum</h3>
+
+          <div class="phase-indicator">
+            <div class="phase-badge init" id="phase-init">Initialization</div>
+            <div class="phase-badge maint" id="phase-maint">Maintenance</div>
+            <div class="phase-badge term" id="phase-term">Termination</div>
+          </div>
+
+          <div class="step-description" id="invariant-description">
+            Press Play to see loop invariants in action
+          </div>
+
+          <div class="invariant-box" style="margin: 1rem 0;">
+            <h4>Loop Invariant</h4>
+            <p id="invariant-text">At the start of each iteration, <code>max_val</code> contains the maximum value of A[0..i-1]</p>
+            <div class="invariant-status valid" id="invariant-status">
+              <span>V</span> <span id="invariant-status-text">Invariant holds</span>
+            </div>
+          </div>
+
+          <div class="viz-canvas">
+            <div class="array-viz" id="invariant-array">
+              <!-- Generated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="step-controls">
+            <button id="inv-reset" title="Reset">|&lt;</button>
+            <button id="inv-back" title="Step Back">&lt;</button>
+            <button id="inv-play" title="Play/Pause">P</button>
+            <button id="inv-forward" title="Step Forward">&gt;</button>
+            <span class="step-indicator" id="inv-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="inv-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="inv-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="keyboard-hints">
+            <span class="keyboard-hint"><span class="key">Space</span> Play/Pause</span>
+            <span class="keyboard-hint"><span class="key">L</span> Step Back</span>
+            <span class="keyboard-hint"><span class="key">R</span> Step Forward</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Python</span>
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="inv-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">find_maximum</span>(A):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    max_val = A[<span class="number">0</span>]</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">    <span class="comment"># Invariant: max_val = max(A[0..i-1])</span></span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="function">len</span>(A)):</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="keyword">if</span> A[i] > max_val:</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">            max_val = A[i]</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">    <span class="keyword">return</span> max_val</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Variables</h4>
+          <div class="variable-list" id="inv-variables">
+            <div class="variable-item">
+              <span class="variable-name">A</span>
+              <span class="variable-value">[3, 7, 2, 9, 4]</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">max_val</span>
+              <span class="variable-value" id="var-max">--</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">i</span>
+              <span class="variable-value" id="var-i">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Loop invariants are like mathematical induction. Initialization is the base case, maintenance is the inductive step, and termination gives us our conclusion.
+    </div>
+
+    <!-- Section 4: Input/Output Specifications -->
+    <h2>4. Input/Output Specifications</h2>
+    <p>Every algorithm should have clear <strong>preconditions</strong> (requirements on inputs) and <strong>postconditions</strong> (guarantees about outputs). These form a "contract" between the algorithm and its users.</p>
+
+    <div class="viz-container">
+      <h3>Algorithm Correctness Checker</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">Click on each algorithm to check its correctness properties.</p>
+
+      <div class="checker-grid">
+        <div class="checker-card" onclick="checkCorrectness('binary-search')">
+          <h4>Binary Search</h4>
+          <p><strong>Precondition:</strong> Array must be sorted</p>
+          <p><strong>Postcondition:</strong> Returns index if found, -1 otherwise</p>
+          <div class="checker-result" id="result-binary-search">
+            <p><strong>Correctness Check:</strong></p>
+            <ul style="padding-left: 1.5rem; margin-top: 0.5rem;">
+              <li>Initialization: Search space = [0, n-1], invariant holds</li>
+              <li>Maintenance: Each step halves the search space correctly</li>
+              <li>Termination: Loop ends when low > high or element found</li>
+            </ul>
+            <p style="color: var(--success); margin-top: 0.5rem;"><strong>V Correct!</strong></p>
+          </div>
+        </div>
+
+        <div class="checker-card" onclick="checkCorrectness('insertion-sort')">
+          <h4>Insertion Sort</h4>
+          <p><strong>Precondition:</strong> Any array of comparable elements</p>
+          <p><strong>Postcondition:</strong> Array is sorted in ascending order</p>
+          <div class="checker-result" id="result-insertion-sort">
+            <p><strong>Correctness Check:</strong></p>
+            <ul style="padding-left: 1.5rem; margin-top: 0.5rem;">
+              <li>Initialization: A[0..0] is trivially sorted</li>
+              <li>Maintenance: A[0..j] stays sorted after inserting A[j]</li>
+              <li>Termination: When j = n, A[0..n-1] is fully sorted</li>
+            </ul>
+            <p style="color: var(--success); margin-top: 0.5rem;"><strong>V Correct!</strong></p>
+          </div>
+        </div>
+
+        <div class="checker-card" onclick="checkCorrectness('buggy-max')">
+          <h4>Buggy Maximum (Incorrect!)</h4>
+          <pre style="background: var(--code-bg); padding: 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-top: 0.5rem;">def buggy_max(A):
+    max_val = 0  # Bug!
+    for x in A:
+        if x > max_val:
+            max_val = x
+    return max_val</pre>
+          <div class="checker-result" id="result-buggy-max">
+            <p><strong>Correctness Check:</strong></p>
+            <p style="color: var(--error);">X <strong>Bug Found!</strong> Initialization fails when all elements are negative.</p>
+            <p style="margin-top: 0.5rem;"><strong>Example:</strong> buggy_max([-5, -2, -8]) returns 0, but should return -2</p>
+            <p style="margin-top: 0.5rem;"><strong>Fix:</strong> Initialize max_val = A[0] instead of 0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Initializing with "magic numbers" like 0 or -1 instead of actual array elements. Always think about edge cases: empty arrays, all negative numbers, single-element arrays.
+    </div>
+
+    <!-- Section 5: Problem Decomposition -->
+    <h2>5. Problem Decomposition</h2>
+    <p>Breaking down complex problems into smaller, manageable subproblems is a key skill in algorithm design. This "divide and conquer" approach makes problems easier to solve and verify.</p>
+
+    <div class="viz-container">
+      <h3>Problem Decomposition Visualizer</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">Click on nodes to expand/collapse subproblems. This shows how "Sort an array" decomposes into smaller tasks.</p>
+
+      <div class="viz-canvas" style="background: var(--background-secondary); min-height: 350px;">
+        <div class="decomposition-tree" id="decomp-tree">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Click on "Merge Sort" to see how it recursively divides the problem. Notice how each subproblem is simpler than the original!
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Good problem decomposition leads to algorithms that are easier to implement, test, and analyze. Each subproblem should be self-contained with clear inputs and outputs.
+    </div>
+
+    <!-- Section 6: Common Mistakes Summary -->
+    <h2>6. Common Mistakes Summary</h2>
+
+    <div class="common-mistake">
+      <strong>Forgetting edge cases:</strong> Always consider empty inputs, single elements, and boundary conditions. What happens when n = 0? When n = 1? When all elements are the same?
+    </div>
+
+    <div class="common-mistake">
+      <strong>Off-by-one errors in loop bounds:</strong> Be precise about whether your loop uses <code>&lt;</code> or <code>&lt;=</code>. Draw out a small example and trace through manually.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Not updating the invariant variable:</strong> If your loop invariant says "max_val holds the maximum so far," make sure you actually update max_val when you find a larger element!
+    </div>
+
+    <div class="common-mistake">
+      <strong>Incorrect termination condition:</strong> Ensure your loop will eventually terminate. For while loops, verify that the condition becomes false. For counting loops, verify the bounds are correct.
+    </div>
+
+    <!-- Section 7: Why Do We Care -->
+    <h2>7. Why Do We Care?</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Safety-Critical Systems:</strong> Medical devices, aviation software, and financial systems require proven correctness -- bugs can cost lives or billions of dollars</li>
+      <li><strong>Debugging:</strong> Understanding invariants helps you quickly identify where code went wrong</li>
+      <li><strong>Code Reviews:</strong> Invariants serve as documentation that helps others understand your code's logic</li>
+      <li><strong>Optimization:</strong> Once you prove correctness, you can safely optimize without breaking functionality</li>
+    </ul>
+
+    <!-- Section 8: Quiz -->
+    <h2>8. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question">
+        <h4>Question 1: What are the three phases of proving loop correctness using invariants?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Setup, Execution, Cleanup</div>
+          <div class="quiz-option" data-index="1">Start, Middle, End</div>
+          <div class="quiz-option" data-index="2">Initialization, Maintenance, Termination</div>
+          <div class="quiz-option" data-index="3">Input, Process, Output</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about what must be true: before the loop starts, during each iteration, and when the loop ends.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> We prove: (1) Initialization -- invariant is true before the first iteration, (2) Maintenance -- if true before an iteration, it stays true after, (3) Termination -- when the loop ends, the invariant gives us our result.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 2: Given the loop invariant "A[0..i-1] is sorted" for insertion sort, what is true when i = n (loop terminates)?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Only A[0] is in the right place</div>
+          <div class="quiz-option" data-index="1">A[0..n-1] is sorted (the entire array)</div>
+          <div class="quiz-option" data-index="2">Only the last element is sorted</div>
+          <div class="quiz-option" data-index="3">The array might not be fully sorted yet</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Substitute i = n into the invariant "A[0..i-1] is sorted"</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> When i = n, the invariant "A[0..i-1] is sorted" becomes "A[0..n-1] is sorted", which means the entire array is sorted.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 3: What's wrong with this find-minimum function?</h4>
+        <pre style="background: var(--code-bg); padding: 1rem; border-radius: 4px; font-family: var(--font-mono); margin-bottom: 1rem; font-size: 0.875rem;">def find_min(A):
+    min_val = float('inf')
+    for i in range(len(A)):
+        if A[i] < min_val:
+            min_val = A[i]
+    return min_val</pre>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">The loop should start at 1</div>
+          <div class="quiz-option" data-index="1">It uses the wrong comparison operator</div>
+          <div class="quiz-option" data-index="2">The return statement is in the wrong place</div>
+          <div class="quiz-option" data-index="3">It returns infinity for empty arrays instead of handling the error</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">What happens when A = []? Is the result meaningful?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> When the array is empty, the loop never executes and the function returns infinity, which is technically incorrect. A robust implementation should either require a non-empty array (precondition) or raise an error for empty input.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 4: Which statement best describes why we use pseudocode?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Pseudocode runs faster than real code</div>
+          <div class="quiz-option" data-index="1">Pseudocode is required by Python</div>
+          <div class="quiz-option" data-index="2">Pseudocode focuses on logic without language-specific syntax details</div>
+          <div class="quiz-option" data-index="3">Pseudocode is harder to understand than real code</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about the purpose: is pseudocode meant to be executed, or to communicate ideas?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Pseudocode lets us focus on the algorithm's logic and structure without getting distracted by language-specific syntax. This makes it easier to discuss algorithms, verify correctness, and translate to any programming language.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 5: In problem decomposition, what makes a good subproblem?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">It should be as complex as the original problem</div>
+          <div class="quiz-option" data-index="1">It should be simpler, self-contained, with clear inputs/outputs</div>
+          <div class="quiz-option" data-index="2">It should depend heavily on other subproblems</div>
+          <div class="quiz-option" data-index="3">It should only work for specific inputs</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">The goal of decomposition is to make problems more manageable...</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Good subproblems are simpler than the original, have clear interfaces (inputs/outputs), and can be solved independently. This makes them easier to implement, test, and reuse.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Dive Deeper -->
+    <h2>9. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://en.wikipedia.org/wiki/Loop_invariant" target="_blank">Wikipedia: Loop Invariants</a></li>
+      <li><a href="https://www.khanacademy.org/computing/computer-science/algorithms" target="_blank">Khan Academy: Algorithms Course</a></li>
+      <li><a href="https://visualgo.net" target="_blank">VisuAlgo - Algorithm Visualizations</a></li>
+      <li><strong>CLRS Textbook:</strong> Chapter 2 (Getting Started) - Loop Invariants</li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-01-python-basics.html">L Session 1: Python Basics</a>
+      <a href="session-03-asymptotic-analysis.html">Session 3: Asymptotic Analysis R</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'S' : 'M';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'S' : 'M';
+
+    // Tab Navigation for Pseudocode Converter
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = btn.dataset.tab;
+
+        // Update buttons
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update content
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.getElementById('tab-' + tabId).classList.add('active');
+      });
+    });
+
+    // Pseudocode-Python line mapping
+    function setupConverterMapping() {
+      const containers = [
+        { pseudo: 'pseudo-find-max', python: 'python-find-max' },
+        { pseudo: 'pseudo-linear', python: 'python-linear' },
+        { pseudo: 'pseudo-sum', python: 'python-sum' }
+      ];
+
+      containers.forEach(({ pseudo, python }) => {
+        const pseudoLines = document.querySelectorAll(`#${pseudo} .pseudo-line`);
+        const pythonLines = document.querySelectorAll(`#${python} .python-line`);
+
+        pseudoLines.forEach((line, index) => {
+          line.addEventListener('mouseenter', () => {
+            pseudoLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+            pythonLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+            line.classList.add('highlight');
+            if (pythonLines[index]) {
+              pythonLines[index].classList.add('mapped');
+            }
+          });
+          line.addEventListener('mouseleave', () => {
+            pseudoLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+            pythonLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+          });
+        });
+
+        pythonLines.forEach((line, index) => {
+          line.addEventListener('mouseenter', () => {
+            pseudoLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+            pythonLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+            line.classList.add('highlight');
+            if (pseudoLines[index]) {
+              pseudoLines[index].classList.add('mapped');
+            }
+          });
+          line.addEventListener('mouseleave', () => {
+            pseudoLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+            pythonLines.forEach(l => l.classList.remove('highlight', 'mapped'));
+          });
+        });
+      });
+    }
+
+    setupConverterMapping();
+
+    // Loop Invariant Animator
+    class InvariantAnimator {
+      constructor() {
+        this.array = [3, 7, 2, 9, 4];
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.generateSteps();
+        this.render();
+        this.setupControls();
+      }
+
+      generateSteps() {
+        const arr = this.array;
+
+        // Initialization phase
+        this.steps.push({
+          phase: 'init',
+          line: 2,
+          i: null,
+          maxVal: arr[0],
+          highlight: [0],
+          desc: 'INITIALIZATION: Set max_val = A[0] = ' + arr[0],
+          invariant: 'max_val = max(A[0..0]) = ' + arr[0] + ' [Invariant holds!]'
+        });
+
+        // Maintenance phase - loop iterations
+        let maxVal = arr[0];
+        for (let i = 1; i < arr.length; i++) {
+          // Check condition
+          this.steps.push({
+            phase: 'maint',
+            line: 4,
+            i: i,
+            maxVal: maxVal,
+            highlight: [i],
+            comparing: true,
+            desc: `MAINTENANCE: Loop iteration i = ${i}, checking A[${i}] = ${arr[i]}`,
+            invariant: `Before this iteration: max_val = max(A[0..${i-1}]) = ${maxVal}`
+          });
+
+          // Compare
+          this.steps.push({
+            phase: 'maint',
+            line: 5,
+            i: i,
+            maxVal: maxVal,
+            highlight: [i],
+            comparing: true,
+            desc: `Compare: A[${i}] = ${arr[i]} > max_val = ${maxVal}? ${arr[i] > maxVal ? 'YES' : 'NO'}`,
+            invariant: `Checking if we need to update max_val...`
+          });
+
+          if (arr[i] > maxVal) {
+            maxVal = arr[i];
+            this.steps.push({
+              phase: 'maint',
+              line: 6,
+              i: i,
+              maxVal: maxVal,
+              highlight: [i],
+              desc: `Update: max_val = ${arr[i]}`,
+              invariant: `After update: max_val = max(A[0..${i}]) = ${maxVal} [Invariant maintained!]`
+            });
+          } else {
+            this.steps.push({
+              phase: 'maint',
+              line: 4,
+              i: i,
+              maxVal: maxVal,
+              highlight: [],
+              desc: `No update needed, max_val stays ${maxVal}`,
+              invariant: `max_val = max(A[0..${i}]) = ${maxVal} [Invariant maintained!]`
+            });
+          }
+        }
+
+        // Termination phase
+        this.steps.push({
+          phase: 'term',
+          line: 7,
+          i: arr.length,
+          maxVal: maxVal,
+          highlight: [],
+          allSorted: true,
+          desc: `TERMINATION: Loop ends with i = ${arr.length}`,
+          invariant: `max_val = max(A[0..${arr.length-1}]) = ${maxVal}. This is the entire array!`
+        });
+
+        this.steps.push({
+          phase: 'term',
+          line: 7,
+          i: null,
+          maxVal: maxVal,
+          highlight: [],
+          allSorted: true,
+          desc: `Return max_val = ${maxVal}. Algorithm is CORRECT!`,
+          invariant: `The invariant plus termination proves we found the maximum!`
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        const container = document.getElementById('invariant-array');
+        const description = document.getElementById('invariant-description');
+        const invariantText = document.getElementById('invariant-text');
+        const invariantStatus = document.getElementById('invariant-status-text');
+        const codePanel = document.getElementById('inv-code');
+        const progress = document.getElementById('inv-progress');
+        const stepIndicator = document.getElementById('inv-step-indicator');
+
+        // Render array
+        container.innerHTML = '';
+        this.array.forEach((val, idx) => {
+          const elem = document.createElement('div');
+          elem.className = 'array-element';
+
+          let barClass = 'array-bar';
+          if (step.allSorted) {
+            barClass += ' sorted';
+          } else if (step.highlight && step.highlight.includes(idx)) {
+            barClass += ' current';
+          } else if (idx < (step.i || 0)) {
+            barClass += ' sorted';
+          }
+
+          elem.innerHTML = `
+            <div class="pointer-label">${step.i === idx ? 'i=' + idx : ''}</div>
+            <div class="${barClass}">${val}</div>
+            <div class="array-index">[${idx}]</div>
+          `;
+          container.appendChild(elem);
+        });
+
+        // Update phases
+        document.getElementById('phase-init').classList.toggle('active', step.phase === 'init');
+        document.getElementById('phase-maint').classList.toggle('active', step.phase === 'maint');
+        document.getElementById('phase-term').classList.toggle('active', step.phase === 'term');
+
+        // Update description
+        description.textContent = step.desc;
+
+        // Update invariant
+        invariantText.textContent = step.invariant;
+        invariantStatus.textContent = 'Invariant holds';
+
+        // Update code highlighting
+        codePanel.querySelectorAll('.code-line').forEach(line => {
+          line.classList.remove('highlighted', 'executed');
+          const lineNum = parseInt(line.dataset.line);
+          if (lineNum === step.line) {
+            line.classList.add('highlighted');
+          } else if (lineNum < step.line) {
+            line.classList.add('executed');
+          }
+        });
+
+        // Update variables
+        document.getElementById('var-max').textContent = step.maxVal !== undefined ? step.maxVal : '--';
+        document.getElementById('var-i').textContent = step.i !== undefined && step.i !== null ? step.i : '--';
+
+        // Update progress
+        const progressPercent = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        progress.style.width = `${progressPercent}%`;
+        stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('inv-play').textContent = '||';
+        document.getElementById('inv-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.currentStep++;
+            this.render();
+          } else {
+            this.pause();
+          }
+        }, 1500 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('inv-play').textContent = 'P';
+        document.getElementById('inv-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+
+      setupControls() {
+        document.getElementById('inv-play').addEventListener('click', () => {
+          this.isPlaying ? this.pause() : this.play();
+        });
+        document.getElementById('inv-reset').addEventListener('click', () => this.reset());
+        document.getElementById('inv-back').addEventListener('click', () => this.stepBackward());
+        document.getElementById('inv-forward').addEventListener('click', () => this.stepForward());
+        document.getElementById('inv-speed').addEventListener('change', (e) => {
+          this.setSpeed(parseFloat(e.target.value));
+        });
+      }
+    }
+
+    const invariantAnimator = new InvariantAnimator();
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          invariantAnimator.isPlaying ? invariantAnimator.pause() : invariantAnimator.play();
+          break;
+        case 'ArrowRight':
+          invariantAnimator.stepForward();
+          break;
+        case 'ArrowLeft':
+          invariantAnimator.stepBackward();
+          break;
+        case 'r':
+        case 'R':
+          invariantAnimator.reset();
+          break;
+      }
+    });
+
+    // Algorithm Correctness Checker
+    function checkCorrectness(algorithm) {
+      const results = document.querySelectorAll('.checker-result');
+      results.forEach(r => r.classList.remove('show'));
+
+      const result = document.getElementById('result-' + algorithm);
+      result.classList.add('show');
+
+      if (algorithm === 'buggy-max') {
+        result.classList.add('incorrect');
+        result.classList.remove('correct');
+      } else {
+        result.classList.add('correct');
+        result.classList.remove('incorrect');
+      }
+    }
+
+    // Problem Decomposition Visualization
+    function createDecompositionTree() {
+      const container = document.getElementById('decomp-tree');
+
+      const tree = {
+        label: 'Sort an Array',
+        type: 'root',
+        expanded: true,
+        children: [
+          {
+            label: 'Merge Sort',
+            type: 'sub',
+            expanded: false,
+            children: [
+              { label: 'Divide in half', type: 'leaf' },
+              { label: 'Sort left half', type: 'sub', children: [
+                { label: 'Divide', type: 'leaf' },
+                { label: 'Sort', type: 'leaf' },
+                { label: 'Merge', type: 'leaf' }
+              ]},
+              { label: 'Sort right half', type: 'sub', children: [
+                { label: 'Divide', type: 'leaf' },
+                { label: 'Sort', type: 'leaf' },
+                { label: 'Merge', type: 'leaf' }
+              ]},
+              { label: 'Merge halves', type: 'leaf' }
+            ]
+          },
+          {
+            label: 'Quick Sort',
+            type: 'sub',
+            expanded: false,
+            children: [
+              { label: 'Choose pivot', type: 'leaf' },
+              { label: 'Partition array', type: 'leaf' },
+              { label: 'Sort left partition', type: 'leaf' },
+              { label: 'Sort right partition', type: 'leaf' }
+            ]
+          },
+          {
+            label: 'Insertion Sort',
+            type: 'sub',
+            expanded: false,
+            children: [
+              { label: 'Start with sorted portion = [0]', type: 'leaf' },
+              { label: 'Insert next element', type: 'leaf' },
+              { label: 'Shift elements right', type: 'leaf' },
+              { label: 'Repeat until done', type: 'leaf' }
+            ]
+          }
+        ]
+      };
+
+      function renderNode(node, depth = 0) {
+        const branch = document.createElement('div');
+        branch.className = 'decomp-branch';
+
+        if (depth > 0) {
+          const connector = document.createElement('div');
+          connector.className = 'decomp-connector';
+          branch.appendChild(connector);
+        }
+
+        const nodeDiv = document.createElement('div');
+        nodeDiv.className = `decomp-node ${node.type}`;
+        nodeDiv.textContent = node.label;
+        nodeDiv.dataset.expanded = node.expanded || false;
+
+        if (node.children && node.children.length > 0) {
+          nodeDiv.style.cursor = 'pointer';
+          nodeDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isExpanded = nodeDiv.dataset.expanded === 'true';
+            nodeDiv.dataset.expanded = !isExpanded;
+
+            const childContainer = branch.querySelector('.decomp-children');
+            if (childContainer) {
+              childContainer.style.display = isExpanded ? 'none' : 'flex';
+            }
+          });
+        }
+
+        branch.appendChild(nodeDiv);
+
+        if (node.children && node.children.length > 0) {
+          const childContainer = document.createElement('div');
+          childContainer.className = 'decomp-children';
+          childContainer.style.display = node.expanded ? 'flex' : 'none';
+
+          node.children.forEach(child => {
+            childContainer.appendChild(renderNode(child, depth + 1));
+          });
+
+          branch.appendChild(childContainer);
+        }
+
+        return branch;
+      }
+
+      container.innerHTML = '';
+      container.appendChild(renderNode(tree));
+    }
+
+    createDecompositionTree();
+
+    // Quiz functionality
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn) {
+      const hint = btn.nextElementSibling;
+      hint.classList.toggle('show');
+      btn.textContent = hint.classList.contains('show') ? 'Hide Hint' : 'Show Hint';
+    }
+
+    // KaTeX auto-render
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

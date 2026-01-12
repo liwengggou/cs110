@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 12: Heaps and Heapsort | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --heap-node: #3498db;
+      --heap-node-highlight: #e74c3c;
+      --heap-edge: #95a5a6;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+      --heap-edge: #5a6a7a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Heap Tree Visualization */
+    .heap-tree-container {
+      width: 100%;
+      height: 280px;
+      position: relative;
+    }
+
+    .heap-tree-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .heap-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .heap-node circle {
+      fill: var(--heap-node);
+      stroke: white;
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .heap-node.highlight circle {
+      fill: var(--current-focus);
+      stroke: #fff;
+      stroke-width: 3;
+    }
+
+    .heap-node.comparing circle {
+      fill: var(--comparing);
+    }
+
+    .heap-node.swapping circle {
+      fill: var(--swapping);
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    .heap-node.sorted circle {
+      fill: var(--sorted);
+    }
+
+    .heap-node text {
+      fill: white;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .heap-edge {
+      stroke: var(--heap-edge);
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .heap-edge.highlight {
+      stroke: var(--current-focus);
+      stroke-width: 3;
+    }
+
+    /* Array Visualization */
+    .array-viz {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .array-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .array-value {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--heap-node);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .array-cell.highlight .array-value {
+      background: var(--current-focus);
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+    }
+
+    .array-cell.comparing .array-value {
+      background: var(--comparing);
+    }
+
+    .array-cell.swapping .array-value {
+      background: var(--swapping);
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    .array-cell.sorted .array-value {
+      background: var(--sorted);
+    }
+
+    .array-cell.heap-boundary .array-value {
+      border-right: 3px solid var(--error);
+    }
+
+    .array-index {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    .array-role {
+      font-size: 0.65rem;
+      color: var(--purple);
+      margin-top: 0.25rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Index Calculator */
+    .index-calculator {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+    }
+
+    .calc-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .calc-input-group label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .calc-input-group input {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .calc-result {
+      padding: 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      text-align: center;
+    }
+
+    .calc-result .label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .calc-result .value {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .complexity-table th,
+    .complexity-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .complexity-table th {
+      background: var(--code-bg);
+      font-weight: 600;
+    }
+
+    .complexity-table code {
+      color: var(--accent);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+      margin-right: 1rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Code Panel */
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Split View */
+    .dual-viz {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .dual-viz > div {
+      min-width: 0;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Formula Display */
+    .formula-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1rem 0;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+    }
+
+    .formula-row {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .formula-item {
+      text-align: center;
+    }
+
+    .formula-item .label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .formula-item .formula {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    @keyframes highlight-flash {
+      0% { background: rgba(241, 196, 15, 0.5); }
+      100% { background: rgba(241, 196, 15, 0.2); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .dual-viz {
+        grid-template-columns: 1fr;
+      }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .array-value { width: 36px; height: 36px; font-size: 0.875rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">&#127769;</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 12</span>
+      <h1>Heaps and Heapsort</h1>
+      <p class="subtitle">Master the heap data structure and its application to efficient sorting</p>
+      <div class="meta">
+        <span>&#9201; ~35 minutes</span>
+        <span>&#128218; Prerequisites: Trees, Arrays, O-notation</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Define</strong> the heap data structure and max-heap property</li>
+        <li><strong>Explain</strong> how a complete binary tree maps to an array</li>
+        <li><strong>Calculate</strong> parent, left-child, and right-child indices</li>
+        <li><strong>Trace</strong> the max-heapify (heapify-down) operation step by step</li>
+        <li><strong>Construct</strong> a heap from an unsorted array using build-heap</li>
+        <li><strong>Execute</strong> the heapsort algorithm and analyze its O(n log n) complexity</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: What is a Heap? -->
+    <h2>1. What is a Heap?</h2>
+    <p>A <strong>heap</strong> is a specialized tree-based data structure that satisfies the <strong>heap property</strong>. In this session, we focus on the <strong>max-heap</strong>, where every parent node is greater than or equal to its children.</p>
+
+    <div class="key-insight">
+      <strong>Key Properties of a Max-Heap:</strong>
+      <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+        <li><strong>Complete Binary Tree:</strong> All levels are fully filled except possibly the last, which is filled left to right</li>
+        <li><strong>Max-Heap Property:</strong> For every node i, the value of i is greater than or equal to the values of its children</li>
+        <li><strong>Root is Maximum:</strong> The largest element is always at the root</li>
+      </ul>
+    </div>
+
+    <div class="viz-container">
+      <h3>Interactive Heap Visualizer</h3>
+      <div class="step-description" id="heap-explorer-desc">
+        Click on any node to see its parent and children. The tree view and array view are synchronized.
+      </div>
+
+      <div class="viz-canvas">
+        <div class="heap-tree-container">
+          <svg class="heap-tree-svg" id="heap-explorer-tree"></svg>
+        </div>
+      </div>
+
+      <div style="padding: 0.5rem 0;">
+        <p style="text-align: center; color: var(--text-secondary); font-size: 0.875rem; margin: 0;">Array Representation (1-indexed for clarity)</p>
+      </div>
+
+      <div class="array-viz" id="heap-explorer-array">
+        <!-- Generated by JavaScript -->
+      </div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Click on different nodes to see how tree positions correspond to array indices. Notice how the parent of node i is at position i/2, and children are at 2i and 2i+1.
+      </div>
+    </div>
+
+    <!-- Section 2: Array Representation -->
+    <h2>2. Heap as an Array</h2>
+    <p>The beauty of a heap is that we can represent it efficiently using a simple array, without needing explicit pointers for parent-child relationships.</p>
+
+    <div class="formula-box">
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">For 1-indexed arrays:</p>
+      <div class="formula-row">
+        <div class="formula-item">
+          <div class="label">Parent of node i</div>
+          <div class="formula">parent(i) = i / 2</div>
+        </div>
+        <div class="formula-item">
+          <div class="label">Left child of node i</div>
+          <div class="formula">left(i) = 2 * i</div>
+        </div>
+        <div class="formula-item">
+          <div class="label">Right child of node i</div>
+          <div class="formula">right(i) = 2 * i + 1</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Index Relationship Calculator</h3>
+      <div class="step-description">
+        Enter a node index to calculate its parent and children positions
+      </div>
+
+      <div class="index-calculator">
+        <div class="calc-input-group">
+          <label for="calc-index">Node Index (1-indexed):</label>
+          <input type="number" id="calc-index" value="3" min="1" max="15">
+        </div>
+        <div class="calc-result">
+          <div class="label">Parent Index</div>
+          <div class="value" id="calc-parent">1</div>
+        </div>
+        <div class="calc-result">
+          <div class="label">Left Child Index</div>
+          <div class="value" id="calc-left">6</div>
+        </div>
+        <div class="calc-result">
+          <div class="label">Right Child Index</div>
+          <div class="value" id="calc-right">7</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1rem; padding: 1rem; background: var(--code-bg); border-radius: var(--border-radius);">
+        <p style="font-family: var(--font-mono); font-size: 0.9rem; margin: 0;" id="calc-formula-display">
+          parent(3) = 3 / 2 = 1 | left(3) = 2 * 3 = 6 | right(3) = 2 * 3 + 1 = 7
+        </p>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Confusing 0-indexed and 1-indexed arrays. In 0-indexed arrays, the formulas become: parent(i) = (i-1)/2, left(i) = 2i+1, right(i) = 2i+2. Most textbooks use 1-indexed for clarity.
+    </div>
+
+    <!-- Section 3: Max-Heapify -->
+    <h2>3. Max-Heapify (Heapify-Down)</h2>
+    <p>The <strong>max-heapify</strong> operation maintains the heap property. Given a node where the subtrees are already heaps, it "sinks" the node down if it violates the max-heap property.</p>
+
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="language-badge">Python</span>
+      </div>
+      <div class="code-content">
+        <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">max_heapify</span>(A, i, heap_size):</span></div>
+        <div class="code-line"><span class="line-number">2</span><span class="line-content">    left = <span class="number">2</span> * i</span></div>
+        <div class="code-line"><span class="line-number">3</span><span class="line-content">    right = <span class="number">2</span> * i + <span class="number">1</span></span></div>
+        <div class="code-line"><span class="line-number">4</span><span class="line-content">    largest = i</span></div>
+        <div class="code-line"><span class="line-number">5</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">6</span><span class="line-content">    <span class="keyword">if</span> left <= heap_size <span class="keyword">and</span> A[left] > A[largest]:</span></div>
+        <div class="code-line"><span class="line-number">7</span><span class="line-content">        largest = left</span></div>
+        <div class="code-line"><span class="line-number">8</span><span class="line-content">    <span class="keyword">if</span> right <= heap_size <span class="keyword">and</span> A[right] > A[largest]:</span></div>
+        <div class="code-line"><span class="line-number">9</span><span class="line-content">        largest = right</span></div>
+        <div class="code-line"><span class="line-number">10</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">11</span><span class="line-content">    <span class="keyword">if</span> largest != i:</span></div>
+        <div class="code-line"><span class="line-number">12</span><span class="line-content">        A[i], A[largest] = A[largest], A[i]  <span class="comment"># swap</span></span></div>
+        <div class="code-line"><span class="line-number">13</span><span class="line-content">        max_heapify(A, largest, heap_size)   <span class="comment"># recurse</span></span></div>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Max-Heapify Step-by-Step Animator</h3>
+      <div class="step-description" id="heapify-desc">
+        Watch how max-heapify fixes the heap property at node 1 (value 4)
+      </div>
+
+      <div class="viz-canvas">
+        <div class="heap-tree-container">
+          <svg class="heap-tree-svg" id="heapify-tree"></svg>
+        </div>
+      </div>
+
+      <div class="array-viz" id="heapify-array">
+        <!-- Generated by JavaScript -->
+      </div>
+
+      <div class="step-controls">
+        <button id="heapify-reset" title="Reset">&#9198;</button>
+        <button id="heapify-back" title="Step Back">&#9194;</button>
+        <button id="heapify-play" title="Play/Pause">&#9654;&#65039;</button>
+        <button id="heapify-forward" title="Step Forward">&#9193;</button>
+        <span class="step-indicator" id="heapify-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="heapify-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="heapify-progress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="keyboard-hints">
+        <span class="keyboard-hint"><span class="key">Space</span> Play/Pause</span>
+        <span class="keyboard-hint"><span class="key">&#8592;</span> Step Back</span>
+        <span class="keyboard-hint"><span class="key">&#8594;</span> Step Forward</span>
+        <span class="keyboard-hint"><span class="key">R</span> Reset</span>
+      </div>
+    </div>
+
+    <!-- Section 4: Build-Heap -->
+    <h2>4. Build-Heap: Bottom-Up Construction</h2>
+    <p>To convert an arbitrary array into a max-heap, we apply max-heapify to all non-leaf nodes, starting from the bottom and working up. This is more efficient than inserting elements one by one.</p>
+
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="language-badge">Python</span>
+      </div>
+      <div class="code-content">
+        <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">build_max_heap</span>(A):</span></div>
+        <div class="code-line"><span class="line-number">2</span><span class="line-content">    heap_size = <span class="function">len</span>(A) - <span class="number">1</span>  <span class="comment"># 1-indexed, so actual elements</span></span></div>
+        <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="comment"># Start from last non-leaf node</span></span></div>
+        <div class="code-line"><span class="line-number">4</span><span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(heap_size // <span class="number">2</span>, <span class="number">0</span>, -<span class="number">1</span>):</span></div>
+        <div class="code-line"><span class="line-number">5</span><span class="line-content">        max_heapify(A, i, heap_size)</span></div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Why Bottom-Up?</strong> By starting from the leaves and moving up, we ensure that when we call max-heapify on any node, its children are already valid heaps. This satisfies the precondition for max-heapify.
+    </div>
+
+    <div class="viz-container">
+      <h3>Build-Heap Animator</h3>
+      <div class="step-description" id="buildheap-desc">
+        Watch how an unsorted array is transformed into a max-heap bottom-up
+      </div>
+
+      <div class="viz-canvas">
+        <div class="heap-tree-container">
+          <svg class="heap-tree-svg" id="buildheap-tree"></svg>
+        </div>
+      </div>
+
+      <div class="array-viz" id="buildheap-array">
+        <!-- Generated by JavaScript -->
+      </div>
+
+      <div class="step-controls">
+        <button id="buildheap-reset" title="Reset">&#9198;</button>
+        <button id="buildheap-back" title="Step Back">&#9194;</button>
+        <button id="buildheap-play" title="Play/Pause">&#9654;&#65039;</button>
+        <button id="buildheap-forward" title="Step Forward">&#9193;</button>
+        <span class="step-indicator" id="buildheap-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="buildheap-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="buildheap-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h4>Build-Heap Time Complexity</h4>
+      <p>Although it might seem like O(n log n), build-heap actually runs in <strong>O(n)</strong> time. This is because:</p>
+      <ul style="padding-left: 1.5rem; margin-top: 0.5rem;">
+        <li>Most nodes are near the bottom of the tree</li>
+        <li>Nodes near the bottom have short heights to heapify down</li>
+        <li>The sum of all heights is O(n), not O(n log n)</li>
+      </ul>
+    </div>
+
+    <!-- Section 5: Heapsort -->
+    <h2>5. Heapsort Algorithm</h2>
+    <p>Heapsort uses the heap structure to sort an array in-place. The algorithm repeatedly extracts the maximum element and places it at the end of the array.</p>
+
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="language-badge">Python</span>
+      </div>
+      <div class="code-content">
+        <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">heapsort</span>(A):</span></div>
+        <div class="code-line"><span class="line-number">2</span><span class="line-content">    build_max_heap(A)</span></div>
+        <div class="code-line"><span class="line-number">3</span><span class="line-content">    heap_size = <span class="function">len</span>(A) - <span class="number">1</span></span></div>
+        <div class="code-line"><span class="line-number">4</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">5</span><span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(heap_size, <span class="number">1</span>, -<span class="number">1</span>):</span></div>
+        <div class="code-line"><span class="line-number">6</span><span class="line-content">        A[<span class="number">1</span>], A[i] = A[i], A[<span class="number">1</span>]  <span class="comment"># swap max to end</span></span></div>
+        <div class="code-line"><span class="line-number">7</span><span class="line-content">        heap_size -= <span class="number">1</span>            <span class="comment"># shrink heap</span></span></div>
+        <div class="code-line"><span class="line-number">8</span><span class="line-content">        max_heapify(A, <span class="number">1</span>, heap_size)  <span class="comment"># restore heap</span></span></div>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Heapsort Animator</h3>
+      <div class="step-description" id="heapsort-desc">
+        Watch heapsort extract the maximum and rebuild the heap repeatedly
+      </div>
+
+      <div class="viz-canvas">
+        <div class="heap-tree-container">
+          <svg class="heap-tree-svg" id="heapsort-tree"></svg>
+        </div>
+      </div>
+
+      <div class="array-viz" id="heapsort-array">
+        <!-- Generated by JavaScript -->
+      </div>
+
+      <div style="text-align: center; padding: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+        <span style="display: inline-block; width: 12px; height: 12px; background: var(--heap-node); border-radius: 2px; margin-right: 4px;"></span> Heap Region
+        <span style="display: inline-block; width: 12px; height: 12px; background: var(--sorted); border-radius: 2px; margin-left: 1rem; margin-right: 4px;"></span> Sorted Region
+      </div>
+
+      <div class="step-controls">
+        <button id="heapsort-reset" title="Reset">&#9198;</button>
+        <button id="heapsort-back" title="Step Back">&#9194;</button>
+        <button id="heapsort-play" title="Play/Pause">&#9654;&#65039;</button>
+        <button id="heapsort-forward" title="Step Forward">&#9193;</button>
+        <span class="step-indicator" id="heapsort-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="heapsort-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="heapsort-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Complexity Analysis -->
+    <h2>6. Time Complexity Analysis</h2>
+
+    <div class="complexity-box">
+      <h4>Heapsort Complexity</h4>
+      <table class="complexity-table">
+        <tr>
+          <th>Operation</th>
+          <th>Time Complexity</th>
+          <th>Explanation</th>
+        </tr>
+        <tr>
+          <td>Build-Heap</td>
+          <td><code>O(n)</code></td>
+          <td>Sum of heights is linear</td>
+        </tr>
+        <tr>
+          <td>Max-Heapify</td>
+          <td><code>O(log n)</code></td>
+          <td>Traverses at most tree height</td>
+        </tr>
+        <tr>
+          <td>Extract-Max (n times)</td>
+          <td><code>O(n log n)</code></td>
+          <td>n extractions, each O(log n)</td>
+        </tr>
+        <tr>
+          <td><strong>Total Heapsort</strong></td>
+          <td><code>O(n log n)</code></td>
+          <td>O(n) + O(n log n) = O(n log n)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Advantages of Heapsort:</strong>
+      <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+        <li><strong>In-place:</strong> Only O(1) extra space needed</li>
+        <li><strong>Guaranteed O(n log n):</strong> No worst-case degradation like quicksort</li>
+        <li><strong>No recursion overhead:</strong> Can be implemented iteratively</li>
+      </ul>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Heapsort vs. Other Sorts:</strong> While heapsort guarantees O(n log n), it typically has worse cache performance than quicksort due to non-sequential memory access patterns. In practice, quicksort is often faster for random data.
+    </div>
+
+    <!-- Quiz Section -->
+    <h2>7. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question" data-hints='["In a 1-indexed array, left child is at 2i and right child is at 2i+1", "Calculate: left = 2*3 = 6, right = 2*3+1 = 7"]'>
+        <h4>Question 1: In a 1-indexed heap array, what are the indices of the children of node at index 3?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">4 and 5</div>
+          <div class="quiz-option" data-index="1">6 and 7</div>
+          <div class="quiz-option" data-index="2">5 and 6</div>
+          <div class="quiz-option" data-index="3">7 and 8</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> For node at index i, left child = 2i = 2(3) = 6, and right child = 2i+1 = 2(3)+1 = 7.
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Think about what property a max-heap must satisfy", "The parent must be greater than or equal to both children"]'>
+        <h4>Question 2: Which array represents a valid max-heap (1-indexed, ignore index 0)?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">[_, 5, 10, 8, 3, 2]</div>
+          <div class="quiz-option" data-index="1">[_, 10, 5, 8, 12, 2]</div>
+          <div class="quiz-option" data-index="2">[_, 16, 14, 10, 8, 7, 9, 3]</div>
+          <div class="quiz-option" data-index="3">[_, 20, 15, 18, 10, 8, 25]</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> [_, 16, 14, 10, 8, 7, 9, 3] is a valid max-heap. 16 > 14 and 10; 14 > 8 and 7; 10 > 9 and 3. Every parent is greater than its children.
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Build-heap processes nodes from bottom to top", "Only non-leaf nodes need to be heapified, and we start from the last one"]'>
+        <h4>Question 3: In build-heap for an array of size n, which node do we process first?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Node at index 1 (the root)</div>
+          <div class="quiz-option" data-index="1">Node at index n/2 (last non-leaf)</div>
+          <div class="quiz-option" data-index="2">Node at index n (last element)</div>
+          <div class="quiz-option" data-index="3">Node at index 2 (first child of root)</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Build-heap starts from the last non-leaf node (index n/2) and works backward to the root. This ensures children are already heaps when we heapify their parent.
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Think about how many times we extract the max element", "Each extraction requires a max-heapify operation"]'>
+        <h4>Question 4: Why is the total time complexity of heapsort O(n log n)?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">Build-heap is O(n log n)</div>
+          <div class="quiz-option" data-index="1">Each heapify is O(n)</div>
+          <div class="quiz-option" data-index="2">We only extract log n elements</div>
+          <div class="quiz-option" data-index="3">We extract n elements, each requiring O(log n) heapify</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Heapsort extracts the max element n-1 times. Each extraction swaps the root with the last heap element and calls max-heapify, which is O(log n). Total: O(n) + O(n log n) = O(n log n).
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Consider what happens to the heap size during heapsort", "The sorted elements accumulate at the end of the array"]'>
+        <h4>Question 5: During heapsort, where do the sorted elements end up?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">At the beginning of the array (ascending from left)</div>
+          <div class="quiz-option" data-index="1">In a separate output array</div>
+          <div class="quiz-option" data-index="2">At the end of the array (ascending from right to left)</div>
+          <div class="quiz-option" data-index="3">Interleaved with unsorted elements</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Each extracted max is swapped to the end and the heap shrinks. The largest elements accumulate at the end, building the sorted array from right to left. This makes heapsort in-place with O(1) extra space.
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <h2>8. Summary</h2>
+    <div class="objectives">
+      <ul>
+        <li>A <strong>heap</strong> is a complete binary tree satisfying the heap property</li>
+        <li>Heaps can be efficiently stored in arrays using index arithmetic</li>
+        <li><strong>Max-heapify</strong> restores the heap property in O(log n) time</li>
+        <li><strong>Build-heap</strong> converts an array to a heap in O(n) time</li>
+        <li><strong>Heapsort</strong> achieves O(n log n) worst-case time with O(1) extra space</li>
+        <li>Heaps are also used for priority queues, graph algorithms, and more</li>
+      </ul>
+    </div>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-11-trees-binary-search-trees.html">&#8592; Session 11: Trees &amp; BSTs</a>
+      <a href="session-13-graph-algorithms.html">Session 13: Graph Algorithms &#8594;</a>
+    </nav>
+  </div>
+
+  <script>
+    // ========================================
+    // Theme Toggle with localStorage
+    // ========================================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerHTML = next === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').innerHTML = savedTheme === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+
+    // ========================================
+    // Heap Visualization Utilities
+    // ========================================
+    class HeapVisualizer {
+      constructor(svgId, arrayId, data) {
+        this.svg = document.getElementById(svgId);
+        this.arrayContainer = document.getElementById(arrayId);
+        this.data = [...data]; // 1-indexed, index 0 is placeholder
+        this.highlights = {};
+        this.sortedIndices = new Set();
+        this.heapSize = this.data.length - 1;
+      }
+
+      getNodePosition(index, totalNodes) {
+        const svgWidth = this.svg.clientWidth || 600;
+        const svgHeight = this.svg.clientHeight || 280;
+        const level = Math.floor(Math.log2(index));
+        const maxLevel = Math.floor(Math.log2(totalNodes));
+        const nodesInLevel = Math.pow(2, level);
+        const posInLevel = index - nodesInLevel;
+
+        const levelHeight = svgHeight / (maxLevel + 2);
+        const y = levelHeight * (level + 1);
+
+        const levelWidth = svgWidth / (nodesInLevel + 1);
+        const x = levelWidth * (posInLevel + 1);
+
+        return { x, y };
+      }
+
+      renderTree() {
+        const n = this.heapSize;
+        if (n < 1) {
+          this.svg.innerHTML = '';
+          return;
+        }
+
+        let html = '';
+        const nodeRadius = 22;
+
+        // Draw edges first (behind nodes)
+        for (let i = 1; i <= n; i++) {
+          const pos = this.getNodePosition(i, n);
+          const left = 2 * i;
+          const right = 2 * i + 1;
+
+          if (left <= n) {
+            const leftPos = this.getNodePosition(left, n);
+            const edgeClass = (this.highlights[i] === 'highlight' && this.highlights[left]) ? 'highlight' : '';
+            html += `<line class="heap-edge ${edgeClass}" x1="${pos.x}" y1="${pos.y}" x2="${leftPos.x}" y2="${leftPos.y}"/>`;
+          }
+          if (right <= n) {
+            const rightPos = this.getNodePosition(right, n);
+            const edgeClass = (this.highlights[i] === 'highlight' && this.highlights[right]) ? 'highlight' : '';
+            html += `<line class="heap-edge ${edgeClass}" x1="${pos.x}" y1="${pos.y}" x2="${rightPos.x}" y2="${rightPos.y}"/>`;
+          }
+        }
+
+        // Draw nodes
+        for (let i = 1; i <= n; i++) {
+          const pos = this.getNodePosition(i, n);
+          const highlightClass = this.highlights[i] || '';
+          const sortedClass = this.sortedIndices.has(i) ? 'sorted' : '';
+          html += `
+            <g class="heap-node ${highlightClass} ${sortedClass}" data-index="${i}">
+              <circle cx="${pos.x}" cy="${pos.y}" r="${nodeRadius}"/>
+              <text x="${pos.x}" y="${pos.y}">${this.data[i]}</text>
+            </g>
+          `;
+        }
+
+        this.svg.innerHTML = html;
+      }
+
+      renderArray(showRoles = false) {
+        let html = '';
+        for (let i = 1; i < this.data.length; i++) {
+          const highlightClass = this.highlights[i] || '';
+          const sortedClass = this.sortedIndices.has(i) ? 'sorted' : '';
+          const boundaryClass = (i === this.heapSize && this.heapSize < this.data.length - 1) ? 'heap-boundary' : '';
+
+          let role = '';
+          if (showRoles && i <= this.heapSize) {
+            if (i === 1) role = 'root';
+            else if (2 * i > this.heapSize) role = 'leaf';
+            else role = 'internal';
+          }
+
+          html += `
+            <div class="array-cell ${highlightClass} ${sortedClass} ${boundaryClass}" data-index="${i}">
+              <div class="array-value">${this.data[i]}</div>
+              <div class="array-index">${i}</div>
+              ${role ? `<div class="array-role">${role}</div>` : ''}
+            </div>
+          `;
+        }
+        this.arrayContainer.innerHTML = html;
+      }
+
+      setHighlight(index, type) {
+        this.highlights[index] = type;
+      }
+
+      clearHighlights() {
+        this.highlights = {};
+      }
+
+      swap(i, j) {
+        [this.data[i], this.data[j]] = [this.data[j], this.data[i]];
+      }
+
+      render(showRoles = false) {
+        this.renderTree();
+        this.renderArray(showRoles);
+      }
+    }
+
+    // ========================================
+    // Heap Explorer (Interactive Click)
+    // ========================================
+    const explorerData = [null, 16, 14, 10, 8, 7, 9, 3, 2, 4, 1];
+    const heapExplorer = new HeapVisualizer('heap-explorer-tree', 'heap-explorer-array', explorerData);
+    heapExplorer.render(true);
+
+    function setupExplorerInteraction() {
+      const svg = document.getElementById('heap-explorer-tree');
+      const arrayContainer = document.getElementById('heap-explorer-array');
+      const desc = document.getElementById('heap-explorer-desc');
+
+      function handleClick(index) {
+        heapExplorer.clearHighlights();
+        heapExplorer.setHighlight(index, 'highlight');
+
+        const parent = Math.floor(index / 2);
+        const left = 2 * index;
+        const right = 2 * index + 1;
+        const n = explorerData.length - 1;
+
+        if (parent >= 1) heapExplorer.setHighlight(parent, 'comparing');
+        if (left <= n) heapExplorer.setHighlight(left, 'comparing');
+        if (right <= n) heapExplorer.setHighlight(right, 'comparing');
+
+        heapExplorer.render(true);
+
+        let descText = `Node ${index} (value ${explorerData[index]}): `;
+        if (parent >= 1) descText += `parent at ${parent} (value ${explorerData[parent]}), `;
+        else descText += `no parent (root), `;
+        if (left <= n) descText += `left child at ${left} (value ${explorerData[left]}), `;
+        else descText += `no left child, `;
+        if (right <= n) descText += `right child at ${right} (value ${explorerData[right]})`;
+        else descText += `no right child`;
+
+        desc.textContent = descText;
+      }
+
+      svg.addEventListener('click', (e) => {
+        const node = e.target.closest('.heap-node');
+        if (node) {
+          handleClick(parseInt(node.dataset.index));
+        }
+      });
+
+      arrayContainer.addEventListener('click', (e) => {
+        const cell = e.target.closest('.array-cell');
+        if (cell) {
+          handleClick(parseInt(cell.dataset.index));
+        }
+      });
+    }
+    setupExplorerInteraction();
+
+    // ========================================
+    // Index Calculator
+    // ========================================
+    const calcIndex = document.getElementById('calc-index');
+    const calcParent = document.getElementById('calc-parent');
+    const calcLeft = document.getElementById('calc-left');
+    const calcRight = document.getElementById('calc-right');
+    const calcFormula = document.getElementById('calc-formula-display');
+
+    function updateCalculator() {
+      const i = parseInt(calcIndex.value) || 1;
+      const parent = Math.floor(i / 2);
+      const left = 2 * i;
+      const right = 2 * i + 1;
+
+      calcParent.textContent = parent >= 1 ? parent : 'none';
+      calcLeft.textContent = left;
+      calcRight.textContent = right;
+
+      calcFormula.textContent = `parent(${i}) = ${i} / 2 = ${parent} | left(${i}) = 2 * ${i} = ${left} | right(${i}) = 2 * ${i} + 1 = ${right}`;
+    }
+
+    calcIndex.addEventListener('input', updateCalculator);
+    updateCalculator();
+
+    // ========================================
+    // Animation Base Class
+    // ========================================
+    class HeapAnimator {
+      constructor(visualizer, descId, progressId, stepIndicatorId, prefix) {
+        this.viz = visualizer;
+        this.desc = document.getElementById(descId);
+        this.progress = document.getElementById(progressId);
+        this.stepIndicator = document.getElementById(stepIndicatorId);
+        this.prefix = prefix;
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.setupControls();
+      }
+
+      setupControls() {
+        document.getElementById(`${this.prefix}-play`).addEventListener('click', () => {
+          this.isPlaying ? this.pause() : this.play();
+        });
+        document.getElementById(`${this.prefix}-reset`).addEventListener('click', () => this.reset());
+        document.getElementById(`${this.prefix}-back`).addEventListener('click', () => this.stepBackward());
+        document.getElementById(`${this.prefix}-forward`).addEventListener('click', () => this.stepForward());
+        document.getElementById(`${this.prefix}-speed`).addEventListener('change', (e) => {
+          this.speed = parseFloat(e.target.value);
+          if (this.isPlaying) {
+            this.pause();
+            this.play();
+          }
+        });
+      }
+
+      generateSteps() {
+        // Override in subclasses
+      }
+
+      applyStep(step) {
+        this.viz.data = [...step.data];
+        this.viz.heapSize = step.heapSize !== undefined ? step.heapSize : this.viz.data.length - 1;
+        this.viz.clearHighlights();
+        if (step.highlights) {
+          for (const [idx, type] of Object.entries(step.highlights)) {
+            this.viz.setHighlight(parseInt(idx), type);
+          }
+        }
+        this.viz.sortedIndices = new Set(step.sorted || []);
+        this.viz.render();
+        this.desc.textContent = step.desc;
+      }
+
+      render() {
+        if (this.steps.length === 0) return;
+        this.applyStep(this.steps[this.currentStep]);
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        this.progress.style.width = `${progress}%`;
+        this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        const btn = document.getElementById(`${this.prefix}-play`);
+        btn.innerHTML = '&#9208;&#65039;';
+        btn.classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.currentStep++;
+            this.render();
+          } else {
+            this.pause();
+          }
+        }, 1000 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        const btn = document.getElementById(`${this.prefix}-play`);
+        btn.innerHTML = '&#9654;&#65039;';
+        btn.classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    // ========================================
+    // Max-Heapify Animator
+    // ========================================
+    class HeapifyAnimator extends HeapAnimator {
+      constructor() {
+        const initialData = [null, 4, 14, 10, 8, 7, 9, 3, 2, 1];
+        const viz = new HeapVisualizer('heapify-tree', 'heapify-array', initialData);
+        super(viz, 'heapify-desc', 'heapify-progress', 'heapify-step-indicator', 'heapify');
+        this.initialData = [...initialData];
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        this.steps = [];
+        let data = [...this.initialData];
+
+        // Initial state
+        this.steps.push({
+          data: [...data],
+          highlights: { 1: 'highlight' },
+          desc: 'Starting max-heapify at node 1 (value 4). This violates the max-heap property.'
+        });
+
+        // Compare with children
+        this.steps.push({
+          data: [...data],
+          highlights: { 1: 'highlight', 2: 'comparing', 3: 'comparing' },
+          desc: 'Compare node 1 (4) with left child (14) and right child (10). Largest is 14 at index 2.'
+        });
+
+        // Swap 1 and 2
+        [data[1], data[2]] = [data[2], data[1]];
+        this.steps.push({
+          data: [...data],
+          highlights: { 1: 'swapping', 2: 'swapping' },
+          desc: 'Swap 4 and 14. Now 14 is at the root.'
+        });
+
+        // After swap, continue at index 2
+        this.steps.push({
+          data: [...data],
+          highlights: { 2: 'highlight' },
+          desc: 'Continue max-heapify at index 2 (now value 4).'
+        });
+
+        // Compare with children at index 2
+        this.steps.push({
+          data: [...data],
+          highlights: { 2: 'highlight', 4: 'comparing', 5: 'comparing' },
+          desc: 'Compare node 2 (4) with left child (8) and right child (7). Largest is 8 at index 4.'
+        });
+
+        // Swap 2 and 4
+        [data[2], data[4]] = [data[4], data[2]];
+        this.steps.push({
+          data: [...data],
+          highlights: { 2: 'swapping', 4: 'swapping' },
+          desc: 'Swap 4 and 8.'
+        });
+
+        // Continue at index 4
+        this.steps.push({
+          data: [...data],
+          highlights: { 4: 'highlight' },
+          desc: 'Continue max-heapify at index 4 (now value 4).'
+        });
+
+        // Compare with children at index 4
+        this.steps.push({
+          data: [...data],
+          highlights: { 4: 'highlight', 8: 'comparing', 9: 'comparing' },
+          desc: 'Compare node 4 (4) with left child (2) and right child (1). Node 4 is largest, no swap needed.'
+        });
+
+        // Done
+        this.steps.push({
+          data: [...data],
+          highlights: {},
+          desc: 'Max-heapify complete! The heap property is now satisfied at node 1 and all descendants.'
+        });
+      }
+    }
+
+    const heapifyAnimator = new HeapifyAnimator();
+
+    // ========================================
+    // Build-Heap Animator
+    // ========================================
+    class BuildHeapAnimator extends HeapAnimator {
+      constructor() {
+        const initialData = [null, 4, 1, 3, 2, 16, 9, 10, 14, 8, 7];
+        const viz = new HeapVisualizer('buildheap-tree', 'buildheap-array', initialData);
+        super(viz, 'buildheap-desc', 'buildheap-progress', 'buildheap-step-indicator', 'buildheap');
+        this.initialData = [...initialData];
+        this.generateSteps();
+        this.render();
+      }
+
+      maxHeapify(data, i, heapSize) {
+        const steps = [];
+        let current = i;
+
+        while (true) {
+          const left = 2 * current;
+          const right = 2 * current + 1;
+          let largest = current;
+
+          if (left <= heapSize && data[left] > data[largest]) {
+            largest = left;
+          }
+          if (right <= heapSize && data[right] > data[largest]) {
+            largest = right;
+          }
+
+          if (largest !== current) {
+            steps.push({
+              type: 'compare',
+              node: current,
+              left: left <= heapSize ? left : null,
+              right: right <= heapSize ? right : null,
+              largest
+            });
+            [data[current], data[largest]] = [data[largest], data[current]];
+            steps.push({
+              type: 'swap',
+              from: current,
+              to: largest,
+              data: [...data]
+            });
+            current = largest;
+          } else {
+            break;
+          }
+        }
+
+        return steps;
+      }
+
+      generateSteps() {
+        this.steps = [];
+        let data = [...this.initialData];
+        const n = data.length - 1;
+
+        this.steps.push({
+          data: [...data],
+          highlights: {},
+          desc: `Starting with unsorted array. We'll heapify from index ${Math.floor(n/2)} down to 1.`
+        });
+
+        for (let i = Math.floor(n / 2); i >= 1; i--) {
+          this.steps.push({
+            data: [...data],
+            highlights: { [i]: 'highlight' },
+            desc: `Calling max-heapify on node ${i} (value ${data[i]})`
+          });
+
+          const heapifySteps = this.maxHeapify(data, i, n);
+
+          for (const step of heapifySteps) {
+            if (step.type === 'compare') {
+              const highlights = { [step.node]: 'highlight' };
+              if (step.left) highlights[step.left] = 'comparing';
+              if (step.right) highlights[step.right] = 'comparing';
+              this.steps.push({
+                data: [...data],
+                highlights,
+                desc: `Comparing node ${step.node} with children. Largest at index ${step.largest}.`
+              });
+            } else if (step.type === 'swap') {
+              data = [...step.data];
+              this.steps.push({
+                data: [...data],
+                highlights: { [step.from]: 'swapping', [step.to]: 'swapping' },
+                desc: `Swapping nodes ${step.from} and ${step.to}.`
+              });
+            }
+          }
+        }
+
+        this.steps.push({
+          data: [...data],
+          highlights: {},
+          desc: 'Build-heap complete! The array is now a valid max-heap.'
+        });
+      }
+    }
+
+    const buildHeapAnimator = new BuildHeapAnimator();
+
+    // ========================================
+    // Heapsort Animator
+    // ========================================
+    class HeapsortAnimator extends HeapAnimator {
+      constructor() {
+        // Start with a valid max-heap
+        const initialData = [null, 16, 14, 10, 8, 7, 9, 3, 2, 4, 1];
+        const viz = new HeapVisualizer('heapsort-tree', 'heapsort-array', initialData);
+        super(viz, 'heapsort-desc', 'heapsort-progress', 'heapsort-step-indicator', 'heapsort');
+        this.initialData = [...initialData];
+        this.generateSteps();
+        this.render();
+      }
+
+      maxHeapify(data, i, heapSize) {
+        const steps = [];
+        let current = i;
+
+        while (true) {
+          const left = 2 * current;
+          const right = 2 * current + 1;
+          let largest = current;
+
+          if (left <= heapSize && data[left] > data[largest]) {
+            largest = left;
+          }
+          if (right <= heapSize && data[right] > data[largest]) {
+            largest = right;
+          }
+
+          if (largest !== current) {
+            steps.push({
+              type: 'compare',
+              node: current,
+              left: left <= heapSize ? left : null,
+              right: right <= heapSize ? right : null,
+              largest,
+              heapSize
+            });
+            [data[current], data[largest]] = [data[largest], data[current]];
+            steps.push({
+              type: 'swap',
+              from: current,
+              to: largest,
+              data: [...data],
+              heapSize
+            });
+            current = largest;
+          } else {
+            break;
+          }
+        }
+
+        return steps;
+      }
+
+      generateSteps() {
+        this.steps = [];
+        let data = [...this.initialData];
+        const n = data.length - 1;
+        let heapSize = n;
+        let sorted = [];
+
+        this.steps.push({
+          data: [...data],
+          highlights: {},
+          heapSize,
+          sorted: [],
+          desc: 'Starting heapsort with a max-heap. The maximum (16) is at the root.'
+        });
+
+        while (heapSize > 1) {
+          // Show we're about to extract max
+          this.steps.push({
+            data: [...data],
+            highlights: { 1: 'highlight', [heapSize]: 'comparing' },
+            heapSize,
+            sorted: [...sorted],
+            desc: `Extract max: swap root (${data[1]}) with last heap element (${data[heapSize]}).`
+          });
+
+          // Swap root with last
+          [data[1], data[heapSize]] = [data[heapSize], data[1]];
+          sorted.unshift(heapSize);
+
+          this.steps.push({
+            data: [...data],
+            highlights: { 1: 'swapping', [heapSize]: 'swapping' },
+            heapSize,
+            sorted: [...sorted],
+            desc: `Swapped. ${data[heapSize]} is now in its final sorted position.`
+          });
+
+          // Shrink heap
+          heapSize--;
+
+          if (heapSize > 0) {
+            this.steps.push({
+              data: [...data],
+              highlights: { 1: 'highlight' },
+              heapSize,
+              sorted: [...sorted],
+              desc: `Heap size reduced to ${heapSize}. Now restore heap property at root.`
+            });
+
+            // Max-heapify from root
+            const heapifySteps = this.maxHeapify(data, 1, heapSize);
+
+            for (const step of heapifySteps) {
+              if (step.type === 'compare') {
+                const highlights = { [step.node]: 'highlight' };
+                if (step.left) highlights[step.left] = 'comparing';
+                if (step.right) highlights[step.right] = 'comparing';
+                this.steps.push({
+                  data: [...data],
+                  highlights,
+                  heapSize: step.heapSize,
+                  sorted: [...sorted],
+                  desc: `Heapify: comparing node ${step.node} with children.`
+                });
+              } else if (step.type === 'swap') {
+                data = [...step.data];
+                this.steps.push({
+                  data: [...data],
+                  highlights: { [step.from]: 'swapping', [step.to]: 'swapping' },
+                  heapSize: step.heapSize,
+                  sorted: [...sorted],
+                  desc: `Swapping ${data[step.to]} and ${data[step.from]}.`
+                });
+              }
+            }
+          }
+        }
+
+        // Final state
+        sorted.unshift(1);
+        this.steps.push({
+          data: [...data],
+          highlights: {},
+          heapSize: 0,
+          sorted: [...sorted],
+          desc: 'Heapsort complete! The array is now sorted in ascending order.'
+        });
+      }
+    }
+
+    const heapsortAnimator = new HeapsortAnimator();
+
+    // ========================================
+    // Quiz Functionality
+    // ========================================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function showHint(btn, hintIndex) {
+      const question = btn.closest('.quiz-question');
+      const hints = JSON.parse(question.dataset.hints);
+      const hintText = question.querySelector('.hint-text');
+
+      if (hintIndex < hints.length) {
+        hintText.textContent = `Hint ${hintIndex + 1}: ${hints[hintIndex]}`;
+        hintText.classList.add('show');
+        btn.textContent = 'Hint shown';
+        btn.disabled = true;
+      }
+    }
+
+    // ========================================
+    // Keyboard Shortcuts
+    // ========================================
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      // Find the visible/focused animator
+      const animators = [heapifyAnimator, buildHeapAnimator, heapsortAnimator];
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          // Toggle play on the first animator for simplicity
+          // In a full implementation, we'd track which is in focus
+          break;
+        case 'ArrowRight':
+          animators.forEach(a => a.stepForward());
+          break;
+        case 'ArrowLeft':
+          animators.forEach(a => a.stepBackward());
+          break;
+        case 'r':
+        case 'R':
+          animators.forEach(a => a.reset());
+          break;
+      }
+    });
+
+    // ========================================
+    // KaTeX auto-render
+    // ========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+
+    // ========================================
+    // Handle window resize for tree layout
+    // ========================================
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        heapExplorer.render(true);
+        heapifyAnimator.render();
+        buildHeapAnimator.render();
+        heapsortAnimator.render();
+      }, 100);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 7: Divide and Conquer—Maximum Subarray Problem | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --divide-color: #E74C3C;
+      --conquer-color: #2ECC71;
+      --combine-color: #3498DB;
+      --left-subarray: #9B59B6;
+      --right-subarray: #E67E22;
+      --crossing-subarray: #1ABC9C;
+      --current-focus: #F1C40F;
+      --max-sum: #27AE60;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* Array Visualization */
+    .array-viz {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .array-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.4s ease;
+    }
+
+    .cell-value {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.4s ease;
+    }
+
+    .cell-value.positive {
+      background: var(--success);
+    }
+
+    .cell-value.negative {
+      background: var(--error);
+    }
+
+    .cell-value.highlight {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+      border: 2px solid var(--current-focus);
+    }
+
+    .cell-value.left-sub {
+      background: var(--left-subarray);
+    }
+
+    .cell-value.right-sub {
+      background: var(--right-subarray);
+    }
+
+    .cell-value.crossing {
+      background: var(--crossing-subarray);
+    }
+
+    .cell-value.max-result {
+      background: var(--max-sum);
+      transform: scale(1.15);
+      box-shadow: 0 0 20px rgba(39, 174, 96, 0.6);
+    }
+
+    .cell-value.dimmed {
+      opacity: 0.3;
+    }
+
+    .index-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Recursion Tree */
+    .tree-container {
+      width: 100%;
+      min-height: 400px;
+      position: relative;
+    }
+
+    .tree-node {
+      position: absolute;
+      background: var(--background-secondary);
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 0.5rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      text-align: center;
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+
+    .tree-node:hover {
+      transform: scale(1.05);
+      z-index: 10;
+    }
+
+    .tree-node.active {
+      border-color: var(--current-focus);
+      background: var(--highlight);
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
+    }
+
+    .tree-node.divide {
+      border-color: var(--divide-color);
+      background: rgba(231, 76, 60, 0.1);
+    }
+
+    .tree-node.conquer {
+      border-color: var(--conquer-color);
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .tree-node.combine {
+      border-color: var(--combine-color);
+      background: rgba(52, 152, 219, 0.1);
+    }
+
+    .tree-line {
+      position: absolute;
+      background: var(--border);
+      height: 2px;
+      transform-origin: left center;
+      transition: all 0.4s ease;
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Info Panels */
+    .info-panel {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .info-card {
+      flex: 1;
+      min-width: 150px;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .info-card .label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-card .value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Paradigm Cards */
+    .paradigm-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .paradigm-card {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      text-align: center;
+      border-left: 4px solid;
+    }
+
+    .paradigm-card.divide {
+      border-color: var(--divide-color);
+    }
+
+    .paradigm-card.conquer {
+      border-color: var(--conquer-color);
+    }
+
+    .paradigm-card.combine {
+      border-color: var(--combine-color);
+    }
+
+    .paradigm-card h4 {
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .paradigm-card p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    /* Master Theorem Calculator */
+    .calculator-container {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .formula-display {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .input-group {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 1rem;
+    }
+
+    .result-box {
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .result-box h4 {
+      margin-bottom: 0.75rem;
+      color: var(--accent);
+    }
+
+    .result-box .complexity {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-box .explanation {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-comparison {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .complexity-item {
+      background: var(--code-bg);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
+
+    .complexity-item .algo-name {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .complexity-item .time {
+      font-family: var(--font-mono);
+      color: var(--accent);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-container {
+      margin-top: 0.75rem;
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: var(--border-radius);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    /* Sum Display */
+    .sum-display {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .sum-item {
+      text-align: center;
+      padding: 0.75rem 1.5rem;
+      background: rgba(0,0,0,0.3);
+      border-radius: var(--border-radius);
+    }
+
+    .sum-item .label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .sum-item .value {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes highlight-flash {
+      0% { background: rgba(241, 196, 15, 0.5); }
+      100% { background: rgba(241, 196, 15, 0.2); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .paradigm-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .cell-value { width: 40px; height: 40px; font-size: 0.875rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">*</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 7</span>
+      <h1>Divide and Conquer: Maximum Subarray</h1>
+      <p class="subtitle">Master recursive problem-solving by splitting, solving, and combining</p>
+      <div class="meta">
+        <span>Time: ~35 minutes</span>
+        <span>Prerequisites: Recursion, Big-O notation</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Understand</strong> the divide and conquer paradigm and its three key steps</li>
+        <li><strong>Apply</strong> divide and conquer to solve the maximum subarray problem</li>
+        <li><strong>Trace</strong> recursive calls and understand problem decomposition</li>
+        <li><strong>Combine</strong> solutions from subproblems effectively</li>
+        <li><strong>Analyze</strong> time complexity using the Master Theorem</li>
+        <li><strong>Compare</strong> O(n log n) divide and conquer with O(n^2) brute force</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: The Divide and Conquer Paradigm -->
+    <h2>1. The Divide and Conquer Paradigm</h2>
+    <p>Divide and conquer is a powerful algorithm design strategy that breaks a problem into smaller subproblems, solves them recursively, and combines their solutions. It's the foundation of many efficient algorithms including merge sort, quicksort, and binary search.</p>
+
+    <div class="paradigm-grid">
+      <div class="paradigm-card divide">
+        <h4>1. Divide</h4>
+        <p>Break the problem into smaller subproblems of the same type</p>
+      </div>
+      <div class="paradigm-card conquer">
+        <h4>2. Conquer</h4>
+        <p>Solve subproblems recursively (or directly if small enough)</p>
+      </div>
+      <div class="paradigm-card combine">
+        <h4>3. Combine</h4>
+        <p>Merge subproblem solutions into the final answer</p>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The power of divide and conquer comes from reducing problem size exponentially. Each division typically halves the problem, leading to O(log n) levels of recursion.
+    </div>
+
+    <!-- Section 2: The Maximum Subarray Problem -->
+    <h2>2. The Maximum Subarray Problem</h2>
+    <p>Given an array of integers (which may include negative numbers), find the contiguous subarray with the largest sum. This classic problem has applications in stock trading (maximum profit), image processing, and genomics.</p>
+
+    <div class="viz-container">
+      <h3>Problem Visualization</h3>
+      <div class="step-description" id="problem-description">
+        Find the contiguous subarray with the maximum sum
+      </div>
+
+      <div class="viz-canvas" id="problem-viz">
+        <div class="array-viz" id="problem-array"></div>
+        <div class="sum-display">
+          <div class="sum-item">
+            <div class="label">Array</div>
+            <div class="value" id="problem-array-text">[-2, 1, -3, 4, -1, 2, 1, -5, 4]</div>
+          </div>
+          <div class="sum-item">
+            <div class="label">Max Subarray</div>
+            <div class="value" id="problem-result">[4, -1, 2, 1] = 6</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="try-this">
+        <strong>Why not just sum all positive numbers?</strong> Because the subarray must be contiguous! The sequence [4, -1, 2, 1] includes -1 to connect 4 with [2, 1].
+      </div>
+    </div>
+
+    <!-- Section 3: Maximum Subarray Algorithm Animation -->
+    <h2>3. Divide and Conquer Solution</h2>
+    <p>The algorithm divides the array at the midpoint and considers three cases: the maximum subarray lies entirely in the left half, entirely in the right half, or crosses the midpoint.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Step-by-Step Maximum Subarray Algorithm</h3>
+          <div class="step-description" id="maxsub-description">
+            Press Play to watch the divide and conquer algorithm in action
+          </div>
+
+          <div class="viz-canvas" id="maxsub-viz">
+            <div class="array-viz" id="maxsub-array"></div>
+            <div class="legend">
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--left-subarray)"></div>
+                <span>Left Subarray</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--right-subarray)"></div>
+                <span>Right Subarray</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--crossing-subarray)"></div>
+                <span>Crossing Subarray</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: var(--max-sum)"></div>
+                <span>Maximum</span>
+              </div>
+            </div>
+            <div class="sum-display" id="maxsub-sums">
+              <div class="sum-item">
+                <div class="label">Left Max</div>
+                <div class="value" id="left-sum">--</div>
+              </div>
+              <div class="sum-item">
+                <div class="label">Right Max</div>
+                <div class="value" id="right-sum">--</div>
+              </div>
+              <div class="sum-item">
+                <div class="label">Crossing Max</div>
+                <div class="value" id="cross-sum">--</div>
+              </div>
+              <div class="sum-item" style="background: rgba(39, 174, 96, 0.3);">
+                <div class="label">Best Sum</div>
+                <div class="value" id="best-sum">--</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-controls">
+            <button id="maxsub-reset" title="Reset">|&lt;</button>
+            <button id="maxsub-back" title="Step Back">&lt;&lt;</button>
+            <button id="maxsub-play" title="Play/Pause">Play</button>
+            <button id="maxsub-forward" title="Step Forward">&gt;&gt;</button>
+            <span class="step-indicator" id="maxsub-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="maxsub-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container" id="maxsub-progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="maxsub-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="keyboard-hints">
+            <span class="keyboard-hint"><span class="key">Space</span> Play/Pause</span>
+            <span class="keyboard-hint"><span class="key">Left</span> Step Back</span>
+            <span class="keyboard-hint"><span class="key">Right</span> Step Forward</span>
+            <span class="keyboard-hint"><span class="key">R</span> Reset</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="maxsub-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">max_crossing</span>(arr, lo, mid, hi):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="comment"># Find max sum ending at mid</span></span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">    left_sum = <span class="number">float</span>(<span class="string">'-inf'</span>)</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    total = <span class="number">0</span></span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(mid, lo-<span class="number">1</span>, -<span class="number">1</span>):</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">        total += arr[i]</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">        left_sum = <span class="function">max</span>(left_sum, total)</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">    <span class="comment"># Find max sum starting at mid+1</span></span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">    right_sum = <span class="number">float</span>(<span class="string">'-inf'</span>)</span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content">    total = <span class="number">0</span></span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(mid+<span class="number">1</span>, hi+<span class="number">1</span>):</span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">        total += arr[i]</span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">        right_sum = <span class="function">max</span>(right_sum, total)</span>
+            </div>
+            <div class="code-line" data-line="15">
+              <span class="line-number">15</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="16">
+              <span class="line-number">16</span>
+              <span class="line-content">    <span class="keyword">return</span> left_sum + right_sum</span>
+            </div>
+            <div class="code-line" data-line="17">
+              <span class="line-number">17</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="18">
+              <span class="line-number">18</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">max_subarray</span>(arr, lo, hi):</span>
+            </div>
+            <div class="code-line" data-line="19">
+              <span class="line-number">19</span>
+              <span class="line-content">    <span class="keyword">if</span> lo == hi:  <span class="comment"># Base case</span></span>
+            </div>
+            <div class="code-line" data-line="20">
+              <span class="line-number">20</span>
+              <span class="line-content">        <span class="keyword">return</span> arr[lo]</span>
+            </div>
+            <div class="code-line" data-line="21">
+              <span class="line-number">21</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="22">
+              <span class="line-number">22</span>
+              <span class="line-content">    mid = (lo + hi) // <span class="number">2</span>  <span class="comment"># Divide</span></span>
+            </div>
+            <div class="code-line" data-line="23">
+              <span class="line-number">23</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="24">
+              <span class="line-number">24</span>
+              <span class="line-content">    <span class="comment"># Conquer</span></span>
+            </div>
+            <div class="code-line" data-line="25">
+              <span class="line-number">25</span>
+              <span class="line-content">    left = <span class="function">max_subarray</span>(arr, lo, mid)</span>
+            </div>
+            <div class="code-line" data-line="26">
+              <span class="line-number">26</span>
+              <span class="line-content">    right = <span class="function">max_subarray</span>(arr, mid+<span class="number">1</span>, hi)</span>
+            </div>
+            <div class="code-line" data-line="27">
+              <span class="line-number">27</span>
+              <span class="line-content">    cross = <span class="function">max_crossing</span>(arr, lo, mid, hi)</span>
+            </div>
+            <div class="code-line" data-line="28">
+              <span class="line-number">28</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="29">
+              <span class="line-number">29</span>
+              <span class="line-content">    <span class="comment"># Combine</span></span>
+            </div>
+            <div class="code-line" data-line="30">
+              <span class="line-number">30</span>
+              <span class="line-content">    <span class="keyword">return</span> <span class="function">max</span>(left, right, cross)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Forgetting to handle the crossing subarray! The maximum subarray might span across the midpoint, which neither the left nor right recursive call would find.
+    </div>
+
+    <!-- Section 4: Recursion Tree Visualization -->
+    <h2>4. Recursion Tree Visualization</h2>
+    <p>Understanding how the problem decomposes helps in analyzing time complexity. Each level of the tree represents a division, with work done at each node.</p>
+
+    <div class="viz-container">
+      <h3>Interactive Recursion Tree</h3>
+      <div class="step-description" id="tree-description">
+        Click nodes to explore the recursion. Watch how the problem divides and solutions combine.
+      </div>
+
+      <div class="viz-canvas" style="min-height: 450px; background: var(--background-secondary);">
+        <div class="tree-container" id="tree-container">
+          <!-- Tree nodes generated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <div class="info-card">
+          <div class="label">Tree Depth</div>
+          <div class="value" id="tree-depth">log n</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Nodes per Level</div>
+          <div class="value" id="nodes-level">2^k</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Work per Level</div>
+          <div class="value" id="work-level">O(n)</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Total Complexity</div>
+          <div class="value" id="total-complexity">O(n log n)</div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="tree-reset">Reset Tree</button>
+        <button id="tree-animate">Animate Full Tree</button>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Each level of the recursion tree does O(n) total work (the crossing subarray computation). With O(log n) levels, the total time complexity is O(n log n).
+    </div>
+
+    <!-- Section 5: Master Theorem Calculator -->
+    <h2>5. Master Theorem</h2>
+    <p>The Master Theorem provides a cookbook for solving recurrences of the form T(n) = aT(n/b) + f(n). It helps us quickly determine the time complexity of divide and conquer algorithms.</p>
+
+    <div class="calculator-container">
+      <h3>Master Theorem Calculator</h3>
+
+      <div class="formula-display" id="formula-display">
+        T(n) = <span id="formula-a">a</span>T(n/<span id="formula-b">b</span>) + <span id="formula-f">f(n)</span>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label for="input-a">a (number of subproblems)</label>
+          <input type="number" id="input-a" value="2" min="1" max="10">
+        </div>
+        <div class="input-group">
+          <label for="input-b">b (division factor)</label>
+          <input type="number" id="input-b" value="2" min="2" max="10">
+        </div>
+        <div class="input-group">
+          <label for="input-f">f(n) exponent k in n^k</label>
+          <input type="number" id="input-f" value="1" min="0" max="5" step="0.5">
+        </div>
+      </div>
+
+      <div class="result-box" id="master-result">
+        <h4>Analysis</h4>
+        <div class="complexity" id="master-complexity">O(n log n)</div>
+        <div class="explanation" id="master-explanation">
+          Comparing log_b(a) = 1 with k = 1: They are equal, so we use Case 2.
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h3>Master Theorem Cases</h3>
+      <div class="complexity-comparison">
+        <div class="complexity-item">
+          <div class="algo-name">Case 1: k &lt; log_b(a)</div>
+          <div class="time">T(n) = O(n^(log_b(a)))</div>
+        </div>
+        <div class="complexity-item">
+          <div class="algo-name">Case 2: k = log_b(a)</div>
+          <div class="time">T(n) = O(n^k log n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="algo-name">Case 3: k &gt; log_b(a)</div>
+          <div class="time">T(n) = O(n^k)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Complexity Comparison -->
+    <h2>6. Why O(n log n) Matters</h2>
+
+    <div class="complexity-box">
+      <h3>Algorithm Comparison</h3>
+      <p>The divide and conquer approach is significantly faster than brute force for large arrays:</p>
+
+      <div class="complexity-comparison">
+        <div class="complexity-item">
+          <div class="algo-name">Brute Force</div>
+          <div class="time">O(n^2)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="algo-name">Divide and Conquer</div>
+          <div class="time">O(n log n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="algo-name">Kadane's Algorithm</div>
+          <div class="time">O(n)</div>
+        </div>
+      </div>
+
+      <div class="try-this" style="margin-top: 1rem;">
+        <strong>For n = 1,000,000:</strong> Brute force needs ~1 trillion operations. Divide and conquer needs ~20 million. That's 50,000x faster!
+      </div>
+    </div>
+
+    <!-- Section 7: Common Mistakes -->
+    <h2>7. Common Mistakes</h2>
+
+    <div class="common-mistake">
+      <strong>Off-by-one in crossing subarray:</strong> The left scan must include the mid index, and the right scan must start at mid+1. Getting this wrong leads to incorrect or missing elements.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Forgetting the base case:</strong> When lo == hi, return arr[lo] directly. Without this, the recursion never terminates.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Integer overflow:</strong> When computing sums of large arrays, the running total can overflow. Use appropriate data types or check for overflow.
+    </div>
+
+    <!-- Section 8: Quick Check Quiz -->
+    <h2>8. Quick Check</h2>
+
+    <div class="quiz-container">
+      <!-- Question 1 -->
+      <div class="quiz-question">
+        <h4>Question 1: What are the three steps of the divide and conquer paradigm?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Split, Recurse, Merge</div>
+          <div class="quiz-option" data-index="1">Break, Solve, Combine</div>
+          <div class="quiz-option" data-index="2">Divide, Conquer, Combine</div>
+          <div class="quiz-option" data-index="3">Partition, Sort, Join</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">The paradigm's name gives away two of the three steps.</div>
+          <button class="hint-btn" onclick="showHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">After conquering the subproblems, what do you do with their solutions?</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The three steps are: (1) Divide the problem into subproblems, (2) Conquer by solving subproblems recursively, (3) Combine the solutions.
+        </div>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="quiz-question">
+        <h4>Question 2: In the maximum subarray problem, why do we need to consider the crossing subarray?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">To handle negative numbers in the array</div>
+          <div class="quiz-option" data-index="1">The maximum subarray might span across the midpoint</div>
+          <div class="quiz-option" data-index="2">To improve the time complexity</div>
+          <div class="quiz-option" data-index="3">It's optional and only used for optimization</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">Think about where the maximum subarray could be located in the full array.</div>
+          <button class="hint-btn" onclick="showHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">The left and right recursive calls only find subarrays entirely within their halves. What if the best answer spans both?</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The maximum subarray has three possible locations: entirely in the left half, entirely in the right half, or crossing the midpoint. We must check all three cases.
+        </div>
+      </div>
+
+      <!-- Question 3 -->
+      <div class="quiz-question">
+        <h4>Question 3: What is the time complexity of the divide and conquer maximum subarray algorithm?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(n^2)</div>
+          <div class="quiz-option" data-index="2">O(n log n)</div>
+          <div class="quiz-option" data-index="3">O(log n)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">The recurrence is T(n) = 2T(n/2) + O(n). What does the Master Theorem tell us?</div>
+          <button class="hint-btn" onclick="showHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">We have log n levels of recursion, and each level does O(n) total work for the crossing subarray computation.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> T(n) = 2T(n/2) + O(n). Using the Master Theorem with a=2, b=2, k=1: log_2(2)=1=k, so Case 2 applies, giving O(n log n).
+        </div>
+      </div>
+
+      <!-- Question 4 -->
+      <div class="quiz-question">
+        <h4>Question 4: For the recurrence T(n) = 4T(n/2) + n^2, what is the time complexity using the Master Theorem?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(n^2)</div>
+          <div class="quiz-option" data-index="1">O(n^2 log n)</div>
+          <div class="quiz-option" data-index="2">O(n^3)</div>
+          <div class="quiz-option" data-index="3">O(n^4)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">Calculate log_b(a) = log_2(4) = 2. Compare this with k = 2 from n^2.</div>
+          <button class="hint-btn" onclick="showHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">When log_b(a) equals k, we use Case 2: T(n) = O(n^k log n).</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> With a=4, b=2, k=2: log_2(4) = 2 = k. This is Case 2, so T(n) = O(n^2 log n).
+        </div>
+      </div>
+
+      <!-- Question 5 -->
+      <div class="quiz-question">
+        <h4>Question 5: What is the base case for the recursive maximum subarray algorithm?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">When lo == hi, return arr[lo]</div>
+          <div class="quiz-option" data-index="1">When the array is empty, return 0</div>
+          <div class="quiz-option" data-index="2">When all elements are negative, return the maximum element</div>
+          <div class="quiz-option" data-index="3">When the sum becomes negative, stop recursion</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">The base case occurs when the subproblem can't be divided further.</div>
+          <button class="hint-btn" onclick="showHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">A single element is the simplest subarray. Its maximum subarray sum is itself.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> When lo equals hi, we have a single element. The maximum subarray of one element is that element itself, so we return arr[lo].
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Dive Deeper -->
+    <h2>9. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Kadane's Algorithm:</strong> A O(n) dynamic programming solution to the maximum subarray problem</li>
+      <li><strong>Strassen's Algorithm:</strong> Divide and conquer for matrix multiplication in O(n^2.81)</li>
+      <li><strong>Closest Pair of Points:</strong> Another classic O(n log n) divide and conquer algorithm</li>
+      <li><a href="https://visualgo.net" target="_blank">VisuAlgo</a> - Interactive algorithm visualizations</li>
+      <li><a href="https://www.geeksforgeeks.org/divide-and-conquer/" target="_blank">GeeksforGeeks: Divide and Conquer</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-06-recursion.html">&lt;- Session 6: Recursion</a>
+      <a href="session-08-sorting.html">Session 8: Sorting Algorithms -&gt;</a>
+    </nav>
+  </div>
+
+  <script>
+    // =====================
+    // Theme Toggle
+    // =====================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'O' : '*';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'O' : '*';
+
+    // =====================
+    // Problem Visualization
+    // =====================
+    const problemArray = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+    const maxSubarrayIndices = [3, 4, 5, 6]; // indices of [4, -1, 2, 1]
+
+    function renderProblemViz() {
+      const container = document.getElementById('problem-array');
+      container.innerHTML = '';
+
+      problemArray.forEach((val, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'array-cell';
+
+        const value = document.createElement('div');
+        value.className = 'cell-value';
+        value.className += val >= 0 ? ' positive' : ' negative';
+        if (maxSubarrayIndices.includes(i)) {
+          value.classList.add('max-result');
+        }
+        value.textContent = val;
+
+        const label = document.createElement('div');
+        label.className = 'index-label';
+        label.textContent = i;
+
+        cell.appendChild(value);
+        cell.appendChild(label);
+        container.appendChild(cell);
+      });
+    }
+
+    renderProblemViz();
+
+    // =====================
+    // Maximum Subarray Animation
+    // =====================
+    class MaxSubarrayAnimator {
+      constructor() {
+        this.array = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.generateSteps();
+        this.render();
+        this.bindEvents();
+      }
+
+      generateSteps() {
+        // Simplified step-by-step animation of the algorithm
+        this.steps = [
+          {
+            desc: 'Starting with array [-2, 1, -3, 4, -1, 2, 1, -5, 4]. We want to find the contiguous subarray with maximum sum.',
+            highlight: [],
+            leftRange: null,
+            rightRange: null,
+            crossRange: null,
+            sums: { left: '--', right: '--', cross: '--', best: '--' },
+            line: 18
+          },
+          {
+            desc: 'DIVIDE: Split the array at midpoint (index 4). Left half: [-2, 1, -3, 4, -1], Right half: [2, 1, -5, 4]',
+            highlight: [4],
+            leftRange: [0, 4],
+            rightRange: [5, 8],
+            crossRange: null,
+            sums: { left: '--', right: '--', cross: '--', best: '--' },
+            line: 22
+          },
+          {
+            desc: 'CONQUER LEFT: Recursively find maximum subarray in left half [0..4]',
+            highlight: [],
+            leftRange: [0, 4],
+            rightRange: null,
+            crossRange: null,
+            sums: { left: '...', right: '--', cross: '--', best: '--' },
+            line: 25
+          },
+          {
+            desc: 'Left half recursion completes. Maximum subarray in left half is [4] = 4',
+            highlight: [3],
+            leftRange: [3, 3],
+            rightRange: null,
+            crossRange: null,
+            sums: { left: '4', right: '--', cross: '--', best: '--' },
+            line: 25
+          },
+          {
+            desc: 'CONQUER RIGHT: Recursively find maximum subarray in right half [5..8]',
+            highlight: [],
+            leftRange: null,
+            rightRange: [5, 8],
+            crossRange: null,
+            sums: { left: '4', right: '...', cross: '--', best: '--' },
+            line: 26
+          },
+          {
+            desc: 'Right half recursion completes. Maximum subarray in right half is [2, 1] = 3',
+            highlight: [5, 6],
+            leftRange: null,
+            rightRange: [5, 6],
+            crossRange: null,
+            sums: { left: '4', right: '3', cross: '--', best: '--' },
+            line: 26
+          },
+          {
+            desc: 'FIND CROSSING: Now find maximum subarray that crosses the midpoint',
+            highlight: [4],
+            leftRange: null,
+            rightRange: null,
+            crossRange: null,
+            sums: { left: '4', right: '3', cross: '...', best: '--' },
+            line: 27
+          },
+          {
+            desc: 'Scan LEFT from mid: Start at index 4 (-1), extend left to maximize sum',
+            highlight: [4],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [4, 4],
+            sums: { left: '4', right: '3', cross: '-1', best: '--' },
+            line: 5
+          },
+          {
+            desc: 'Scan LEFT: Add index 3 (4). Sum = 4 + (-1) = 3. Best so far!',
+            highlight: [3, 4],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [3, 4],
+            sums: { left: '4', right: '3', cross: '3 (partial)', best: '--' },
+            line: 6
+          },
+          {
+            desc: 'Scan LEFT: Add index 2 (-3). Sum = 3 + (-3) = 0. Keep best = 3',
+            highlight: [2, 3, 4],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [3, 4],
+            sums: { left: '4', right: '3', cross: '3 (partial)', best: '--' },
+            line: 7
+          },
+          {
+            desc: 'Left side of crossing: Best sum ending at mid is 3 (from indices 3-4)',
+            highlight: [3, 4],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [3, 4],
+            sums: { left: '4', right: '3', cross: '3+?', best: '--' },
+            line: 7
+          },
+          {
+            desc: 'Scan RIGHT from mid+1: Start at index 5 (2)',
+            highlight: [5],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [3, 5],
+            sums: { left: '4', right: '3', cross: '3+2', best: '--' },
+            line: 12
+          },
+          {
+            desc: 'Scan RIGHT: Add index 6 (1). Sum = 2 + 1 = 3. Best so far!',
+            highlight: [5, 6],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [3, 6],
+            sums: { left: '4', right: '3', cross: '3+3', best: '--' },
+            line: 13
+          },
+          {
+            desc: 'Scan RIGHT: Add index 7 (-5). Sum = 3 + (-5) = -2. Keep best = 3',
+            highlight: [5, 6, 7],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [3, 6],
+            sums: { left: '4', right: '3', cross: '3+3', best: '--' },
+            line: 14
+          },
+          {
+            desc: 'CROSSING COMPLETE: Left part = 3, Right part = 3. Total crossing sum = 6',
+            highlight: [3, 4, 5, 6],
+            leftRange: null,
+            rightRange: null,
+            crossRange: [3, 6],
+            sums: { left: '4', right: '3', cross: '6', best: '--' },
+            line: 16
+          },
+          {
+            desc: 'COMBINE: Compare left (4), right (3), crossing (6). Maximum is 6!',
+            highlight: [3, 4, 5, 6],
+            leftRange: null,
+            rightRange: null,
+            crossRange: null,
+            maxRange: [3, 6],
+            sums: { left: '4', right: '3', cross: '6', best: '6' },
+            line: 30
+          },
+          {
+            desc: 'RESULT: Maximum subarray is [4, -1, 2, 1] with sum = 6',
+            highlight: [3, 4, 5, 6],
+            leftRange: null,
+            rightRange: null,
+            crossRange: null,
+            maxRange: [3, 6],
+            sums: { left: '4', right: '3', cross: '6', best: '6' },
+            line: 30
+          }
+        ];
+      }
+
+      render() {
+        const container = document.getElementById('maxsub-array');
+        container.innerHTML = '';
+
+        const step = this.steps[this.currentStep];
+
+        this.array.forEach((val, i) => {
+          const cell = document.createElement('div');
+          cell.className = 'array-cell';
+
+          const value = document.createElement('div');
+          value.className = 'cell-value';
+          value.className += val >= 0 ? ' positive' : ' negative';
+
+          // Apply highlighting based on current step
+          if (step.highlight.includes(i)) {
+            value.classList.add('highlight');
+          }
+
+          if (step.leftRange && i >= step.leftRange[0] && i <= step.leftRange[1]) {
+            value.classList.add('left-sub');
+          } else if (step.rightRange && i >= step.rightRange[0] && i <= step.rightRange[1]) {
+            value.classList.add('right-sub');
+          } else if (step.crossRange && i >= step.crossRange[0] && i <= step.crossRange[1]) {
+            value.classList.add('crossing');
+          } else if (step.maxRange && i >= step.maxRange[0] && i <= step.maxRange[1]) {
+            value.classList.add('max-result');
+          } else if (!step.highlight.includes(i) && (step.leftRange || step.rightRange || step.crossRange || step.maxRange)) {
+            value.classList.add('dimmed');
+          }
+
+          value.textContent = val;
+
+          const label = document.createElement('div');
+          label.className = 'index-label';
+          label.textContent = i;
+
+          cell.appendChild(value);
+          cell.appendChild(label);
+          container.appendChild(cell);
+        });
+
+        // Update sums display
+        document.getElementById('left-sum').textContent = step.sums.left;
+        document.getElementById('right-sum').textContent = step.sums.right;
+        document.getElementById('cross-sum').textContent = step.sums.cross;
+        document.getElementById('best-sum').textContent = step.sums.best;
+
+        // Update description
+        document.getElementById('maxsub-description').textContent = step.desc;
+
+        // Update code highlighting
+        document.querySelectorAll('#maxsub-code .code-line').forEach(line => {
+          line.classList.remove('highlighted');
+          if (parseInt(line.dataset.line) === step.line) {
+            line.classList.add('highlighted');
+          }
+        });
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        document.getElementById('maxsub-progress').style.width = `${progress}%`;
+        document.getElementById('maxsub-step-indicator').textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('maxsub-play').textContent = 'Pause';
+        document.getElementById('maxsub-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1500 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('maxsub-play').textContent = 'Play';
+        document.getElementById('maxsub-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+
+      bindEvents() {
+        document.getElementById('maxsub-play').addEventListener('click', () => {
+          this.isPlaying ? this.pause() : this.play();
+        });
+        document.getElementById('maxsub-reset').addEventListener('click', () => this.reset());
+        document.getElementById('maxsub-back').addEventListener('click', () => this.stepBackward());
+        document.getElementById('maxsub-forward').addEventListener('click', () => this.stepForward());
+        document.getElementById('maxsub-speed').addEventListener('change', (e) => {
+          this.setSpeed(parseFloat(e.target.value));
+        });
+      }
+    }
+
+    const maxSubAnimator = new MaxSubarrayAnimator();
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          maxSubAnimator.isPlaying ? maxSubAnimator.pause() : maxSubAnimator.play();
+          break;
+        case 'ArrowRight':
+          maxSubAnimator.stepForward();
+          break;
+        case 'ArrowLeft':
+          maxSubAnimator.stepBackward();
+          break;
+        case 'r':
+        case 'R':
+          maxSubAnimator.reset();
+          break;
+      }
+    });
+
+    // =====================
+    // Recursion Tree Visualization
+    // =====================
+    class RecursionTree {
+      constructor() {
+        this.container = document.getElementById('tree-container');
+        this.nodes = [];
+        this.animating = false;
+        this.buildTree();
+        this.render();
+        this.bindEvents();
+      }
+
+      buildTree() {
+        // Build tree for array of size 8
+        // Root: [0..8]
+        // Level 1: [0..4], [5..8]
+        // Level 2: [0..2], [3..4], [5..6], [7..8]
+        // Level 3: [0..1], [2], [3], [4], [5], [6], [7], [8]
+
+        this.nodes = [
+          { id: 0, range: '[0..8]', level: 0, parent: null, x: 50, y: 10, state: 'normal' },
+          { id: 1, range: '[0..3]', level: 1, parent: 0, x: 25, y: 25, state: 'normal' },
+          { id: 2, range: '[4..8]', level: 1, parent: 0, x: 75, y: 25, state: 'normal' },
+          { id: 3, range: '[0..1]', level: 2, parent: 1, x: 12, y: 45, state: 'normal' },
+          { id: 4, range: '[2..3]', level: 2, parent: 1, x: 37, y: 45, state: 'normal' },
+          { id: 5, range: '[4..5]', level: 2, parent: 2, x: 62, y: 45, state: 'normal' },
+          { id: 6, range: '[6..8]', level: 2, parent: 2, x: 87, y: 45, state: 'normal' },
+          { id: 7, range: '[0]', level: 3, parent: 3, x: 6, y: 70, state: 'normal' },
+          { id: 8, range: '[1]', level: 3, parent: 3, x: 18, y: 70, state: 'normal' },
+          { id: 9, range: '[2]', level: 3, parent: 4, x: 31, y: 70, state: 'normal' },
+          { id: 10, range: '[3]', level: 3, parent: 4, x: 43, y: 70, state: 'normal' },
+          { id: 11, range: '[4]', level: 3, parent: 5, x: 56, y: 70, state: 'normal' },
+          { id: 12, range: '[5]', level: 3, parent: 5, x: 68, y: 70, state: 'normal' },
+          { id: 13, range: '[6..7]', level: 3, parent: 6, x: 81, y: 70, state: 'normal' },
+          { id: 14, range: '[8]', level: 3, parent: 6, x: 93, y: 70, state: 'normal' },
+        ];
+      }
+
+      render() {
+        this.container.innerHTML = '';
+
+        // Draw lines first
+        this.nodes.forEach(node => {
+          if (node.parent !== null) {
+            const parent = this.nodes[node.parent];
+            this.drawLine(parent, node);
+          }
+        });
+
+        // Draw nodes
+        this.nodes.forEach(node => {
+          const nodeEl = document.createElement('div');
+          nodeEl.className = 'tree-node';
+          if (node.state === 'divide') nodeEl.classList.add('divide');
+          if (node.state === 'conquer') nodeEl.classList.add('conquer');
+          if (node.state === 'combine') nodeEl.classList.add('combine');
+          if (node.state === 'active') nodeEl.classList.add('active');
+
+          nodeEl.style.left = `${node.x}%`;
+          nodeEl.style.top = `${node.y}%`;
+          nodeEl.style.transform = 'translate(-50%, 0)';
+          nodeEl.textContent = node.range;
+          nodeEl.dataset.id = node.id;
+
+          nodeEl.addEventListener('click', () => this.highlightPath(node.id));
+
+          this.container.appendChild(nodeEl);
+        });
+      }
+
+      drawLine(parent, child) {
+        const containerRect = this.container.getBoundingClientRect();
+        const line = document.createElement('div');
+        line.className = 'tree-line';
+
+        // Calculate positions
+        const x1 = parent.x;
+        const y1 = parent.y + 5;
+        const x2 = child.x;
+        const y2 = child.y;
+
+        const dx = (x2 - x1) * containerRect.width / 100;
+        const dy = (y2 - y1) * containerRect.height / 100;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        line.style.left = `${x1}%`;
+        line.style.top = `${y1}%`;
+        line.style.width = `${length}px`;
+        line.style.transform = `rotate(${angle}deg)`;
+
+        this.container.appendChild(line);
+      }
+
+      highlightPath(nodeId) {
+        // Reset all nodes
+        this.nodes.forEach(n => n.state = 'normal');
+
+        // Highlight path from this node to root
+        let current = nodeId;
+        while (current !== null) {
+          this.nodes[current].state = 'active';
+          current = this.nodes[current].parent;
+        }
+
+        // Update description
+        const node = this.nodes[nodeId];
+        document.getElementById('tree-description').textContent =
+          `Selected: ${node.range} at level ${node.level}. This node processes elements ${node.range} of the array.`;
+
+        this.render();
+      }
+
+      async animateFullTree() {
+        if (this.animating) return;
+        this.animating = true;
+
+        // Reset
+        this.nodes.forEach(n => n.state = 'normal');
+        this.render();
+
+        // Animate in order: divide phase, then conquer phase
+        const animationOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+
+        for (let i = 0; i < animationOrder.length; i++) {
+          const idx = animationOrder[i];
+          this.nodes[idx].state = 'divide';
+          document.getElementById('tree-description').textContent =
+            `DIVIDE: Breaking down ${this.nodes[idx].range}`;
+          this.render();
+          await this.sleep(300);
+        }
+
+        // Conquer phase (bottom up)
+        const conquerOrder = [7, 8, 9, 10, 11, 12, 13, 14, 3, 4, 5, 6, 1, 2, 0];
+
+        for (let i = 0; i < conquerOrder.length; i++) {
+          const idx = conquerOrder[i];
+          this.nodes[idx].state = 'conquer';
+          document.getElementById('tree-description').textContent =
+            `CONQUER: Solving ${this.nodes[idx].range}`;
+          this.render();
+          await this.sleep(300);
+        }
+
+        // Combine phase
+        const combineOrder = [3, 4, 5, 6, 1, 2, 0];
+
+        for (let i = 0; i < combineOrder.length; i++) {
+          const idx = combineOrder[i];
+          this.nodes[idx].state = 'combine';
+          document.getElementById('tree-description').textContent =
+            `COMBINE: Merging solutions for ${this.nodes[idx].range}`;
+          this.render();
+          await this.sleep(400);
+        }
+
+        document.getElementById('tree-description').textContent =
+          'Complete! Click any node to explore, or animate again.';
+
+        this.animating = false;
+      }
+
+      reset() {
+        this.nodes.forEach(n => n.state = 'normal');
+        document.getElementById('tree-description').textContent =
+          'Click nodes to explore the recursion. Watch how the problem divides and solutions combine.';
+        this.render();
+      }
+
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      bindEvents() {
+        document.getElementById('tree-reset').addEventListener('click', () => this.reset());
+        document.getElementById('tree-animate').addEventListener('click', () => this.animateFullTree());
+      }
+    }
+
+    const recursionTree = new RecursionTree();
+
+    // =====================
+    // Master Theorem Calculator
+    // =====================
+    function updateMasterTheorem() {
+      const a = parseFloat(document.getElementById('input-a').value) || 2;
+      const b = parseFloat(document.getElementById('input-b').value) || 2;
+      const k = parseFloat(document.getElementById('input-f').value) || 1;
+
+      // Update formula display
+      document.getElementById('formula-a').textContent = a;
+      document.getElementById('formula-b').textContent = b;
+      document.getElementById('formula-f').textContent = k === 0 ? '1' : (k === 1 ? 'n' : `n^${k}`);
+
+      // Calculate log_b(a)
+      const logba = Math.log(a) / Math.log(b);
+
+      let complexity = '';
+      let explanation = '';
+      let caseNum = 0;
+
+      if (Math.abs(k - logba) < 0.01) {
+        // Case 2: k = log_b(a)
+        caseNum = 2;
+        complexity = k === 0 ? 'O(log n)' : `O(n^${k} log n)`;
+        explanation = `log_${b}(${a}) = ${logba.toFixed(2)} equals k = ${k}. Using Case 2.`;
+      } else if (k < logba) {
+        // Case 1: k < log_b(a)
+        caseNum = 1;
+        complexity = `O(n^${logba.toFixed(2)})`;
+        explanation = `k = ${k} < log_${b}(${a}) = ${logba.toFixed(2)}. Using Case 1.`;
+      } else {
+        // Case 3: k > log_b(a)
+        caseNum = 3;
+        complexity = k === 0 ? 'O(1)' : (k === 1 ? 'O(n)' : `O(n^${k})`);
+        explanation = `k = ${k} > log_${b}(${a}) = ${logba.toFixed(2)}. Using Case 3.`;
+      }
+
+      document.getElementById('master-complexity').textContent = complexity;
+      document.getElementById('master-explanation').innerHTML =
+        `<strong>Case ${caseNum}:</strong> ${explanation}<br><br>` +
+        `The recurrence T(n) = ${a}T(n/${b}) + n^${k} has solution <strong>${complexity}</strong>`;
+    }
+
+    document.getElementById('input-a').addEventListener('input', updateMasterTheorem);
+    document.getElementById('input-b').addEventListener('input', updateMasterTheorem);
+    document.getElementById('input-f').addEventListener('input', updateMasterTheorem);
+
+    updateMasterTheorem();
+
+    // =====================
+    // Quiz Functionality
+    // =====================
+    function showHint(btn, hintNum) {
+      const container = btn.closest('.hint-container');
+      const hints = container.querySelectorAll('.hint-text');
+      const buttons = container.querySelectorAll('.hint-btn');
+
+      hints[hintNum].classList.add('show');
+      btn.style.display = 'none';
+
+      // Show next hint button if exists
+      if (hintNum < buttons.length - 1) {
+        buttons[hintNum + 1].style.display = 'inline';
+      }
+    }
+
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    // =====================
+    // KaTeX Auto-render
+    // =====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

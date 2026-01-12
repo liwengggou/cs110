@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 5: Quadratic Sorting Algorithms | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --pivot: #EB5757;
+      --min-marker: #E74C3C;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 280px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* Array Bars */
+    .array-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 6px;
+      min-height: 200px;
+      width: 100%;
+    }
+
+    .array-element {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .array-bar {
+      width: 45px;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 4px;
+    }
+
+    .array-bar .bar-value {
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .array-bar.comparing {
+      background: var(--comparing);
+      box-shadow: 0 0 15px var(--comparing);
+    }
+
+    .array-bar.swapping {
+      background: var(--swapping);
+      animation: pulse 0.4s ease;
+    }
+
+    .array-bar.sorted {
+      background: var(--sorted);
+    }
+
+    .array-bar.current {
+      background: var(--current-focus);
+      box-shadow: 0 0 15px var(--current-focus);
+    }
+
+    .array-bar.min-marker {
+      background: var(--min-marker);
+      box-shadow: 0 0 15px var(--min-marker);
+    }
+
+    .array-bar.key {
+      background: var(--pivot);
+      box-shadow: 0 0 15px var(--pivot);
+    }
+
+    .array-bar.shifting {
+      background: var(--purple);
+    }
+
+    .array-bar.stable-a {
+      background: linear-gradient(180deg, var(--accent) 70%, #ff6b6b 30%);
+    }
+
+    .array-bar.stable-b {
+      background: linear-gradient(180deg, var(--accent) 70%, #4ecdc4 30%);
+    }
+
+    .array-index {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    .pointer-indicator {
+      position: absolute;
+      bottom: -30px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    .pointer-i {
+      background: var(--current-focus);
+      color: #000;
+    }
+
+    .pointer-j {
+      background: var(--comparing);
+      color: white;
+    }
+
+    .pointer-min {
+      background: var(--min-marker);
+      color: white;
+    }
+
+    .pointer-key {
+      background: var(--pivot);
+      color: white;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    @keyframes shift-right {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(51px); }
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Split View */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Code Panel */
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.25);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2rem;
+      text-align: right;
+      padding-right: 0.75rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+      white-space: pre;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .try-this-input {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .try-this-input input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .try-this-input button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .try-this-input button:hover {
+      background: var(--accent-hover);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-box h4 {
+      margin: 0 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .complexity-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+    }
+
+    .complexity-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .complexity-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Mode Tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .mode-tab {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--background);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+    }
+
+    .mode-tab:hover {
+      background: var(--code-bg);
+    }
+
+    .mode-tab.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Comparison View */
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .comparison-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      background: var(--background);
+    }
+
+    .comparison-panel h4 {
+      margin: 0 0 1rem 0;
+      text-align: center;
+      color: var(--accent);
+    }
+
+    .comparison-stats {
+      display: flex;
+      justify-content: space-around;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Stability Demo */
+    .stability-legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+    }
+
+    .legend-color.a { background: linear-gradient(180deg, var(--accent) 70%, #ff6b6b 30%); }
+    .legend-color.b { background: linear-gradient(180deg, var(--accent) 70%, #4ecdc4 30%); }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+
+      .comparison-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .array-bar { width: 35px; }
+      .complexity-grid { grid-template-columns: 1fr; }
+      .mode-tabs { flex-wrap: wrap; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">M</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 5</span>
+      <h1>Quadratic Sorting Algorithms</h1>
+      <p class="subtitle">Master Selection Sort and Insertion Sort through interactive step-by-step visualization</p>
+      <div class="meta">
+        <span>Time: ~30 minutes</span>
+        <span>Prerequisites: Session 1-4 (Python basics, asymptotic analysis)</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Trace</strong> selection sort and insertion sort step by step</li>
+        <li><strong>Analyze</strong> why both algorithms have O(n^2) time complexity</li>
+        <li><strong>Compare</strong> the behavior, stability, and use cases of each algorithm</li>
+        <li><strong>Identify</strong> when insertion sort outperforms selection sort</li>
+        <li><strong>Implement</strong> both algorithms correctly in Python</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Selection Sort -->
+    <h2>1. Selection Sort</h2>
+    <p>Selection sort works by repeatedly finding the minimum element from the unsorted portion and moving it to the beginning. It divides the array into a sorted (left) and unsorted (right) region.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Selection sort always makes exactly n-1 swaps, regardless of the input. It's the algorithm of choice when writes/swaps are expensive.
+    </div>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Selection Sort Animator</h3>
+          <div class="step-description" id="selection-description">
+            Press Play to watch selection sort in action
+          </div>
+
+          <div class="viz-canvas" id="selection-viz">
+            <div class="array-container" id="selection-array"></div>
+          </div>
+
+          <div class="step-controls">
+            <button id="selection-reset" title="Reset">|&lt;</button>
+            <button id="selection-back" title="Step Back">&lt;&lt;</button>
+            <button id="selection-play" title="Play/Pause">Play</button>
+            <button id="selection-forward" title="Step Forward">&gt;&gt;</button>
+            <span class="step-indicator" id="selection-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="selection-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container" id="selection-progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="selection-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="keyboard-hints">
+            <span class="keyboard-hint"><span class="key">Space</span> Play/Pause</span>
+            <span class="keyboard-hint"><span class="key">Left</span> Step Back</span>
+            <span class="keyboard-hint"><span class="key">Right</span> Step Forward</span>
+            <span class="keyboard-hint"><span class="key">R</span> Reset</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="selection-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">selection_sort</span>(arr):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    n = <span class="function">len</span>(arr)</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n - <span class="number">1</span>):</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">        min_idx = i</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(i + <span class="number">1</span>, n):</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">            <span class="keyword">if</span> arr[j] < arr[min_idx]:</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">                min_idx = j</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">        arr[i], arr[min_idx] = arr[min_idx], arr[i]</span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">    <span class="keyword">return</span> arr</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Variables</h4>
+          <div class="variable-list" id="selection-variables">
+            <div class="variable-item">
+              <span class="variable-name">i</span>
+              <span class="variable-value" id="sel-var-i">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">j</span>
+              <span class="variable-value" id="sel-var-j">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">min_idx</span>
+              <span class="variable-value" id="sel-var-min">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">comparisons</span>
+              <span class="variable-value" id="sel-var-comp">0</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">swaps</span>
+              <span class="variable-value" id="sel-var-swaps">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h4>Complexity Analysis</h4>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-label">Best Case</div>
+          <div class="complexity-value">O(n^2)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Average Case</div>
+          <div class="complexity-value">O(n^2)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Worst Case</div>
+          <div class="complexity-value">O(n^2)</div>
+        </div>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+        <strong>Space Complexity:</strong> O(1) - Selection sort is in-place, using only a constant amount of extra memory.
+      </p>
+    </div>
+
+    <!-- Section 2: Insertion Sort -->
+    <h2>2. Insertion Sort</h2>
+    <p>Insertion sort builds the sorted array one element at a time. It picks each element and inserts it into its correct position among the already-sorted elements by shifting larger elements to the right.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Insertion sort is adaptive - it runs in O(n) time on nearly-sorted data. It's also stable, preserving the relative order of equal elements.
+    </div>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Insertion Sort Animator</h3>
+          <div class="step-description" id="insertion-description">
+            Press Play to watch insertion sort in action
+          </div>
+
+          <div class="viz-canvas" id="insertion-viz">
+            <div class="array-container" id="insertion-array"></div>
+          </div>
+
+          <div class="step-controls">
+            <button id="insertion-reset" title="Reset">|&lt;</button>
+            <button id="insertion-back" title="Step Back">&lt;&lt;</button>
+            <button id="insertion-play" title="Play/Pause">Play</button>
+            <button id="insertion-forward" title="Step Forward">&gt;&gt;</button>
+            <span class="step-indicator" id="insertion-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="insertion-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="insertion-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="insertion-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">insertion_sort</span>(arr):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="function">len</span>(arr)):</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        key = arr[i]</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">        j = i - <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="keyword">while</span> j >= <span class="number">0</span> <span class="keyword">and</span> arr[j] > key:</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">            arr[j + <span class="number">1</span>] = arr[j]</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">            j -= <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">        arr[j + <span class="number">1</span>] = key</span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">    <span class="keyword">return</span> arr</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Variables</h4>
+          <div class="variable-list" id="insertion-variables">
+            <div class="variable-item">
+              <span class="variable-name">i</span>
+              <span class="variable-value" id="ins-var-i">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">j</span>
+              <span class="variable-value" id="ins-var-j">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">key</span>
+              <span class="variable-value" id="ins-var-key">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">comparisons</span>
+              <span class="variable-value" id="ins-var-comp">0</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">shifts</span>
+              <span class="variable-value" id="ins-var-shifts">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h4>Complexity Analysis</h4>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-label">Best Case</div>
+          <div class="complexity-value">O(n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Average Case</div>
+          <div class="complexity-value">O(n^2)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Worst Case</div>
+          <div class="complexity-value">O(n^2)</div>
+        </div>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+        <strong>Space Complexity:</strong> O(1) - Insertion sort is also in-place. <strong>Note:</strong> Best case O(n) occurs when the array is already sorted.
+      </p>
+    </div>
+
+    <!-- Section 3: Side-by-Side Comparison -->
+    <h2>3. Side-by-Side Comparison</h2>
+    <p>Watch both algorithms sort the same array simultaneously. Notice the differences in how they approach the problem.</p>
+
+    <div class="viz-container">
+      <div class="step-controls" style="margin-bottom: 1rem; margin-top: 0;">
+        <button id="compare-reset">|&lt; Reset</button>
+        <button id="compare-play">Play Both</button>
+        <span class="step-indicator" id="compare-status">Ready</span>
+      </div>
+
+      <div class="comparison-container">
+        <div class="comparison-panel">
+          <h4>Selection Sort</h4>
+          <div class="viz-canvas" style="min-height: 200px;">
+            <div class="array-container" id="compare-selection-array"></div>
+          </div>
+          <div class="comparison-stats">
+            <div class="stat-item">
+              <div class="stat-label">Comparisons</div>
+              <div class="stat-value" id="compare-sel-comp">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Swaps</div>
+              <div class="stat-value" id="compare-sel-swaps">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comparison-panel">
+          <h4>Insertion Sort</h4>
+          <div class="viz-canvas" style="min-height: 200px;">
+            <div class="array-container" id="compare-insertion-array"></div>
+          </div>
+          <div class="comparison-stats">
+            <div class="stat-item">
+              <div class="stat-label">Comparisons</div>
+              <div class="stat-value" id="compare-ins-comp">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Shifts</div>
+              <div class="stat-value" id="compare-ins-shifts">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Stability Demonstration -->
+    <h2>4. Stable vs Unstable Sorting</h2>
+    <p>A sorting algorithm is <strong>stable</strong> if it preserves the relative order of equal elements. Let's see how selection sort (unstable) and insertion sort (stable) handle duplicate values.</p>
+
+    <div class="stability-legend">
+      <div class="legend-item">
+        <div class="legend-color a"></div>
+        <span>First occurrence (red stripe)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color b"></div>
+        <span>Second occurrence (teal stripe)</span>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Stability Demo: Sorting [3a, 1, 3b, 2]</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Watch what happens to the two 3's. In a stable sort, 3a should remain before 3b.
+      </p>
+
+      <div class="step-controls" style="margin-bottom: 1rem; margin-top: 0;">
+        <button id="stability-reset">|&lt; Reset</button>
+        <button id="stability-play">Play Demo</button>
+      </div>
+
+      <div class="comparison-container">
+        <div class="comparison-panel">
+          <h4>Selection Sort (Unstable)</h4>
+          <div class="viz-canvas" style="min-height: 180px;">
+            <div class="array-container" id="stability-selection-array"></div>
+          </div>
+          <p id="stability-sel-result" style="text-align: center; margin-top: 0.5rem; font-size: 0.875rem;">-</p>
+        </div>
+
+        <div class="comparison-panel">
+          <h4>Insertion Sort (Stable)</h4>
+          <div class="viz-canvas" style="min-height: 180px;">
+            <div class="array-container" id="stability-insertion-array"></div>
+          </div>
+          <p id="stability-ins-result" style="text-align: center; margin-top: 0.5rem; font-size: 0.875rem;">-</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Selection sort can move equal elements past each other during swaps, making it unstable. Insertion sort only shifts elements, never moving an element past an equal one, preserving stability.
+    </div>
+
+    <!-- Section 5: Custom Input -->
+    <h2>5. Try Your Own Array</h2>
+    <div class="try-this">
+      <strong>Try This:</strong> Enter your own array to see how these algorithms work on different inputs. Try sorted, reverse-sorted, and arrays with duplicates!
+      <div class="try-this-input">
+        <input type="text" id="custom-input" placeholder="Enter numbers separated by commas, e.g., 5, 2, 8, 1, 9" value="64, 34, 25, 12, 22, 11, 90">
+        <button onclick="loadCustomArray()">Load Array</button>
+      </div>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setCustomMode('selection')">Selection Sort</button>
+      <button class="mode-tab" onclick="setCustomMode('insertion')">Insertion Sort</button>
+    </div>
+
+    <div class="viz-container">
+      <div class="step-description" id="custom-description">
+        Load an array and press Play to visualize
+      </div>
+
+      <div class="viz-canvas">
+        <div class="array-container" id="custom-array"></div>
+      </div>
+
+      <div class="step-controls">
+        <button id="custom-reset">|&lt;</button>
+        <button id="custom-back">&lt;&lt;</button>
+        <button id="custom-play">Play</button>
+        <button id="custom-forward">&gt;&gt;</button>
+        <span class="step-indicator" id="custom-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="custom-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="custom-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Common Mistakes -->
+    <h2>6. Common Mistakes</h2>
+
+    <div class="common-mistake">
+      <strong>Off-by-one in outer loop:</strong> In selection sort, the outer loop should go to <code>n-1</code>, not <code>n</code>. When only one element remains, it's already in the correct position.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Forgetting to save the key:</strong> In insertion sort, you must save <code>arr[i]</code> to <code>key</code> before shifting. Otherwise, the value gets overwritten and lost.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Wrong comparison direction:</strong> In insertion sort, compare with <code>arr[j] > key</code>, not <code>arr[j] >= key</code>. Using >= breaks stability by moving equal elements unnecessarily.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Confusing swaps with shifts:</strong> Selection sort swaps two elements directly. Insertion sort shifts elements one position right and then places the key - there's no swap involved.
+    </div>
+
+    <!-- Section 7: Why Do We Care -->
+    <h2>7. Why Do We Care?</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Small datasets:</strong> For arrays with fewer than 10-20 elements, quadratic sorts can outperform complex algorithms due to lower overhead</li>
+      <li><strong>Nearly-sorted data:</strong> Insertion sort runs in O(n) time when data is almost sorted - perfect for maintaining sorted lists</li>
+      <li><strong>Memory constraints:</strong> Both algorithms use O(1) extra space, crucial for embedded systems</li>
+      <li><strong>Building blocks:</strong> Understanding these simple algorithms helps you appreciate and analyze more complex sorts like Merge Sort and Quicksort</li>
+    </ul>
+
+    <!-- Section 8: Quiz -->
+    <h2>8. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question">
+        <h4>Question 1: After 2 passes of selection sort on [5, 3, 1, 4, 2], what is the array?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">[1, 2, 5, 4, 3]</div>
+          <div class="quiz-option" data-index="1">[1, 2, 5, 4, 3] - actually [1, 2, 3, 4, 5]... let me recalculate</div>
+          <div class="quiz-option" data-index="2">[1, 3, 5, 4, 2]</div>
+          <div class="quiz-option" data-index="3">[1, 2, 3, 4, 5]</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Pass 1: Find minimum (1) and swap with position 0. Pass 2: Find minimum in remaining (2) and swap with position 1.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Pass 1: min is 1, swap with index 0 -> [1, 3, 5, 4, 2]. Pass 2: min is 2, swap with index 1 -> [1, 2, 5, 4, 3].
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 2: What is the best-case time complexity of insertion sort?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(n log n)</div>
+          <div class="quiz-option" data-index="2">O(n^2)</div>
+          <div class="quiz-option" data-index="3">O(1)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about what happens when the array is already sorted. How many comparisons does each element need?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> When the array is already sorted, each element only needs one comparison (arr[j] > key is immediately false), giving O(n) total.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 3: Which algorithm is stable?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Selection Sort</div>
+          <div class="quiz-option" data-index="1">Insertion Sort</div>
+          <div class="quiz-option" data-index="2">Both</div>
+          <div class="quiz-option" data-index="3">Neither</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Consider what happens with [3a, 1, 3b]. Selection sort swaps 3a with 1, moving 3a past 3b.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Insertion sort is stable because it only shifts elements right and never moves an element past an equal one. Selection sort's swaps can disrupt the relative order of equal elements.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 4: How many swaps does selection sort make on an array of n elements?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">O(n^2)</div>
+          <div class="quiz-option" data-index="1">O(n log n)</div>
+          <div class="quiz-option" data-index="2">O(n) - exactly n-1 swaps</div>
+          <div class="quiz-option" data-index="3">Depends on the input</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Count how many times the swap operation (line 8) executes - once per outer loop iteration.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Selection sort makes exactly n-1 swaps, one per pass of the outer loop. This is why it's preferred when writes are expensive.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 5: On which input would insertion sort perform worst?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">[1, 2, 3, 4, 5]</div>
+          <div class="quiz-option" data-index="1">[1, 3, 2, 4, 5]</div>
+          <div class="quiz-option" data-index="2">[3, 1, 4, 1, 5]</div>
+          <div class="quiz-option" data-index="3">[5, 4, 3, 2, 1]</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">The worst case is when every element must be shifted the maximum possible distance.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> A reverse-sorted array is worst for insertion sort. Each new element must be compared with and shifted past all previous elements, resulting in 1+2+3+...+(n-1) = O(n^2) comparisons and shifts.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Dive Deeper -->
+    <h2>9. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://visualgo.net/en/sorting" target="_blank">VisuAlgo - Sorting Algorithm Visualizations</a></li>
+      <li><a href="https://www.cs.usfca.edu/~galles/visualization/ComparisonSort.html" target="_blank">USFCA - Comparison Sort Visualization</a></li>
+      <li>Related LeetCode: <a href="https://leetcode.com/problems/sort-an-array/" target="_blank">912. Sort an Array</a></li>
+      <li>Related LeetCode: <a href="https://leetcode.com/problems/sort-colors/" target="_blank">75. Sort Colors</a> (try with O(n) using counting)</li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-04-asymptotic-analysis.html">&larr; Session 4: Asymptotic Analysis</a>
+      <a href="session-06-recursion.html">Session 6: Recursion &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // ==================== THEME TOGGLE ====================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'S' : 'M';
+      localStorage.setItem('theme', next);
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'S' : 'M';
+
+    // ==================== SORTING ANIMATOR BASE CLASS ====================
+    class SortingAnimator {
+      constructor(config) {
+        this.container = document.getElementById(config.containerId);
+        this.codePanel = document.getElementById(config.codeId);
+        this.progressBar = document.getElementById(config.progressId);
+        this.stepIndicator = document.getElementById(config.stepIndicatorId);
+        this.description = document.getElementById(config.descriptionId);
+        this.variableIds = config.variableIds || {};
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+        this.playBtnId = config.playBtnId;
+        this.originalArray = config.array ? [...config.array] : [64, 34, 25, 12, 22, 11, 90];
+      }
+
+      generateSteps() {
+        // Override in subclass
+      }
+
+      renderArray(arrayState, highlights = {}) {
+        this.container.innerHTML = '';
+        const maxVal = Math.max(...arrayState.map(item => typeof item === 'object' ? item.value : item));
+
+        arrayState.forEach((item, idx) => {
+          const value = typeof item === 'object' ? item.value : item;
+          const label = typeof item === 'object' ? item.label : null;
+
+          const element = document.createElement('div');
+          element.className = 'array-element';
+
+          const bar = document.createElement('div');
+          bar.className = 'array-bar';
+          const height = Math.max(30, (value / maxVal) * 150);
+          bar.style.height = `${height}px`;
+
+          // Apply highlights
+          if (highlights.sorted && highlights.sorted.includes(idx)) {
+            bar.classList.add('sorted');
+          }
+          if (highlights.current === idx) {
+            bar.classList.add('current');
+          }
+          if (highlights.comparing && highlights.comparing.includes(idx)) {
+            bar.classList.add('comparing');
+          }
+          if (highlights.minIdx === idx) {
+            bar.classList.add('min-marker');
+          }
+          if (highlights.swapping && highlights.swapping.includes(idx)) {
+            bar.classList.add('swapping');
+          }
+          if (highlights.key === idx) {
+            bar.classList.add('key');
+          }
+          if (highlights.shifting && highlights.shifting.includes(idx)) {
+            bar.classList.add('shifting');
+          }
+
+          // Stability markers
+          if (label === 'a') bar.classList.add('stable-a');
+          if (label === 'b') bar.classList.add('stable-b');
+
+          const barValue = document.createElement('span');
+          barValue.className = 'bar-value';
+          barValue.textContent = value + (label || '');
+          bar.appendChild(barValue);
+
+          // Pointer indicators
+          if (highlights.pointerI === idx) {
+            const pointer = document.createElement('div');
+            pointer.className = 'pointer-indicator pointer-i';
+            pointer.textContent = 'i';
+            bar.appendChild(pointer);
+          }
+          if (highlights.pointerJ === idx) {
+            const pointer = document.createElement('div');
+            pointer.className = 'pointer-indicator pointer-j';
+            pointer.textContent = 'j';
+            pointer.style.left = highlights.pointerI === idx ? '50%' : '50%';
+            bar.appendChild(pointer);
+          }
+          if (highlights.pointerMin === idx && highlights.pointerMin !== highlights.pointerI) {
+            const pointer = document.createElement('div');
+            pointer.className = 'pointer-indicator pointer-min';
+            pointer.textContent = 'min';
+            bar.appendChild(pointer);
+          }
+
+          element.appendChild(bar);
+
+          const indexLabel = document.createElement('div');
+          indexLabel.className = 'array-index';
+          indexLabel.textContent = idx;
+          element.appendChild(indexLabel);
+
+          this.container.appendChild(element);
+        });
+      }
+
+      highlightCode(lineNum) {
+        if (!this.codePanel) return;
+        this.codePanel.querySelectorAll('.code-line').forEach(line => {
+          line.classList.remove('highlighted', 'executed');
+          const ln = parseInt(line.dataset.line);
+          if (ln === lineNum) {
+            line.classList.add('highlighted');
+          } else if (ln < lineNum) {
+            line.classList.add('executed');
+          }
+        });
+      }
+
+      updateVariables(vars) {
+        Object.keys(vars).forEach(key => {
+          const el = document.getElementById(this.variableIds[key]);
+          if (el) {
+            const newVal = vars[key];
+            if (el.textContent !== String(newVal)) {
+              el.textContent = newVal;
+              el.classList.add('changed');
+              setTimeout(() => el.classList.remove('changed'), 400);
+            }
+          }
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        this.renderArray(step.array, step.highlights);
+        this.highlightCode(step.codeLine);
+        if (this.description) {
+          this.description.textContent = step.description;
+        }
+        if (step.variables) {
+          this.updateVariables(step.variables);
+        }
+
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        if (this.progressBar) {
+          this.progressBar.style.width = `${progress}%`;
+        }
+        if (this.stepIndicator) {
+          this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+        }
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        const btn = document.getElementById(this.playBtnId);
+        if (btn) {
+          btn.textContent = 'Pause';
+          btn.classList.add('playing');
+        }
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 800 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        const btn = document.getElementById(this.playBtnId);
+        if (btn) {
+          btn.textContent = 'Play';
+          btn.classList.remove('playing');
+        }
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+
+      setArray(arr) {
+        this.originalArray = [...arr];
+        this.generateSteps();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    // ==================== SELECTION SORT ANIMATOR ====================
+    class SelectionSortAnimator extends SortingAnimator {
+      generateSteps() {
+        this.steps = [];
+        const arr = [...this.originalArray];
+        const n = arr.length;
+        let comparisons = 0;
+        let swaps = 0;
+
+        // Initial state
+        this.steps.push({
+          array: [...arr],
+          codeLine: 1,
+          description: 'Starting selection sort',
+          highlights: {},
+          variables: { i: '-', j: '-', min: '-', comp: 0, swaps: 0 }
+        });
+
+        for (let i = 0; i < n - 1; i++) {
+          let minIdx = i;
+
+          // Start of pass - set min_idx = i
+          this.steps.push({
+            array: [...arr],
+            codeLine: 4,
+            description: `Pass ${i + 1}: Set min_idx = ${i}`,
+            highlights: { sorted: Array.from({length: i}, (_, k) => k), current: i, pointerI: i, pointerMin: i },
+            variables: { i, j: '-', min: minIdx, comp: comparisons, swaps }
+          });
+
+          // Inner loop - find minimum
+          for (let j = i + 1; j < n; j++) {
+            comparisons++;
+
+            // Compare step
+            this.steps.push({
+              array: [...arr],
+              codeLine: 6,
+              description: `Compare arr[${j}]=${arr[j]} with arr[${minIdx}]=${arr[minIdx]}`,
+              highlights: { sorted: Array.from({length: i}, (_, k) => k), comparing: [j, minIdx], pointerI: i, pointerJ: j, pointerMin: minIdx },
+              variables: { i, j, min: minIdx, comp: comparisons, swaps }
+            });
+
+            if (arr[j] < arr[minIdx]) {
+              minIdx = j;
+              this.steps.push({
+                array: [...arr],
+                codeLine: 7,
+                description: `Found new minimum: ${arr[j]} at index ${j}`,
+                highlights: { sorted: Array.from({length: i}, (_, k) => k), minIdx: j, pointerI: i, pointerJ: j, pointerMin: j },
+                variables: { i, j, min: minIdx, comp: comparisons, swaps }
+              });
+            }
+          }
+
+          // Swap step
+          if (minIdx !== i) {
+            this.steps.push({
+              array: [...arr],
+              codeLine: 8,
+              description: `Swap arr[${i}]=${arr[i]} with arr[${minIdx}]=${arr[minIdx]}`,
+              highlights: { sorted: Array.from({length: i}, (_, k) => k), swapping: [i, minIdx] },
+              variables: { i, j: n, min: minIdx, comp: comparisons, swaps }
+            });
+
+            [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+            swaps++;
+          }
+
+          // After swap
+          this.steps.push({
+            array: [...arr],
+            codeLine: 8,
+            description: `Element ${arr[i]} is now in its final position`,
+            highlights: { sorted: Array.from({length: i + 1}, (_, k) => k) },
+            variables: { i, j: n, min: minIdx, comp: comparisons, swaps }
+          });
+        }
+
+        // Complete
+        this.steps.push({
+          array: [...arr],
+          codeLine: 9,
+          description: `Sorting complete! ${comparisons} comparisons, ${swaps} swaps`,
+          highlights: { sorted: Array.from({length: n}, (_, k) => k) },
+          variables: { i: n-1, j: n, min: '-', comp: comparisons, swaps }
+        });
+      }
+    }
+
+    // ==================== INSERTION SORT ANIMATOR ====================
+    class InsertionSortAnimator extends SortingAnimator {
+      generateSteps() {
+        this.steps = [];
+        const arr = [...this.originalArray];
+        const n = arr.length;
+        let comparisons = 0;
+        let shifts = 0;
+
+        // Initial state
+        this.steps.push({
+          array: [...arr],
+          codeLine: 1,
+          description: 'Starting insertion sort (first element is trivially sorted)',
+          highlights: { sorted: [0] },
+          variables: { i: '-', j: '-', key: '-', comp: 0, shifts: 0 }
+        });
+
+        for (let i = 1; i < n; i++) {
+          const key = arr[i];
+          let j = i - 1;
+
+          // Pick the key
+          this.steps.push({
+            array: [...arr],
+            codeLine: 3,
+            description: `Pick key = ${key} at index ${i}`,
+            highlights: { sorted: Array.from({length: i}, (_, k) => k), key: i },
+            variables: { i, j, key, comp: comparisons, shifts }
+          });
+
+          // Compare and shift
+          let shifted = false;
+          while (j >= 0 && arr[j] > key) {
+            comparisons++;
+
+            this.steps.push({
+              array: [...arr],
+              codeLine: 5,
+              description: `Compare arr[${j}]=${arr[j]} > key=${key}? Yes`,
+              highlights: { sorted: Array.from({length: i}, (_, k) => k).filter(x => x <= j), comparing: [j], key: i },
+              variables: { i, j, key, comp: comparisons, shifts }
+            });
+
+            // Shift
+            arr[j + 1] = arr[j];
+            shifts++;
+            shifted = true;
+
+            this.steps.push({
+              array: [...arr],
+              codeLine: 6,
+              description: `Shift ${arr[j]} from index ${j} to ${j + 1}`,
+              highlights: { sorted: Array.from({length: i}, (_, k) => k).filter(x => x < j), shifting: [j + 1] },
+              variables: { i, j, key, comp: comparisons, shifts }
+            });
+
+            j--;
+          }
+
+          // Final comparison (if any element was left to compare)
+          if (j >= 0) {
+            comparisons++;
+            this.steps.push({
+              array: [...arr],
+              codeLine: 5,
+              description: j >= 0 ? `Compare arr[${j}]=${arr[j]} > key=${key}? No, stop shifting` : 'Reached beginning of array',
+              highlights: { sorted: Array.from({length: i}, (_, k) => k).filter(x => x <= j), key: i },
+              variables: { i, j, key, comp: comparisons, shifts }
+            });
+          }
+
+          // Insert key
+          arr[j + 1] = key;
+          this.steps.push({
+            array: [...arr],
+            codeLine: 8,
+            description: `Insert key=${key} at index ${j + 1}`,
+            highlights: { sorted: Array.from({length: i + 1}, (_, k) => k) },
+            variables: { i, j, key, comp: comparisons, shifts }
+          });
+        }
+
+        // Complete
+        this.steps.push({
+          array: [...arr],
+          codeLine: 9,
+          description: `Sorting complete! ${comparisons} comparisons, ${shifts} shifts`,
+          highlights: { sorted: Array.from({length: n}, (_, k) => k) },
+          variables: { i: n, j: '-', key: '-', comp: comparisons, shifts }
+        });
+      }
+    }
+
+    // ==================== INITIALIZE ANIMATORS ====================
+    const defaultArray = [64, 34, 25, 12, 22, 11, 90];
+
+    // Selection Sort Animator
+    const selectionAnimator = new SelectionSortAnimator({
+      containerId: 'selection-array',
+      codeId: 'selection-code',
+      progressId: 'selection-progress',
+      stepIndicatorId: 'selection-step-indicator',
+      descriptionId: 'selection-description',
+      playBtnId: 'selection-play',
+      array: defaultArray,
+      variableIds: {
+        i: 'sel-var-i',
+        j: 'sel-var-j',
+        min: 'sel-var-min',
+        comp: 'sel-var-comp',
+        swaps: 'sel-var-swaps'
+      }
+    });
+    selectionAnimator.generateSteps();
+    selectionAnimator.render();
+
+    // Insertion Sort Animator
+    const insertionAnimator = new InsertionSortAnimator({
+      containerId: 'insertion-array',
+      codeId: 'insertion-code',
+      progressId: 'insertion-progress',
+      stepIndicatorId: 'insertion-step-indicator',
+      descriptionId: 'insertion-description',
+      playBtnId: 'insertion-play',
+      array: defaultArray,
+      variableIds: {
+        i: 'ins-var-i',
+        j: 'ins-var-j',
+        key: 'ins-var-key',
+        comp: 'ins-var-comp',
+        shifts: 'ins-var-shifts'
+      }
+    });
+    insertionAnimator.generateSteps();
+    insertionAnimator.render();
+
+    // ==================== CONTROL BINDINGS ====================
+    function bindControls(animator, prefix) {
+      document.getElementById(`${prefix}-play`).addEventListener('click', () => {
+        animator.isPlaying ? animator.pause() : animator.play();
+      });
+      document.getElementById(`${prefix}-reset`).addEventListener('click', () => animator.reset());
+      document.getElementById(`${prefix}-back`).addEventListener('click', () => animator.stepBackward());
+      document.getElementById(`${prefix}-forward`).addEventListener('click', () => animator.stepForward());
+      document.getElementById(`${prefix}-speed`).addEventListener('change', (e) => {
+        animator.setSpeed(parseFloat(e.target.value));
+      });
+    }
+
+    bindControls(selectionAnimator, 'selection');
+    bindControls(insertionAnimator, 'insertion');
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          selectionAnimator.isPlaying ? selectionAnimator.pause() : selectionAnimator.play();
+          break;
+        case 'ArrowRight':
+          selectionAnimator.stepForward();
+          break;
+        case 'ArrowLeft':
+          selectionAnimator.stepBackward();
+          break;
+        case 'r':
+        case 'R':
+          selectionAnimator.reset();
+          break;
+      }
+    });
+
+    // ==================== COMPARISON VIEW ====================
+    let compareSelArr = [...defaultArray];
+    let compareInsArr = [...defaultArray];
+    let compareInterval = null;
+    let compareStep = 0;
+
+    function renderCompareArray(containerId, arr, highlights = {}) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      const maxVal = Math.max(...arr);
+
+      arr.forEach((value, idx) => {
+        const element = document.createElement('div');
+        element.className = 'array-element';
+
+        const bar = document.createElement('div');
+        bar.className = 'array-bar';
+        bar.style.height = `${Math.max(25, (value / maxVal) * 120)}px`;
+        bar.style.width = '35px';
+
+        if (highlights.sorted && highlights.sorted.includes(idx)) bar.classList.add('sorted');
+        if (highlights.comparing && highlights.comparing.includes(idx)) bar.classList.add('comparing');
+        if (highlights.swapping && highlights.swapping.includes(idx)) bar.classList.add('swapping');
+
+        const barValue = document.createElement('span');
+        barValue.className = 'bar-value';
+        barValue.style.fontSize = '0.75rem';
+        barValue.textContent = value;
+        bar.appendChild(barValue);
+
+        element.appendChild(bar);
+        container.appendChild(element);
+      });
+    }
+
+    function runComparison() {
+      compareSelArr = [...defaultArray];
+      compareInsArr = [...defaultArray];
+      let selComp = 0, selSwaps = 0;
+      let insComp = 0, insShifts = 0;
+      const n = defaultArray.length;
+
+      let selI = 0, selJ = 0, selMinIdx = 0, selPhase = 'findMin';
+      let insI = 1, insJ = 0, insKey = compareInsArr[1], insPhase = 'pick';
+
+      document.getElementById('compare-status').textContent = 'Running...';
+
+      compareInterval = setInterval(() => {
+        // Selection sort step
+        if (selI < n - 1) {
+          if (selPhase === 'findMin') {
+            if (selJ < n) {
+              selComp++;
+              if (compareSelArr[selJ] < compareSelArr[selMinIdx]) {
+                selMinIdx = selJ;
+              }
+              renderCompareArray('compare-selection-array', compareSelArr, {
+                sorted: Array.from({length: selI}, (_, k) => k),
+                comparing: [selJ, selMinIdx]
+              });
+              selJ++;
+            } else {
+              selPhase = 'swap';
+            }
+          } else if (selPhase === 'swap') {
+            if (selMinIdx !== selI) {
+              [compareSelArr[selI], compareSelArr[selMinIdx]] = [compareSelArr[selMinIdx], compareSelArr[selI]];
+              selSwaps++;
+            }
+            renderCompareArray('compare-selection-array', compareSelArr, {
+              sorted: Array.from({length: selI + 1}, (_, k) => k)
+            });
+            selI++;
+            selMinIdx = selI;
+            selJ = selI + 1;
+            selPhase = 'findMin';
+          }
+          document.getElementById('compare-sel-comp').textContent = selComp;
+          document.getElementById('compare-sel-swaps').textContent = selSwaps;
+        } else {
+          renderCompareArray('compare-selection-array', compareSelArr, {
+            sorted: Array.from({length: n}, (_, k) => k)
+          });
+        }
+
+        // Insertion sort step
+        if (insI < n) {
+          if (insPhase === 'pick') {
+            insKey = compareInsArr[insI];
+            insJ = insI - 1;
+            insPhase = 'shift';
+            renderCompareArray('compare-insertion-array', compareInsArr, {
+              sorted: Array.from({length: insI}, (_, k) => k),
+              comparing: [insI]
+            });
+          } else if (insPhase === 'shift') {
+            if (insJ >= 0 && compareInsArr[insJ] > insKey) {
+              insComp++;
+              compareInsArr[insJ + 1] = compareInsArr[insJ];
+              insShifts++;
+              renderCompareArray('compare-insertion-array', compareInsArr, {
+                sorted: Array.from({length: insI}, (_, k) => k).filter(x => x < insJ),
+                comparing: [insJ]
+              });
+              insJ--;
+            } else {
+              compareInsArr[insJ + 1] = insKey;
+              renderCompareArray('compare-insertion-array', compareInsArr, {
+                sorted: Array.from({length: insI + 1}, (_, k) => k)
+              });
+              insI++;
+              insPhase = 'pick';
+            }
+          }
+          document.getElementById('compare-ins-comp').textContent = insComp;
+          document.getElementById('compare-ins-shifts').textContent = insShifts;
+        } else {
+          renderCompareArray('compare-insertion-array', compareInsArr, {
+            sorted: Array.from({length: n}, (_, k) => k)
+          });
+        }
+
+        // Check if both done
+        if (selI >= n - 1 && insI >= n) {
+          clearInterval(compareInterval);
+          document.getElementById('compare-status').textContent = 'Complete!';
+        }
+      }, 300);
+    }
+
+    function resetComparison() {
+      clearInterval(compareInterval);
+      compareSelArr = [...defaultArray];
+      compareInsArr = [...defaultArray];
+      renderCompareArray('compare-selection-array', compareSelArr, {});
+      renderCompareArray('compare-insertion-array', compareInsArr, {});
+      document.getElementById('compare-sel-comp').textContent = '0';
+      document.getElementById('compare-sel-swaps').textContent = '0';
+      document.getElementById('compare-ins-comp').textContent = '0';
+      document.getElementById('compare-ins-shifts').textContent = '0';
+      document.getElementById('compare-status').textContent = 'Ready';
+    }
+
+    document.getElementById('compare-play').addEventListener('click', runComparison);
+    document.getElementById('compare-reset').addEventListener('click', resetComparison);
+    resetComparison();
+
+    // ==================== STABILITY DEMO ====================
+    const stabilityArray = [
+      { value: 3, label: 'a' },
+      { value: 1, label: '' },
+      { value: 3, label: 'b' },
+      { value: 2, label: '' }
+    ];
+
+    function renderStabilityArray(containerId, arr) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      const maxVal = Math.max(...arr.map(x => x.value));
+
+      arr.forEach((item, idx) => {
+        const element = document.createElement('div');
+        element.className = 'array-element';
+
+        const bar = document.createElement('div');
+        bar.className = 'array-bar';
+        bar.style.height = `${Math.max(40, (item.value / maxVal) * 100)}px`;
+        bar.style.width = '50px';
+
+        if (item.label === 'a') bar.classList.add('stable-a');
+        if (item.label === 'b') bar.classList.add('stable-b');
+
+        const barValue = document.createElement('span');
+        barValue.className = 'bar-value';
+        barValue.textContent = item.value + item.label;
+        bar.appendChild(barValue);
+
+        element.appendChild(bar);
+        container.appendChild(element);
+      });
+    }
+
+    function runStabilityDemo() {
+      // Selection sort (unstable)
+      let selArr = stabilityArray.map(x => ({...x}));
+      const n = selArr.length;
+
+      for (let i = 0; i < n - 1; i++) {
+        let minIdx = i;
+        for (let j = i + 1; j < n; j++) {
+          if (selArr[j].value < selArr[minIdx].value) {
+            minIdx = j;
+          }
+        }
+        [selArr[i], selArr[minIdx]] = [selArr[minIdx], selArr[i]];
+      }
+
+      renderStabilityArray('stability-selection-array', selArr);
+      const selOrder = selArr.filter(x => x.value === 3).map(x => x.label).join(', ');
+      const selStable = selOrder === 'a, b';
+      document.getElementById('stability-sel-result').innerHTML =
+        `Order of 3s: [${selOrder}] - <span style="color: ${selStable ? 'var(--success)' : 'var(--error)'}">${selStable ? 'Stable!' : 'Not stable!'}</span>`;
+
+      // Insertion sort (stable)
+      let insArr = stabilityArray.map(x => ({...x}));
+
+      for (let i = 1; i < n; i++) {
+        const key = insArr[i];
+        let j = i - 1;
+        while (j >= 0 && insArr[j].value > key.value) {
+          insArr[j + 1] = insArr[j];
+          j--;
+        }
+        insArr[j + 1] = key;
+      }
+
+      renderStabilityArray('stability-insertion-array', insArr);
+      const insOrder = insArr.filter(x => x.value === 3).map(x => x.label).join(', ');
+      const insStable = insOrder === 'a, b';
+      document.getElementById('stability-ins-result').innerHTML =
+        `Order of 3s: [${insOrder}] - <span style="color: ${insStable ? 'var(--success)' : 'var(--error)'}">${insStable ? 'Stable!' : 'Not stable!'}</span>`;
+    }
+
+    function resetStabilityDemo() {
+      renderStabilityArray('stability-selection-array', stabilityArray);
+      renderStabilityArray('stability-insertion-array', stabilityArray);
+      document.getElementById('stability-sel-result').textContent = '-';
+      document.getElementById('stability-ins-result').textContent = '-';
+    }
+
+    document.getElementById('stability-play').addEventListener('click', runStabilityDemo);
+    document.getElementById('stability-reset').addEventListener('click', resetStabilityDemo);
+    resetStabilityDemo();
+
+    // ==================== CUSTOM INPUT ====================
+    let customMode = 'selection';
+    let customAnimator = null;
+
+    function setCustomMode(mode) {
+      customMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.textContent.toLowerCase().includes(mode)) {
+          tab.classList.add('active');
+        }
+      });
+      loadCustomArray();
+    }
+
+    function loadCustomArray() {
+      const input = document.getElementById('custom-input').value;
+      const arr = input.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+
+      if (arr.length < 2) {
+        alert('Please enter at least 2 numbers separated by commas');
+        return;
+      }
+
+      if (arr.length > 12) {
+        alert('Maximum 12 elements for visualization');
+        return;
+      }
+
+      const AnimatorClass = customMode === 'selection' ? SelectionSortAnimator : InsertionSortAnimator;
+
+      customAnimator = new AnimatorClass({
+        containerId: 'custom-array',
+        progressId: 'custom-progress',
+        stepIndicatorId: 'custom-step-indicator',
+        descriptionId: 'custom-description',
+        playBtnId: 'custom-play',
+        array: arr
+      });
+      customAnimator.generateSteps();
+      customAnimator.render();
+    }
+
+    document.getElementById('custom-play').addEventListener('click', () => {
+      if (customAnimator) {
+        customAnimator.isPlaying ? customAnimator.pause() : customAnimator.play();
+      }
+    });
+    document.getElementById('custom-reset').addEventListener('click', () => {
+      if (customAnimator) customAnimator.reset();
+    });
+    document.getElementById('custom-back').addEventListener('click', () => {
+      if (customAnimator) customAnimator.stepBackward();
+    });
+    document.getElementById('custom-forward').addEventListener('click', () => {
+      if (customAnimator) customAnimator.stepForward();
+    });
+    document.getElementById('custom-speed').addEventListener('change', (e) => {
+      if (customAnimator) customAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // Initialize custom with default
+    loadCustomArray();
+
+    // ==================== QUIZ FUNCTIONALITY ====================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn) {
+      const hint = btn.nextElementSibling;
+      hint.classList.toggle('show');
+      btn.textContent = hint.classList.contains('show') ? 'Hide Hint' : 'Show Hint';
+    }
+
+    // Fix quiz question 1 options
+    document.querySelector('.quiz-question:first-child .quiz-options').innerHTML = `
+      <div class="quiz-option" data-index="0">[1, 3, 5, 4, 2]</div>
+      <div class="quiz-option" data-index="1">[1, 2, 5, 4, 3]</div>
+      <div class="quiz-option" data-index="2">[1, 2, 3, 4, 5]</div>
+      <div class="quiz-option" data-index="3">[5, 3, 1, 2, 4]</div>
+    `;
+
+    // Rebind quiz after fixing
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    // ==================== KATEX AUTO-RENDER ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

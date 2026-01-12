@@ -1,0 +1,2586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 4: Runtime Analysis | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- D3.js for visualizations -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+
+      --omega-color: #E74C3C;
+      --theta-color: #9B59B6;
+      --big-o-color: #3498DB;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 200px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Array Visualization */
+    .array-viz {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .array-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .array-value {
+      min-width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .array-box.highlight .array-value {
+      background: var(--current-focus);
+      transform: scale(1.15);
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+    }
+
+    .array-box.comparing .array-value {
+      background: var(--comparing);
+    }
+
+    .array-box.found .array-value {
+      background: var(--success);
+    }
+
+    .index-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Comparison Table */
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .complexity-table th,
+    .complexity-table td {
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+
+    .complexity-table th {
+      background: var(--background-secondary);
+      font-weight: 600;
+    }
+
+    .complexity-table tr:nth-child(even) {
+      background: var(--background-secondary);
+    }
+
+    /* Notation Cards */
+    .notation-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .notation-card {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      border-left: 4px solid;
+    }
+
+    .notation-card.big-o {
+      border-left-color: var(--big-o-color);
+    }
+
+    .notation-card.omega {
+      border-left-color: var(--omega-color);
+    }
+
+    .notation-card.theta {
+      border-left-color: var(--theta-color);
+    }
+
+    .notation-card h4 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .notation-card .symbol {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+    }
+
+    .notation-card.big-o .symbol { color: var(--big-o-color); }
+    .notation-card.omega .symbol { color: var(--omega-color); }
+    .notation-card.theta .symbol { color: var(--theta-color); }
+
+    /* Comparison Chart */
+    .chart-container {
+      width: 100%;
+      height: 350px;
+      margin: 1rem 0;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    /* Nested Loop Grid */
+    .loop-grid {
+      display: grid;
+      gap: 4px;
+      padding: 1rem;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .loop-cell {
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.5);
+      transition: all 0.2s ease;
+    }
+
+    .loop-cell.active {
+      background: var(--current-focus);
+      color: #000;
+      transform: scale(1.1);
+    }
+
+    .loop-cell.visited {
+      background: var(--success);
+      color: white;
+    }
+
+    /* Call Tree */
+    .call-tree-container {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      overflow: auto;
+    }
+
+    .tree-node {
+      fill: var(--accent);
+      stroke: white;
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node.active {
+      fill: var(--current-focus);
+      filter: drop-shadow(0 0 10px rgba(241, 196, 15, 0.7));
+    }
+
+    .tree-node.computed {
+      fill: var(--success);
+    }
+
+    .tree-link {
+      stroke: rgba(255,255,255,0.3);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .tree-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      fill: white;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat-item {
+      background: var(--background-secondary);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+      margin-right: 0.5rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Input Controls */
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .input-group label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .input-group input[type="number"],
+    .input-group select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      width: 80px;
+    }
+
+    .input-group input[type="range"] {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes highlight-flash {
+      0% { background: rgba(241, 196, 15, 0.5); }
+      100% { background: rgba(241, 196, 15, 0.2); }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .notation-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">&#127769;</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 4</span>
+      <h1>Runtime Analysis</h1>
+      <p class="subtitle">Master the art of analyzing algorithm efficiency through Big-O, Big-Omega, and Big-Theta notation</p>
+      <div class="meta">
+        <span>&#9201; ~35 minutes</span>
+        <span>&#128218; Prerequisites: Loops, Recursion Basics</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Distinguish</strong> between best case, worst case, and average case analysis</li>
+        <li><strong>Apply</strong> Big-O, Big-Omega, and Big-Theta notation correctly</li>
+        <li><strong>Analyze</strong> nested loops and determine their time complexity</li>
+        <li><strong>Recognize</strong> logarithmic time complexity in divide-and-conquer algorithms</li>
+        <li><strong>Compare</strong> linear vs quadratic complexity through visualization</li>
+        <li><strong>Trace</strong> recursive algorithms and count operations</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Case Analysis -->
+    <h2>1. Best, Worst, and Average Case Analysis</h2>
+    <p>When analyzing an algorithm, we consider different scenarios based on the input. These scenarios help us understand how the algorithm performs under various conditions.</p>
+
+    <div class="notation-cards">
+      <div class="notation-card omega">
+        <h4><span class="symbol">&#937;</span> Best Case</h4>
+        <p>The minimum number of operations needed. Represents the lower bound on running time.</p>
+        <p><strong>Example:</strong> Finding an element at index 0 in linear search: O(1)</p>
+      </div>
+      <div class="notation-card theta">
+        <h4><span class="symbol">&#952;</span> Average Case</h4>
+        <p>The expected number of operations for a "typical" input. Often the most practical measure.</p>
+        <p><strong>Example:</strong> Finding an element in a random position: O(n/2) = O(n)</p>
+      </div>
+      <div class="notation-card big-o">
+        <h4><span class="symbol">O</span> Worst Case</h4>
+        <p>The maximum number of operations needed. Provides an upper bound guarantee.</p>
+        <p><strong>Example:</strong> Element not found in linear search: O(n)</p>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Interactive: Linear Search Case Analysis</h3>
+      <div class="step-description" id="search-description">
+        Click "Search" to find the target element and see which case applies
+      </div>
+
+      <div class="input-group">
+        <label>Array size:</label>
+        <input type="number" id="search-size" value="8" min="4" max="16">
+        <label>Target:</label>
+        <select id="search-target">
+          <option value="first">First element (Best)</option>
+          <option value="middle" selected>Middle element (Average)</option>
+          <option value="last">Last element (Worst)</option>
+          <option value="none">Not in array (Worst)</option>
+        </select>
+        <button onclick="startLinearSearch()" style="padding: 0.5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>
+        <button onclick="resetLinearSearch()" style="padding: 0.5rem 1rem; background: var(--background); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">Reset</button>
+      </div>
+
+      <div class="viz-canvas">
+        <div class="array-viz" id="linear-search-viz"></div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-item">
+          <div class="stat-value" id="comparisons-count">0</div>
+          <div class="stat-label">Comparisons</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="case-type">-</div>
+          <div class="stat-label">Case Type</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="complexity-result">-</div>
+          <div class="stat-label">Complexity</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> We typically focus on worst-case analysis because it provides a guarantee. No matter what input we receive, the algorithm will never be slower than the worst case.
+    </div>
+
+    <!-- Section 2: Asymptotic Notation -->
+    <h2>2. Asymptotic Notation Comparison</h2>
+    <p>Three notations describe different bounds on algorithm growth rates. Understanding when to use each is crucial for precise analysis.</p>
+
+    <table class="complexity-table">
+      <thead>
+        <tr>
+          <th>Notation</th>
+          <th>Meaning</th>
+          <th>Bound Type</th>
+          <th>Analogy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>O(f(n))</strong></td>
+          <td>Grows no faster than f(n)</td>
+          <td>Upper bound</td>
+          <td>At most this slow</td>
+        </tr>
+        <tr>
+          <td><strong>&#937;(f(n))</strong></td>
+          <td>Grows no slower than f(n)</td>
+          <td>Lower bound</td>
+          <td>At least this fast</td>
+        </tr>
+        <tr>
+          <td><strong>&#952;(f(n))</strong></td>
+          <td>Grows exactly like f(n)</td>
+          <td>Tight bound</td>
+          <td>Exactly this rate</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="viz-container">
+      <h3>Growth Rate Visualization</h3>
+      <div class="step-description" id="growth-description">
+        Compare how different complexity classes grow as input size increases
+      </div>
+
+      <div class="input-group">
+        <label>Max n:</label>
+        <input type="range" id="growth-n" min="10" max="100" value="50">
+        <span id="growth-n-value">50</span>
+      </div>
+
+      <div class="chart-container" id="growth-chart"></div>
+
+      <div class="chart-legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: #2ecc71;"></div>
+          <span>O(1) - Constant</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #3498db;"></div>
+          <span>O(log n) - Logarithmic</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #9b59b6;"></div>
+          <span>O(n) - Linear</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #f39c12;"></div>
+          <span>O(n log n) - Linearithmic</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #e74c3c;"></div>
+          <span>O(n^2) - Quadratic</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Using Big-O when Big-Theta is more precise. If an algorithm always takes exactly n^2 operations (not just at most), use &#952;(n^2), not just O(n^2).
+    </div>
+
+    <!-- Section 3: Nested Loops -->
+    <h2>3. Analyzing Nested Loops</h2>
+    <p>Nested loops multiply their iteration counts. A loop inside another loop often leads to quadratic or higher complexity.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container" style="margin: 0;">
+          <h3>Nested Loop Iteration Counter</h3>
+          <div class="step-description" id="nested-description">
+            Watch each cell represent one inner loop iteration (i, j)
+          </div>
+
+          <div class="input-group">
+            <label>Array size n:</label>
+            <input type="number" id="nested-size" value="5" min="3" max="8" onchange="resetNestedLoop()">
+            <label>Pattern:</label>
+            <select id="nested-pattern" onchange="resetNestedLoop()">
+              <option value="full">Full n x n (Quadratic)</option>
+              <option value="triangle">Triangle (n*(n-1)/2)</option>
+              <option value="diagonal">Diagonal only (Linear)</option>
+            </select>
+          </div>
+
+          <div id="nested-grid-container" style="overflow-x: auto;">
+            <div class="loop-grid" id="nested-grid"></div>
+          </div>
+
+          <div class="step-controls">
+            <button id="nested-reset" title="Reset">&#9198;</button>
+            <button id="nested-back" title="Step Back">&#9194;</button>
+            <button id="nested-play" title="Play/Pause">&#9654;&#65039;</button>
+            <button id="nested-forward" title="Step Forward">&#9193;</button>
+            <span class="step-indicator" id="nested-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="nested-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="nested-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="stats-panel">
+            <div class="stat-item">
+              <div class="stat-value" id="nested-iterations">0</div>
+              <div class="stat-label">Total Iterations</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="nested-i">-</div>
+              <div class="stat-label">Outer Loop (i)</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="nested-j">-</div>
+              <div class="stat-label">Inner Loop (j)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+            <span id="pattern-complexity" style="font-size: 0.875rem; color: var(--text-secondary);">O(n^2)</span>
+          </div>
+          <div class="code-content" id="nested-code">
+            <!-- Generated by JavaScript -->
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Analysis</h4>
+          <div class="variable-list">
+            <div class="variable-item">
+              <span class="variable-name">n</span>
+              <span class="variable-value" id="var-n">5</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">Outer iterations</span>
+              <span class="variable-value" id="var-outer">n</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">Inner iterations</span>
+              <span class="variable-value" id="var-inner">n per outer</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">Total</span>
+              <span class="variable-value" id="var-total">n * n = n^2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The key to analyzing nested loops is multiplying iteration counts. If outer runs n times and inner runs m times per outer iteration, total = n * m operations.
+    </div>
+
+    <!-- Section 4: Logarithmic Complexity -->
+    <h2>4. Logarithmic Time Complexity</h2>
+    <p>Logarithmic complexity appears when we repeatedly divide the problem size. Binary search is the classic example: each comparison eliminates half of the remaining elements.</p>
+
+    <div class="viz-container">
+      <h3>Binary Search vs Linear Search</h3>
+      <div class="step-description" id="binary-description">
+        Compare how binary search (O(log n)) outperforms linear search (O(n))
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchSearchTab('linear')">Linear Search</button>
+        <button class="tab" onclick="switchSearchTab('binary')">Binary Search</button>
+      </div>
+
+      <div class="tab-content active" id="tab-linear">
+        <div class="input-group">
+          <label>Array size:</label>
+          <input type="number" id="linear-size" value="16" min="8" max="32">
+          <label>Target:</label>
+          <input type="number" id="linear-target" value="25">
+          <button onclick="runLinearDemo()" style="padding: 0.5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>
+        </div>
+        <div class="viz-canvas" style="flex-direction: column; padding: 1rem;">
+          <div class="array-viz" id="linear-demo-viz"></div>
+          <div id="linear-demo-stats" style="color: white; margin-top: 1rem; font-family: var(--font-mono);"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-binary">
+        <div class="input-group">
+          <label>Array size:</label>
+          <input type="number" id="binary-size" value="16" min="8" max="32">
+          <label>Target:</label>
+          <input type="number" id="binary-target" value="25">
+          <button onclick="runBinaryDemo()" style="padding: 0.5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>
+        </div>
+        <div class="viz-canvas" style="flex-direction: column; padding: 1rem;">
+          <div class="array-viz" id="binary-demo-viz"></div>
+          <div id="binary-demo-stats" style="color: white; margin-top: 1rem; font-family: var(--font-mono);"></div>
+        </div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-item">
+          <div class="stat-value" id="linear-ops">-</div>
+          <div class="stat-label">Linear Search Ops</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="binary-ops">-</div>
+          <div class="stat-label">Binary Search Ops</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="speedup">-</div>
+          <div class="stat-label">Speedup Factor</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try This:</strong> Increase the array size to 32 and search for a value near the end. Notice how binary search remains fast (around 5 comparisons) while linear search needs up to 32 comparisons!
+    </div>
+
+    <!-- Section 5: Linear vs Quadratic -->
+    <h2>5. Linear vs Quadratic: A Practical Comparison</h2>
+    <p>The difference between O(n) and O(n^2) might seem small for tiny inputs, but it becomes dramatic as n grows.</p>
+
+    <div class="viz-container">
+      <h3>Operations Count Comparison</h3>
+      <div class="input-group">
+        <label>Input size n:</label>
+        <input type="range" id="complexity-slider" min="1" max="100" value="10">
+        <span id="complexity-n" style="font-family: var(--font-mono); min-width: 3rem;">10</span>
+      </div>
+
+      <table class="complexity-table" style="margin-top: 0;">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Complexity</th>
+            <th>Operations (n = <span id="table-n">10</span>)</th>
+            <th>Relative</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Find max in array</td>
+            <td>O(n)</td>
+            <td id="ops-linear">10</td>
+            <td>1x</td>
+          </tr>
+          <tr>
+            <td>Check all pairs</td>
+            <td>O(n^2)</td>
+            <td id="ops-quadratic">100</td>
+            <td id="ops-quadratic-rel">10x</td>
+          </tr>
+          <tr>
+            <td>Binary search</td>
+            <td>O(log n)</td>
+            <td id="ops-log">3</td>
+            <td id="ops-log-rel">0.3x</td>
+          </tr>
+          <tr>
+            <td>Merge sort</td>
+            <td>O(n log n)</td>
+            <td id="ops-nlogn">33</td>
+            <td id="ops-nlogn-rel">3.3x</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="scale-warning" style="display: none; padding: 1rem; background: rgba(235, 87, 87, 0.1); border-radius: var(--border-radius); margin-top: 1rem; color: var(--error);">
+        <strong>Warning:</strong> At n = <span id="warning-n"></span>, the quadratic algorithm performs <span id="warning-ops"></span> operations. This is why we care about complexity!
+      </div>
+    </div>
+
+    <!-- Section 6: Recursive Algorithm Analysis -->
+    <h2>6. Analyzing Recursive Algorithms</h2>
+    <p>Recursive algorithms require analyzing the call tree. The total work is the sum of work done at each node in the tree.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container" style="margin: 0;">
+          <h3>Recursive Call Tree Visualizer</h3>
+          <div class="step-description" id="recursive-description">
+            Watch the Fibonacci recursion unfold and count the function calls
+          </div>
+
+          <div class="input-group">
+            <label>Calculate fib(</label>
+            <input type="number" id="fib-n" value="5" min="1" max="7">
+            <label>)</label>
+            <button onclick="startFibonacci()" style="padding: 0.5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer;">Visualize</button>
+          </div>
+
+          <div class="call-tree-container" id="call-tree"></div>
+
+          <div class="step-controls">
+            <button id="fib-reset" title="Reset" onclick="resetFibonacci()">&#9198;</button>
+            <button id="fib-back" title="Step Back" onclick="fibStepBack()">&#9194;</button>
+            <button id="fib-play" title="Play/Pause" onclick="toggleFibPlay()">&#9654;&#65039;</button>
+            <button id="fib-forward" title="Step Forward" onclick="fibStepForward()">&#9193;</button>
+            <span class="step-indicator" id="fib-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="fib-speed" onchange="updateFibSpeed()">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="stats-panel">
+            <div class="stat-item">
+              <div class="stat-value" id="fib-calls">0</div>
+              <div class="stat-label">Function Calls</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="fib-result">-</div>
+              <div class="stat-label">Result</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="fib-complexity">O(2^n)</div>
+              <div class="stat-label">Time Complexity</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="fib-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">fib</span>(n):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> n <span class="operator">&lt;=</span> <span class="number">1</span>:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        <span class="keyword">return</span> n</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="keyword">return</span> <span class="function">fib</span>(n<span class="operator">-</span><span class="number">1</span>) <span class="operator">+</span> <span class="function">fib</span>(n<span class="operator">-</span><span class="number">2</span>)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Call Stack</h4>
+          <div class="variable-list" id="call-stack">
+            <div class="variable-item">
+              <span style="color: var(--text-secondary);">Empty</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="key-insight" style="margin-top: 1rem;">
+          <strong>Why O(2^n)?</strong> Each call creates 2 more calls. The tree has roughly 2^n nodes. This is extremely inefficient - fib(40) makes over 300 million calls!
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Assuming all recursion is slow. Divide-and-conquer algorithms like merge sort use recursion efficiently at O(n log n) because they don't have overlapping subproblems.
+    </div>
+
+    <!-- Quick Check -->
+    <h2>7. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question">
+        <h4>Question 1: What is the time complexity of this code?</h4>
+        <pre style="background: var(--code-bg); padding: 1rem; border-radius: 4px; font-family: var(--font-mono); margin-bottom: 1rem;">for i in range(n):
+    for j in range(n):
+        print(i, j)</pre>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(2n)</div>
+          <div class="quiz-option" data-index="2">O(n^2)</div>
+          <div class="quiz-option" data-index="3">O(n!)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-0-0">Count the iterations: outer loop runs n times, inner loop runs n times for each outer iteration.</div>
+        <div class="hint-text" id="hint-0-1">Multiply the iteration counts: n * n = n^2 total iterations.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The outer loop runs n times, and for each iteration, the inner loop also runs n times. Total operations = n * n = n^2, so the complexity is O(n^2).
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 2: Binary search has O(log n) complexity because...</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">It uses logarithms in its calculations</div>
+          <div class="quiz-option" data-index="1">It halves the search space with each comparison</div>
+          <div class="quiz-option" data-index="2">It only works on small arrays</div>
+          <div class="quiz-option" data-index="3">It makes n/2 comparisons</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-1-0">Think about what happens after each comparison in binary search.</div>
+        <div class="hint-text" id="hint-1-1">If we start with n elements, after 1 comparison we have n/2, after 2 we have n/4... How many times until we have 1?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Binary search divides the search space in half with each comparison. Starting with n elements, we need log2(n) halving operations to get to 1 element, hence O(log n).
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 3: If f(n) = 3n^2 + 5n + 100, what is its Big-O complexity?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(3n^2 + 5n + 100)</div>
+          <div class="quiz-option" data-index="1">O(n^2)</div>
+          <div class="quiz-option" data-index="2">O(n)</div>
+          <div class="quiz-option" data-index="3">O(100)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-2-0">In Big-O notation, we focus on the fastest-growing term.</div>
+        <div class="hint-text" id="hint-2-1">Constants and lower-order terms (like 5n and 100) are dropped because they become insignificant for large n.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Big-O drops constants and lower-order terms. As n grows large, 3n^2 dominates 5n and 100, so we simplify to O(n^2).
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 4: What is the best case time complexity of linear search?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">O(1)</div>
+          <div class="quiz-option" data-index="1">O(log n)</div>
+          <div class="quiz-option" data-index="2">O(n)</div>
+          <div class="quiz-option" data-index="3">O(n^2)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-3-0">Best case means the most favorable input. When would linear search finish fastest?</div>
+        <div class="hint-text" id="hint-3-1">If the element we're looking for is at the very first position, we find it immediately.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> In the best case, the target element is at the first position (index 0). We find it with just one comparison, giving us O(1) - constant time.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 5: The naive recursive Fibonacci has O(2^n) complexity. Why is this problematic?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">It uses too much memory for the call stack</div>
+          <div class="quiz-option" data-index="1">It only works for small numbers</div>
+          <div class="quiz-option" data-index="2">The number of operations doubles with each increment of n, making it impractical for large n</div>
+          <div class="quiz-option" data-index="3">It produces incorrect results</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-4-0">Consider how 2^n grows: 2^10 = 1,024, 2^20 = 1,048,576, 2^30 = over 1 billion.</div>
+        <div class="hint-text" id="hint-4-1">Exponential growth means even small increases in n cause massive increases in computation time.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Exponential complexity means the work roughly doubles each time n increases by 1. For fib(50), we'd need over 10^15 operations - that's years of computation! Memoization or iterative approaches bring this down to O(n).
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <h2>8. Summary</h2>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem;">
+      <li><strong>Case Analysis:</strong> Best, average, and worst cases describe algorithm behavior under different inputs</li>
+      <li><strong>Big-O (Upper Bound):</strong> Guarantees an algorithm runs in at most this time</li>
+      <li><strong>Big-Omega (Lower Bound):</strong> Algorithm takes at least this much time</li>
+      <li><strong>Big-Theta (Tight Bound):</strong> Algorithm takes exactly this growth rate</li>
+      <li><strong>Nested Loops:</strong> Multiply iteration counts; nested loops often lead to O(n^2)</li>
+      <li><strong>Logarithmic Time:</strong> Appears when problem size is halved repeatedly (binary search)</li>
+      <li><strong>Recursive Complexity:</strong> Analyze the call tree; some recursions are efficient, others exponential</li>
+    </ul>
+
+    <div class="try-this">
+      <strong>Practice Challenge:</strong> Analyze the complexity of finding if an array has any duplicates using two nested loops. Then, think about how you could solve it in O(n) time using a hash set!
+    </div>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-03-recursion.html">&#8592; Session 3: Recursion</a>
+      <a href="session-05-sorting-algorithms.html">Session 5: Sorting Algorithms &#8594;</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerHTML = next === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').innerHTML = savedTheme === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+
+    // ==================== LINEAR SEARCH CASE ANALYSIS ====================
+    let linearSearchState = {
+      array: [],
+      target: -1,
+      currentIndex: -1,
+      comparisons: 0,
+      found: false,
+      running: false
+    };
+
+    function initLinearSearch() {
+      const size = parseInt(document.getElementById('search-size').value);
+      linearSearchState.array = Array.from({length: size}, (_, i) => (i + 1) * 3);
+      linearSearchState.currentIndex = -1;
+      linearSearchState.comparisons = 0;
+      linearSearchState.found = false;
+      linearSearchState.running = false;
+      renderLinearSearch();
+    }
+
+    function renderLinearSearch() {
+      const viz = document.getElementById('linear-search-viz');
+      viz.innerHTML = '';
+
+      linearSearchState.array.forEach((val, i) => {
+        const box = document.createElement('div');
+        box.className = 'array-box';
+        if (i === linearSearchState.currentIndex) {
+          box.classList.add('highlight');
+        }
+        if (linearSearchState.found && linearSearchState.array[linearSearchState.currentIndex] === linearSearchState.target && i === linearSearchState.currentIndex) {
+          box.classList.add('found');
+        }
+        box.innerHTML = `
+          <div class="array-value">${val}</div>
+          <div class="index-label">${i}</div>
+        `;
+        viz.appendChild(box);
+      });
+
+      document.getElementById('comparisons-count').textContent = linearSearchState.comparisons;
+    }
+
+    function startLinearSearch() {
+      if (linearSearchState.running) return;
+
+      const size = parseInt(document.getElementById('search-size').value);
+      const targetType = document.getElementById('search-target').value;
+
+      linearSearchState.array = Array.from({length: size}, (_, i) => (i + 1) * 3);
+
+      switch(targetType) {
+        case 'first':
+          linearSearchState.target = linearSearchState.array[0];
+          break;
+        case 'middle':
+          linearSearchState.target = linearSearchState.array[Math.floor(size / 2)];
+          break;
+        case 'last':
+          linearSearchState.target = linearSearchState.array[size - 1];
+          break;
+        case 'none':
+          linearSearchState.target = -999;
+          break;
+      }
+
+      linearSearchState.currentIndex = -1;
+      linearSearchState.comparisons = 0;
+      linearSearchState.found = false;
+      linearSearchState.running = true;
+
+      document.getElementById('search-description').textContent = `Searching for ${linearSearchState.target}...`;
+
+      runLinearSearchStep();
+    }
+
+    function runLinearSearchStep() {
+      if (!linearSearchState.running) return;
+
+      linearSearchState.currentIndex++;
+      linearSearchState.comparisons++;
+
+      if (linearSearchState.currentIndex >= linearSearchState.array.length) {
+        linearSearchState.running = false;
+        document.getElementById('search-description').textContent = `Element ${linearSearchState.target} not found after checking all ${linearSearchState.array.length} elements`;
+        document.getElementById('case-type').textContent = 'Worst';
+        document.getElementById('complexity-result').textContent = 'O(n)';
+        renderLinearSearch();
+        return;
+      }
+
+      renderLinearSearch();
+
+      if (linearSearchState.array[linearSearchState.currentIndex] === linearSearchState.target) {
+        linearSearchState.found = true;
+        linearSearchState.running = false;
+
+        let caseType, complexity;
+        if (linearSearchState.currentIndex === 0) {
+          caseType = 'Best';
+          complexity = 'O(1)';
+        } else if (linearSearchState.currentIndex === linearSearchState.array.length - 1) {
+          caseType = 'Worst';
+          complexity = 'O(n)';
+        } else {
+          caseType = 'Average';
+          complexity = 'O(n)';
+        }
+
+        document.getElementById('search-description').textContent = `Found ${linearSearchState.target} at index ${linearSearchState.currentIndex}!`;
+        document.getElementById('case-type').textContent = caseType;
+        document.getElementById('complexity-result').textContent = complexity;
+        renderLinearSearch();
+        return;
+      }
+
+      document.getElementById('search-description').textContent = `Checking index ${linearSearchState.currentIndex}: ${linearSearchState.array[linearSearchState.currentIndex]} != ${linearSearchState.target}`;
+
+      setTimeout(runLinearSearchStep, 400);
+    }
+
+    function resetLinearSearch() {
+      linearSearchState.running = false;
+      initLinearSearch();
+      document.getElementById('search-description').textContent = 'Click "Search" to find the target element and see which case applies';
+      document.getElementById('case-type').textContent = '-';
+      document.getElementById('complexity-result').textContent = '-';
+    }
+
+    initLinearSearch();
+
+    // ==================== GROWTH CHART ====================
+    function renderGrowthChart() {
+      const container = document.getElementById('growth-chart');
+      const maxN = parseInt(document.getElementById('growth-n').value);
+      document.getElementById('growth-n-value').textContent = maxN;
+
+      const width = container.clientWidth;
+      const height = 350;
+      const margin = {top: 20, right: 30, bottom: 40, left: 60};
+
+      container.innerHTML = '';
+
+      const svg = d3.select('#growth-chart')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      const xScale = d3.scaleLinear().domain([1, maxN]).range([0, innerWidth]);
+
+      // Calculate y max based on quadratic
+      const yMax = Math.min(maxN * maxN, 10000);
+      const yScale = d3.scaleLinear().domain([0, yMax]).range([innerHeight, 0]);
+
+      // Axes
+      const xAxis = d3.axisBottom(xScale).ticks(10);
+      const yAxis = d3.axisLeft(yScale).ticks(5);
+
+      g.append('g')
+        .attr('transform', `translate(0,${innerHeight})`)
+        .call(xAxis)
+        .selectAll('text, line, path')
+        .style('stroke', 'var(--text-secondary)')
+        .style('fill', 'var(--text-secondary)');
+
+      g.append('g')
+        .call(yAxis)
+        .selectAll('text, line, path')
+        .style('stroke', 'var(--text-secondary)')
+        .style('fill', 'var(--text-secondary)');
+
+      // Data generators
+      const data = d3.range(1, maxN + 1);
+
+      const functions = [
+        { fn: () => 1, color: '#2ecc71', label: 'O(1)' },
+        { fn: n => Math.log2(n), color: '#3498db', label: 'O(log n)' },
+        { fn: n => n, color: '#9b59b6', label: 'O(n)' },
+        { fn: n => n * Math.log2(n), color: '#f39c12', label: 'O(n log n)' },
+        { fn: n => n * n, color: '#e74c3c', label: 'O(n^2)' }
+      ];
+
+      const line = d3.line()
+        .x(d => xScale(d))
+        .y(d => yScale(d.y))
+        .curve(d3.curveMonotoneX);
+
+      functions.forEach(({fn, color}) => {
+        const lineData = data.map(n => ({x: n, y: Math.min(fn(n), yMax)}));
+
+        g.append('path')
+          .datum(lineData)
+          .attr('fill', 'none')
+          .attr('stroke', color)
+          .attr('stroke-width', 2.5)
+          .attr('d', d3.line().x(d => xScale(d.x)).y(d => yScale(d.y)));
+      });
+
+      // Labels
+      g.append('text')
+        .attr('x', innerWidth / 2)
+        .attr('y', innerHeight + 35)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'var(--text-secondary)')
+        .style('font-size', '12px')
+        .text('Input size (n)');
+
+      g.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -innerHeight / 2)
+        .attr('y', -45)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'var(--text-secondary)')
+        .style('font-size', '12px')
+        .text('Operations');
+    }
+
+    document.getElementById('growth-n').addEventListener('input', renderGrowthChart);
+
+    // Delay initial render to ensure container has width
+    setTimeout(renderGrowthChart, 100);
+    window.addEventListener('resize', renderGrowthChart);
+
+    // ==================== NESTED LOOP ANIMATOR ====================
+    let nestedState = {
+      n: 5,
+      pattern: 'full',
+      steps: [],
+      currentStep: 0,
+      isPlaying: false,
+      speed: 1,
+      intervalId: null
+    };
+
+    function generateNestedSteps() {
+      const n = parseInt(document.getElementById('nested-size').value);
+      const pattern = document.getElementById('nested-pattern').value;
+      nestedState.n = n;
+      nestedState.pattern = pattern;
+      nestedState.steps = [];
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          let include = false;
+          switch(pattern) {
+            case 'full':
+              include = true;
+              break;
+            case 'triangle':
+              include = j > i;
+              break;
+            case 'diagonal':
+              include = i === j;
+              break;
+          }
+          if (include) {
+            nestedState.steps.push({i, j});
+          }
+        }
+      }
+
+      // Update analysis panel
+      document.getElementById('var-n').textContent = n;
+      switch(pattern) {
+        case 'full':
+          document.getElementById('var-outer').textContent = 'n';
+          document.getElementById('var-inner').textContent = 'n per outer';
+          document.getElementById('var-total').textContent = `n * n = ${n*n}`;
+          document.getElementById('pattern-complexity').textContent = 'O(n^2)';
+          break;
+        case 'triangle':
+          document.getElementById('var-outer').textContent = 'n';
+          document.getElementById('var-inner').textContent = 'decreasing';
+          document.getElementById('var-total').textContent = `n(n-1)/2 = ${n*(n-1)/2}`;
+          document.getElementById('pattern-complexity').textContent = 'O(n^2)';
+          break;
+        case 'diagonal':
+          document.getElementById('var-outer').textContent = 'n';
+          document.getElementById('var-inner').textContent = '1';
+          document.getElementById('var-total').textContent = `n = ${n}`;
+          document.getElementById('pattern-complexity').textContent = 'O(n)';
+          break;
+      }
+
+      updateNestedCode();
+    }
+
+    function updateNestedCode() {
+      const pattern = nestedState.pattern;
+      const codeContainer = document.getElementById('nested-code');
+
+      let code = '';
+      if (pattern === 'full') {
+        code = `
+          <div class="code-line" data-line="1"><span class="line-number">1</span><span class="line-content"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):</span></div>
+          <div class="code-line" data-line="2"><span class="line-number">2</span><span class="line-content">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(n):</span></div>
+          <div class="code-line" data-line="3"><span class="line-number">3</span><span class="line-content">        <span class="function">process</span>(i, j)</span></div>
+        `;
+      } else if (pattern === 'triangle') {
+        code = `
+          <div class="code-line" data-line="1"><span class="line-number">1</span><span class="line-content"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):</span></div>
+          <div class="code-line" data-line="2"><span class="line-number">2</span><span class="line-content">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(i+<span class="number">1</span>, n):</span></div>
+          <div class="code-line" data-line="3"><span class="line-number">3</span><span class="line-content">        <span class="function">process</span>(i, j)</span></div>
+        `;
+      } else {
+        code = `
+          <div class="code-line" data-line="1"><span class="line-number">1</span><span class="line-content"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):</span></div>
+          <div class="code-line" data-line="2"><span class="line-number">2</span><span class="line-content">    <span class="function">process</span>(i, i)</span></div>
+        `;
+      }
+      codeContainer.innerHTML = code;
+    }
+
+    function renderNestedGrid() {
+      const grid = document.getElementById('nested-grid');
+      const n = nestedState.n;
+
+      grid.style.gridTemplateColumns = `repeat(${n}, 35px)`;
+      grid.innerHTML = '';
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          const cell = document.createElement('div');
+          cell.className = 'loop-cell';
+          cell.dataset.i = i;
+          cell.dataset.j = j;
+
+          // Check if this cell should be active
+          const stepIndex = nestedState.steps.findIndex(s => s.i === i && s.j === j);
+          if (stepIndex !== -1 && stepIndex < nestedState.currentStep) {
+            cell.classList.add('visited');
+          }
+          if (stepIndex === nestedState.currentStep - 1 && nestedState.currentStep > 0) {
+            cell.classList.add('active');
+          }
+
+          cell.textContent = `${i},${j}`;
+          grid.appendChild(cell);
+        }
+      }
+
+      // Update stats
+      document.getElementById('nested-iterations').textContent = Math.max(0, nestedState.currentStep);
+      if (nestedState.currentStep > 0 && nestedState.currentStep <= nestedState.steps.length) {
+        const current = nestedState.steps[nestedState.currentStep - 1];
+        document.getElementById('nested-i').textContent = current.i;
+        document.getElementById('nested-j').textContent = current.j;
+        document.getElementById('nested-description').textContent = `Processing cell (${current.i}, ${current.j}) - iteration ${nestedState.currentStep}`;
+      } else {
+        document.getElementById('nested-i').textContent = '-';
+        document.getElementById('nested-j').textContent = '-';
+        document.getElementById('nested-description').textContent = nestedState.currentStep === 0 ? 'Press play to start the nested loop animation' : `Complete! Total iterations: ${nestedState.steps.length}`;
+      }
+
+      // Update progress
+      const progress = nestedState.steps.length > 0 ? (nestedState.currentStep / nestedState.steps.length) * 100 : 0;
+      document.getElementById('nested-progress').style.width = `${progress}%`;
+      document.getElementById('nested-step-indicator').textContent = `Step ${nestedState.currentStep} of ${nestedState.steps.length}`;
+    }
+
+    function resetNestedLoop() {
+      nestedState.isPlaying = false;
+      clearInterval(nestedState.intervalId);
+      document.getElementById('nested-play').innerHTML = '&#9654;&#65039;';
+      nestedState.currentStep = 0;
+      generateNestedSteps();
+      renderNestedGrid();
+    }
+
+    function nestedStepForward() {
+      if (nestedState.currentStep < nestedState.steps.length) {
+        nestedState.currentStep++;
+        renderNestedGrid();
+      }
+    }
+
+    function nestedStepBack() {
+      if (nestedState.currentStep > 0) {
+        nestedState.currentStep--;
+        renderNestedGrid();
+      }
+    }
+
+    function toggleNestedPlay() {
+      if (nestedState.isPlaying) {
+        nestedState.isPlaying = false;
+        clearInterval(nestedState.intervalId);
+        document.getElementById('nested-play').innerHTML = '&#9654;&#65039;';
+      } else {
+        if (nestedState.currentStep >= nestedState.steps.length) {
+          nestedState.currentStep = 0;
+        }
+        nestedState.isPlaying = true;
+        document.getElementById('nested-play').innerHTML = '&#9208;&#65039;';
+        nestedState.intervalId = setInterval(() => {
+          if (nestedState.currentStep < nestedState.steps.length) {
+            nestedState.currentStep++;
+            renderNestedGrid();
+          } else {
+            nestedState.isPlaying = false;
+            clearInterval(nestedState.intervalId);
+            document.getElementById('nested-play').innerHTML = '&#9654;&#65039;';
+          }
+        }, 300 / nestedState.speed);
+      }
+    }
+
+    document.getElementById('nested-reset').addEventListener('click', resetNestedLoop);
+    document.getElementById('nested-back').addEventListener('click', nestedStepBack);
+    document.getElementById('nested-play').addEventListener('click', toggleNestedPlay);
+    document.getElementById('nested-forward').addEventListener('click', nestedStepForward);
+    document.getElementById('nested-speed').addEventListener('change', (e) => {
+      nestedState.speed = parseFloat(e.target.value);
+      if (nestedState.isPlaying) {
+        toggleNestedPlay();
+        toggleNestedPlay();
+      }
+    });
+
+    resetNestedLoop();
+
+    // ==================== BINARY VS LINEAR SEARCH ====================
+    function switchSearchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      if (tab === 'linear') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('tab-linear').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('tab-binary').classList.add('active');
+      }
+    }
+
+    function runLinearDemo() {
+      const size = parseInt(document.getElementById('linear-size').value);
+      const target = parseInt(document.getElementById('linear-target').value);
+      const arr = Array.from({length: size}, (_, i) => i * 2 + 1);
+
+      const viz = document.getElementById('linear-demo-viz');
+      const stats = document.getElementById('linear-demo-stats');
+
+      viz.innerHTML = '';
+      arr.forEach((val, i) => {
+        const box = document.createElement('div');
+        box.className = 'array-box';
+        box.id = `linear-box-${i}`;
+        box.innerHTML = `<div class="array-value">${val}</div><div class="index-label">${i}</div>`;
+        viz.appendChild(box);
+      });
+
+      let i = 0;
+      const interval = setInterval(() => {
+        // Reset previous
+        if (i > 0) {
+          document.getElementById(`linear-box-${i-1}`).classList.remove('highlight');
+        }
+
+        if (i >= arr.length) {
+          clearInterval(interval);
+          stats.textContent = `Not found after ${arr.length} comparisons`;
+          document.getElementById('linear-ops').textContent = arr.length;
+          return;
+        }
+
+        const box = document.getElementById(`linear-box-${i}`);
+        box.classList.add('highlight');
+        stats.textContent = `Checking index ${i}: ${arr[i]} ${arr[i] === target ? '= ' : '!= '}${target}`;
+
+        if (arr[i] === target) {
+          clearInterval(interval);
+          box.classList.remove('highlight');
+          box.classList.add('found');
+          stats.textContent = `Found ${target} at index ${i} after ${i + 1} comparisons`;
+          document.getElementById('linear-ops').textContent = i + 1;
+          updateSpeedup();
+          return;
+        }
+
+        i++;
+      }, 200);
+
+      document.getElementById('linear-ops').textContent = '-';
+    }
+
+    function runBinaryDemo() {
+      const size = parseInt(document.getElementById('binary-size').value);
+      const target = parseInt(document.getElementById('binary-target').value);
+      const arr = Array.from({length: size}, (_, i) => i * 2 + 1);
+
+      const viz = document.getElementById('binary-demo-viz');
+      const stats = document.getElementById('binary-demo-stats');
+
+      viz.innerHTML = '';
+      arr.forEach((val, i) => {
+        const box = document.createElement('div');
+        box.className = 'array-box';
+        box.id = `binary-box-${i}`;
+        box.innerHTML = `<div class="array-value">${val}</div><div class="index-label">${i}</div>`;
+        viz.appendChild(box);
+      });
+
+      let left = 0, right = arr.length - 1;
+      let comparisons = 0;
+
+      function step() {
+        if (left > right) {
+          stats.textContent = `Not found after ${comparisons} comparisons`;
+          document.getElementById('binary-ops').textContent = comparisons;
+          updateSpeedup();
+          return;
+        }
+
+        comparisons++;
+        const mid = Math.floor((left + right) / 2);
+
+        // Reset all highlighting first
+        for (let i = 0; i < arr.length; i++) {
+          const box = document.getElementById(`binary-box-${i}`);
+          box.classList.remove('highlight', 'comparing');
+          if (i < left || i > right) {
+            box.querySelector('.array-value').style.opacity = '0.3';
+          }
+        }
+
+        const midBox = document.getElementById(`binary-box-${mid}`);
+        midBox.classList.add('highlight');
+
+        if (arr[mid] === target) {
+          stats.textContent = `Found ${target} at index ${mid} after ${comparisons} comparisons`;
+          midBox.classList.remove('highlight');
+          midBox.classList.add('found');
+          document.getElementById('binary-ops').textContent = comparisons;
+          updateSpeedup();
+          return;
+        }
+
+        stats.textContent = `Checking mid=${mid}: ${arr[mid]} ${arr[mid] < target ? '<' : '>'} ${target}. Search ${arr[mid] < target ? 'right' : 'left'} half.`;
+
+        if (arr[mid] < target) {
+          left = mid + 1;
+        } else {
+          right = mid - 1;
+        }
+
+        setTimeout(step, 600);
+      }
+
+      step();
+      document.getElementById('binary-ops').textContent = '-';
+    }
+
+    function updateSpeedup() {
+      const linearOps = parseInt(document.getElementById('linear-ops').textContent);
+      const binaryOps = parseInt(document.getElementById('binary-ops').textContent);
+
+      if (!isNaN(linearOps) && !isNaN(binaryOps) && binaryOps > 0) {
+        document.getElementById('speedup').textContent = (linearOps / binaryOps).toFixed(1) + 'x';
+      }
+    }
+
+    // ==================== COMPLEXITY COMPARISON SLIDER ====================
+    document.getElementById('complexity-slider').addEventListener('input', (e) => {
+      const n = parseInt(e.target.value);
+      document.getElementById('complexity-n').textContent = n;
+      document.getElementById('table-n').textContent = n;
+
+      const linear = n;
+      const quadratic = n * n;
+      const log = Math.ceil(Math.log2(n));
+      const nlogn = Math.ceil(n * Math.log2(n));
+
+      document.getElementById('ops-linear').textContent = linear.toLocaleString();
+      document.getElementById('ops-quadratic').textContent = quadratic.toLocaleString();
+      document.getElementById('ops-log').textContent = log;
+      document.getElementById('ops-nlogn').textContent = nlogn.toLocaleString();
+
+      document.getElementById('ops-quadratic-rel').textContent = (quadratic / linear).toFixed(1) + 'x';
+      document.getElementById('ops-log-rel').textContent = (log / linear).toFixed(2) + 'x';
+      document.getElementById('ops-nlogn-rel').textContent = (nlogn / linear).toFixed(1) + 'x';
+
+      const warning = document.getElementById('scale-warning');
+      if (quadratic > 1000) {
+        warning.style.display = 'block';
+        document.getElementById('warning-n').textContent = n;
+        document.getElementById('warning-ops').textContent = quadratic.toLocaleString();
+      } else {
+        warning.style.display = 'none';
+      }
+    });
+
+    // ==================== FIBONACCI CALL TREE ====================
+    let fibState = {
+      n: 5,
+      nodes: [],
+      currentStep: 0,
+      isPlaying: false,
+      speed: 1,
+      intervalId: null,
+      callStack: []
+    };
+
+    function buildFibTree(n, depth = 0, x = 0, parent = null) {
+      const node = {
+        n: n,
+        depth: depth,
+        x: x,
+        parent: parent,
+        left: null,
+        right: null,
+        value: null,
+        computed: false,
+        id: fibState.nodes.length
+      };
+      fibState.nodes.push(node);
+
+      if (n <= 1) {
+        node.value = n;
+        node.computed = true;
+      } else {
+        node.left = buildFibTree(n - 1, depth + 1, x - 1, node);
+        node.right = buildFibTree(n - 2, depth + 1, x + 1, node);
+      }
+
+      return node;
+    }
+
+    function generateFibSteps(node, steps = []) {
+      steps.push({ type: 'call', node: node });
+
+      if (node.n <= 1) {
+        steps.push({ type: 'return', node: node, value: node.n });
+      } else {
+        generateFibSteps(node.left, steps);
+        generateFibSteps(node.right, steps);
+        steps.push({ type: 'return', node: node, value: node.left.value + node.right.value });
+      }
+
+      return steps;
+    }
+
+    function startFibonacci() {
+      const n = parseInt(document.getElementById('fib-n').value);
+      fibState.n = n;
+      fibState.nodes = [];
+      fibState.currentStep = 0;
+      fibState.callStack = [];
+
+      const root = buildFibTree(n);
+      fibState.steps = generateFibSteps(root);
+
+      renderFibTree();
+      updateFibStats();
+    }
+
+    function renderFibTree() {
+      const container = document.getElementById('call-tree');
+      const width = container.clientWidth || 600;
+      const height = 300;
+
+      container.innerHTML = '';
+
+      if (fibState.nodes.length === 0) return;
+
+      const svg = d3.select('#call-tree')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      // Calculate positions
+      const maxDepth = Math.max(...fibState.nodes.map(n => n.depth));
+      const levelHeight = height / (maxDepth + 2);
+
+      // Use a tree layout
+      const treeData = {
+        name: `fib(${fibState.n})`,
+        node: fibState.nodes[0],
+        children: []
+      };
+
+      function buildTreeData(node) {
+        const data = {
+          name: `fib(${node.n})`,
+          node: node,
+          children: []
+        };
+        if (node.left) data.children.push(buildTreeData(node.left));
+        if (node.right) data.children.push(buildTreeData(node.right));
+        return data;
+      }
+
+      const root = d3.hierarchy(buildTreeData(fibState.nodes[0]));
+
+      const treeLayout = d3.tree().size([width - 60, height - 60]);
+      treeLayout(root);
+
+      // Draw links
+      svg.selectAll('.tree-link')
+        .data(root.links())
+        .enter()
+        .append('path')
+        .attr('class', 'tree-link')
+        .attr('d', d3.linkVertical()
+          .x(d => d.x + 30)
+          .y(d => d.y + 30));
+
+      // Draw nodes
+      const nodeGroups = svg.selectAll('.node-group')
+        .data(root.descendants())
+        .enter()
+        .append('g')
+        .attr('transform', d => `translate(${d.x + 30}, ${d.y + 30})`);
+
+      nodeGroups.append('circle')
+        .attr('class', d => {
+          let cls = 'tree-node';
+          const nodeData = d.data.node;
+
+          // Determine if this node is active or computed based on current step
+          const currentStepData = fibState.steps[fibState.currentStep - 1];
+          if (currentStepData && currentStepData.node.id === nodeData.id) {
+            cls += ' active';
+          }
+
+          // Check if already computed
+          for (let i = 0; i < fibState.currentStep; i++) {
+            if (fibState.steps[i].type === 'return' && fibState.steps[i].node.id === nodeData.id) {
+              cls += ' computed';
+              break;
+            }
+          }
+
+          return cls;
+        })
+        .attr('r', 18);
+
+      nodeGroups.append('text')
+        .attr('class', 'tree-label')
+        .text(d => {
+          const nodeData = d.data.node;
+          // Check if computed
+          for (let i = 0; i < fibState.currentStep; i++) {
+            if (fibState.steps[i].type === 'return' && fibState.steps[i].node.id === nodeData.id) {
+              return fibState.steps[i].value;
+            }
+          }
+          return d.data.node.n;
+        });
+    }
+
+    function updateFibStats() {
+      // Count calls up to current step
+      let calls = 0;
+      for (let i = 0; i < fibState.currentStep; i++) {
+        if (fibState.steps[i].type === 'call') calls++;
+      }
+      document.getElementById('fib-calls').textContent = calls;
+
+      // Check if complete
+      if (fibState.currentStep >= fibState.steps.length) {
+        const lastStep = fibState.steps[fibState.steps.length - 1];
+        document.getElementById('fib-result').textContent = lastStep.value;
+        document.getElementById('recursive-description').textContent = `Complete! fib(${fibState.n}) = ${lastStep.value}`;
+      } else if (fibState.currentStep > 0) {
+        const step = fibState.steps[fibState.currentStep - 1];
+        if (step.type === 'call') {
+          document.getElementById('recursive-description').textContent = `Calling fib(${step.node.n})`;
+        } else {
+          document.getElementById('recursive-description').textContent = `Returning ${step.value} from fib(${step.node.n})`;
+        }
+      } else {
+        document.getElementById('recursive-description').textContent = 'Press play to watch the recursion unfold';
+        document.getElementById('fib-result').textContent = '-';
+      }
+
+      document.getElementById('fib-step-indicator').textContent = `Step ${fibState.currentStep} of ${fibState.steps.length}`;
+
+      // Update call stack display
+      updateCallStack();
+    }
+
+    function updateCallStack() {
+      const stackDiv = document.getElementById('call-stack');
+
+      // Build call stack from steps
+      let stack = [];
+      for (let i = 0; i < fibState.currentStep; i++) {
+        const step = fibState.steps[i];
+        if (step.type === 'call') {
+          stack.push(`fib(${step.node.n})`);
+        } else if (step.type === 'return') {
+          stack.pop();
+        }
+      }
+
+      if (stack.length === 0) {
+        stackDiv.innerHTML = '<div class="variable-item"><span style="color: var(--text-secondary);">Empty</span></div>';
+      } else {
+        stackDiv.innerHTML = stack.map((call, i) =>
+          `<div class="variable-item"><span class="variable-name">${stack.length - i}</span><span class="variable-value">${call}</span></div>`
+        ).reverse().join('');
+      }
+    }
+
+    function fibStepForward() {
+      if (fibState.currentStep < fibState.steps.length) {
+        fibState.currentStep++;
+        renderFibTree();
+        updateFibStats();
+      }
+    }
+
+    function fibStepBack() {
+      if (fibState.currentStep > 0) {
+        fibState.currentStep--;
+        renderFibTree();
+        updateFibStats();
+      }
+    }
+
+    function toggleFibPlay() {
+      if (fibState.isPlaying) {
+        fibState.isPlaying = false;
+        clearInterval(fibState.intervalId);
+        document.getElementById('fib-play').innerHTML = '&#9654;&#65039;';
+      } else {
+        if (fibState.currentStep >= fibState.steps.length) {
+          fibState.currentStep = 0;
+        }
+        fibState.isPlaying = true;
+        document.getElementById('fib-play').innerHTML = '&#9208;&#65039;';
+        fibState.intervalId = setInterval(() => {
+          if (fibState.currentStep < fibState.steps.length) {
+            fibState.currentStep++;
+            renderFibTree();
+            updateFibStats();
+          } else {
+            fibState.isPlaying = false;
+            clearInterval(fibState.intervalId);
+            document.getElementById('fib-play').innerHTML = '&#9654;&#65039;';
+          }
+        }, 500 / fibState.speed);
+      }
+    }
+
+    function resetFibonacci() {
+      fibState.isPlaying = false;
+      clearInterval(fibState.intervalId);
+      document.getElementById('fib-play').innerHTML = '&#9654;&#65039;';
+      fibState.currentStep = 0;
+      fibState.nodes = [];
+      fibState.steps = [];
+      fibState.callStack = [];
+      document.getElementById('call-tree').innerHTML = '';
+      document.getElementById('fib-calls').textContent = '0';
+      document.getElementById('fib-result').textContent = '-';
+      document.getElementById('fib-step-indicator').textContent = 'Step 0 of 0';
+      document.getElementById('recursive-description').textContent = 'Click "Visualize" to build the call tree';
+      document.getElementById('call-stack').innerHTML = '<div class="variable-item"><span style="color: var(--text-secondary);">Empty</span></div>';
+    }
+
+    function updateFibSpeed() {
+      fibState.speed = parseFloat(document.getElementById('fib-speed').value);
+      if (fibState.isPlaying) {
+        toggleFibPlay();
+        toggleFibPlay();
+      }
+    }
+
+    // ==================== QUIZ FUNCTIONALITY ====================
+    document.querySelectorAll('.quiz-options').forEach((optionsContainer, qIndex) => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintNum) {
+      const questionDiv = btn.closest('.quiz-question');
+      const qIndex = Array.from(document.querySelectorAll('.quiz-question')).indexOf(questionDiv);
+      const hint = document.getElementById(`hint-${qIndex}-${hintNum}`);
+      hint.classList.toggle('show');
+      btn.textContent = hint.classList.contains('show') ? `Hide Hint ${hintNum + 1}` : `Hint ${hintNum + 1}`;
+    }
+
+    // ==================== KATEX AUTO-RENDER ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+
+    // ==================== KEYBOARD SHORTCUTS ====================
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          toggleNestedPlay();
+          break;
+        case 'ArrowRight':
+          nestedStepForward();
+          break;
+        case 'ArrowLeft':
+          nestedStepBack();
+          break;
+        case 'r':
+        case 'R':
+          resetNestedLoop();
+          break;
+      }
+    });
+  </script>
+</body>
+</html>

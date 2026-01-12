@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 16: Randomly Built BSTs | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --node-fill: #2EAADC;
+      --node-stroke: #1a8ab5;
+      --node-text: #FFFFFF;
+      --edge-color: #6B6B6B;
+      --highlight-node: #F1C40F;
+      --worst-case: #EB5757;
+      --balanced: #0F7B6C;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+      --edge-color: #9B9B9B;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .viz-canvas svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Side by Side Comparison */
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .comparison-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      background: var(--background);
+    }
+
+    .comparison-panel h4 {
+      margin-bottom: 1rem;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .comparison-panel .viz-canvas {
+      min-height: 250px;
+    }
+
+    .worst-case-label {
+      color: var(--error);
+    }
+
+    .balanced-label {
+      color: var(--success);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      padding: 0.5rem 1rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      font-family: var(--font-main);
+    }
+
+    .controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .controls button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .controls button.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .controls input[type="text"] {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      width: 200px;
+    }
+
+    .controls select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+
+    .controls label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Histogram */
+    .histogram-container {
+      width: 100%;
+      height: 200px;
+      position: relative;
+      margin-top: 1rem;
+    }
+
+    .histogram-bar {
+      position: absolute;
+      bottom: 30px;
+      background: var(--accent);
+      border-radius: 2px 2px 0 0;
+      transition: height 0.3s ease;
+    }
+
+    .histogram-label {
+      position: absolute;
+      bottom: 5px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      transform: translateX(-50%);
+    }
+
+    .histogram-axis {
+      position: absolute;
+      bottom: 28px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--border);
+    }
+
+    /* Depth Legend */
+    .depth-legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+    }
+
+    .depth-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .depth-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Math Display */
+    .math-block {
+      background: var(--code-bg);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      margin: 1rem 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+      margin-right: 1rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Order Display */
+    .order-display {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-top: 0.5rem;
+      word-break: break-all;
+    }
+
+    /* Animation */
+    @keyframes nodeInsert {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .node-animate {
+      animation: nodeInsert 0.3s ease-out;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .comparison-container {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .controls input[type="text"] {
+        width: 100%;
+      }
+
+      .control-group {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">&#127769;</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 16</span>
+      <h1>Randomly Built Binary Search Trees</h1>
+      <p class="subtitle">Understanding why random insertion order leads to balanced trees with expected height O(log n)</p>
+      <div class="meta">
+        <span>Duration: ~35 minutes</span>
+        <span>Prerequisites: BST Basics, Probability</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Explain</strong> the relationship between insertion order and BST structure</li>
+        <li><strong>Analyze</strong> why sorted insertion creates degenerate (linked-list) trees</li>
+        <li><strong>Prove</strong> that random insertion yields expected height O(log n)</li>
+        <li><strong>Compare</strong> balanced vs. unbalanced tree performance characteristics</li>
+        <li><strong>Apply</strong> probabilistic analysis to tree construction</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Insertion Order Matters -->
+    <h2>1. Insertion Order Matters</h2>
+    <p>The shape of a Binary Search Tree depends entirely on the order in which elements are inserted. The same set of values can produce vastly different tree structures, from a perfectly balanced tree to a degenerate linked list.</p>
+
+    <div class="viz-container">
+      <h3>Interactive Insertion Order Simulator</h3>
+      <p>Enter the same values in different orders to see how tree shape changes.</p>
+
+      <div class="controls">
+        <div class="control-group">
+          <label>Values to insert:</label>
+          <input type="text" id="insert-values" value="4,2,6,1,3,5,7" placeholder="e.g., 4,2,6,1,3,5,7">
+        </div>
+        <button id="btn-balanced-order" class="primary">Balanced Order</button>
+        <button id="btn-sorted-order">Sorted Order</button>
+        <button id="btn-reverse-order">Reverse Sorted</button>
+        <button id="btn-random-order">Random Order</button>
+        <button id="btn-clear-tree">Clear</button>
+      </div>
+
+      <div class="order-display" id="current-order">Current insertion order: 4, 2, 6, 1, 3, 5, 7</div>
+
+      <div class="viz-canvas" id="insertion-canvas" style="height: 350px;"></div>
+
+      <div class="stats-panel">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-nodes">0</div>
+          <div class="stat-label">Nodes</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-height">0</div>
+          <div class="stat-label">Tree Height</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-optimal">0</div>
+          <div class="stat-label">Optimal Height</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-ratio">0</div>
+          <div class="stat-label">Height Ratio</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Inserting elements in sorted order creates a degenerate tree (essentially a linked list) with height n-1, while a balanced insertion order achieves height floor(log_2 n). This difference is dramatic: for n=1000 elements, heights would be 999 vs ~10!
+    </div>
+
+    <!-- Section 2: Side-by-Side Comparison -->
+    <h2>2. Sorted vs. Random Insertion</h2>
+    <p>Let's visualize the dramatic difference between sorted and random insertion orders side by side.</p>
+
+    <div class="comparison-container">
+      <div class="comparison-panel">
+        <h4 class="worst-case-label">Sorted Insertion (Worst Case)</h4>
+        <div class="viz-canvas" id="sorted-canvas" style="height: 300px;"></div>
+        <div class="stats-panel">
+          <div class="stat-item">
+            <div class="stat-value" id="sorted-height">-</div>
+            <div class="stat-label">Height</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="sorted-complexity">O(n)</div>
+            <div class="stat-label">Search Time</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison-panel">
+        <h4 class="balanced-label">Random Insertion (Average Case)</h4>
+        <div class="viz-canvas" id="random-canvas" style="height: 300px;"></div>
+        <div class="stats-panel">
+          <div class="stat-item">
+            <div class="stat-value" id="random-height">-</div>
+            <div class="stat-label">Height</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="random-complexity">O(log n)</div>
+            <div class="stat-label">Search Time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls" style="justify-content: center;">
+      <div class="control-group">
+        <label>Number of nodes:</label>
+        <select id="comparison-size">
+          <option value="7">7 nodes</option>
+          <option value="10">10 nodes</option>
+          <option value="15" selected>15 nodes</option>
+          <option value="20">20 nodes</option>
+        </select>
+      </div>
+      <button id="btn-run-comparison" class="primary">Run Comparison</button>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Assuming BSTs always have O(log n) operations. This is only true for <em>balanced</em> BSTs. A degenerate BST degrades to O(n) for all operations!
+    </div>
+
+    <!-- Section 3: Mathematical Analysis -->
+    <h2>3. Expected Height of Random BSTs</h2>
+    <p>When we insert n distinct keys in a uniformly random order, what is the expected height of the resulting BST?</p>
+
+    <h3>The Probabilistic Setup</h3>
+    <p>Consider inserting keys 1, 2, ..., n in a random permutation. Each of the n! permutations is equally likely.</p>
+
+    <div class="math-block">
+      $$E[\text{height}] = O(\log n)$$
+    </div>
+
+    <p>More precisely, we can show that:</p>
+    <div class="math-block">
+      $$E[\text{height}] \leq 3 \ln n \approx 4.33 \log_2 n$$
+    </div>
+
+    <h3>Intuition: Quicksort Connection</h3>
+    <p>The structure of a random BST is identical to the recursion tree of Quicksort with a random pivot! When we insert a random sequence:</p>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li>The first element becomes the root (like the pivot in Quicksort)</li>
+      <li>Elements smaller go to the left subtree</li>
+      <li>Elements larger go to the right subtree</li>
+      <li>This process recurses, mirroring Quicksort's partitioning</li>
+    </ul>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The depth of node k in a random BST equals the number of ancestors of k. Node i is an ancestor of k if and only if i was the first among all keys in the range [min(i,k), max(i,k)] to be inserted.
+    </div>
+
+    <!-- Section 4: Height Distribution Simulator -->
+    <h2>4. Height Distribution Analysis</h2>
+    <p>Run multiple trials to see how tree heights are distributed for random insertions.</p>
+
+    <div class="viz-container">
+      <h3>Random BST Height Simulator</h3>
+
+      <div class="controls">
+        <div class="control-group">
+          <label>Tree size (n):</label>
+          <select id="sim-size">
+            <option value="50">50 nodes</option>
+            <option value="100" selected>100 nodes</option>
+            <option value="200">200 nodes</option>
+            <option value="500">500 nodes</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Number of trials:</label>
+          <select id="sim-trials">
+            <option value="100">100 trials</option>
+            <option value="500" selected>500 trials</option>
+            <option value="1000">1000 trials</option>
+          </select>
+        </div>
+        <button id="btn-run-simulation" class="primary">Run Simulation</button>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-item">
+          <div class="stat-value" id="sim-min">-</div>
+          <div class="stat-label">Min Height</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-avg">-</div>
+          <div class="stat-label">Average Height</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-max">-</div>
+          <div class="stat-label">Max Height</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-expected">-</div>
+          <div class="stat-label">E[height] = 3ln(n)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-optimal">-</div>
+          <div class="stat-label">Optimal (log2 n)</div>
+        </div>
+      </div>
+
+      <div class="histogram-container" id="height-histogram">
+        <div class="histogram-axis"></div>
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try This:</strong> Run the simulation with different tree sizes and observe how the average height grows. Notice that it stays close to the theoretical expected value of 3 ln(n), which is O(log n).
+    </div>
+
+    <!-- Section 5: Depth Analysis -->
+    <h2>5. Node Depth Analysis</h2>
+    <p>Explore the depth of individual nodes in a random BST. The depth of a node determines how long it takes to find that node.</p>
+
+    <div class="viz-container">
+      <h3>Depth Visualizer</h3>
+      <p>Nodes are colored by their depth. Hover over nodes to see their path from the root.</p>
+
+      <div class="controls">
+        <div class="control-group">
+          <label>Tree size:</label>
+          <select id="depth-size">
+            <option value="15" selected>15 nodes</option>
+            <option value="31">31 nodes</option>
+            <option value="63">63 nodes</option>
+          </select>
+        </div>
+        <button id="btn-new-depth-tree" class="primary">Generate Random Tree</button>
+        <button id="btn-balanced-depth-tree">Generate Balanced Tree</button>
+      </div>
+
+      <div class="viz-canvas" id="depth-canvas" style="height: 400px;"></div>
+
+      <div class="depth-legend" id="depth-legend"></div>
+
+      <div class="stats-panel">
+        <div class="stat-item">
+          <div class="stat-value" id="depth-avg">-</div>
+          <div class="stat-label">Avg Depth</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="depth-max">-</div>
+          <div class="stat-label">Max Depth</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="depth-internal">-</div>
+          <div class="stat-label">Avg Internal Path</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Internal Path Length</h3>
+    <p>The <strong>internal path length</strong> is the sum of depths of all nodes. For a random BST with n nodes:</p>
+    <div class="math-block">
+      $$E[\text{Internal Path Length}] = O(n \log n)$$
+    </div>
+    <p>This means the average depth of a node is O(log n), confirming our expected search time.</p>
+
+    <!-- Section 6: Why Random Works -->
+    <h2>6. Why Random Insertion Works</h2>
+
+    <h3>The Root Selection Argument</h3>
+    <p>When we insert keys in random order, the root is equally likely to be any of the n keys. If the root has rank r (i.e., r-1 smaller keys and n-r larger keys), then:</p>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li>The left subtree contains r-1 nodes in random order</li>
+      <li>The right subtree contains n-r nodes in random order</li>
+      <li>Both subtrees are independent random BSTs</li>
+    </ul>
+
+    <div class="math-block">
+      $$E[h(n)] = \frac{1}{n} \sum_{r=1}^{n} \left( 1 + \max(E[h(r-1)], E[h(n-r)]) \right)$$
+    </div>
+
+    <h3>Comparison with Balanced Trees</h3>
+    <table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+      <thead>
+        <tr style="background: var(--code-bg);">
+          <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid var(--border);">Property</th>
+          <th style="padding: 0.75rem; text-align: center; border-bottom: 2px solid var(--border);">Random BST</th>
+          <th style="padding: 0.75rem; text-align: center; border-bottom: 2px solid var(--border);">Balanced BST (AVL/Red-Black)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Expected Height</td>
+          <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border);">O(log n)</td>
+          <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border);">O(log n)</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Worst Case Height</td>
+          <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border);">O(n)</td>
+          <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border);">O(log n)</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Insert Complexity</td>
+          <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border);">O(h)</td>
+          <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border);">O(log n) with rotations</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem;">Implementation</td>
+          <td style="padding: 0.75rem; text-align: center;">Simple</td>
+          <td style="padding: 0.75rem; text-align: center;">Complex (rebalancing)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Random BSTs achieve O(log n) expected height naturally, without any explicit balancing. This is why randomization is such a powerful technique in algorithm design - it often gives us "good" behavior on average without complex bookkeeping.
+    </div>
+
+    <!-- Quiz Section -->
+    <h2>7. Knowledge Check</h2>
+
+    <div class="quiz-container">
+      <!-- Question 1 -->
+      <div class="quiz-question">
+        <h4>Question 1: What is the height of a BST created by inserting 1, 2, 3, 4, 5 in that order?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">2</div>
+          <div class="quiz-option" data-index="1">3</div>
+          <div class="quiz-option" data-index="2">4 (this is log2(5) rounded up)</div>
+          <div class="quiz-option" data-index="3">4 (this is n-1 where n=5)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-1-0">Think about what happens when you insert sorted values. Where does each new node go?</div>
+        <div class="hint-text" id="hint-1-1">1 becomes the root. 2 is larger, so it goes right. 3 is larger than 2, so it goes right of 2... Draw it out!</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Sorted insertion creates a degenerate tree (linked list). Each new element is larger than all previous ones, so it always goes to the rightmost position. With 5 nodes, we get a chain of height 4 (n-1).
+        </div>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="quiz-question">
+        <h4>Question 2: For a randomly built BST with n nodes, what is the expected height?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(log n)</div>
+          <div class="quiz-option" data-index="2">O(n log n)</div>
+          <div class="quiz-option" data-index="3">O(sqrt(n))</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-2-0">Random insertion tends to create balanced-ish trees most of the time.</div>
+        <div class="hint-text" id="hint-2-1">The analysis is similar to Quicksort with random pivot selection. What's the expected depth of recursion in Quicksort?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The expected height of a randomly built BST is O(log n), specifically about 3 ln n. This is because random insertion tends to balance the tree naturally.
+        </div>
+      </div>
+
+      <!-- Question 3 -->
+      <div class="quiz-question">
+        <h4>Question 3: Why is the structure of a random BST related to Quicksort?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Both use comparison-based sorting</div>
+          <div class="quiz-option" data-index="1">Both have O(n log n) average time complexity</div>
+          <div class="quiz-option" data-index="2">The first inserted element acts like a pivot, partitioning remaining elements</div>
+          <div class="quiz-option" data-index="3">Both require balanced trees to work efficiently</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-3-0">Think about what the root of a BST does to the remaining elements.</div>
+        <div class="hint-text" id="hint-3-1">In Quicksort, the pivot divides elements into "smaller" and "larger" groups. What does the BST root do?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The first element inserted becomes the root and partitions all subsequent elements - smaller ones go left, larger ones go right. This is exactly what a Quicksort pivot does! The recursion tree of Quicksort with a random pivot has the same structure as a random BST.
+        </div>
+      </div>
+
+      <!-- Question 4 -->
+      <div class="quiz-question">
+        <h4>Question 4: What is the expected internal path length of a random BST with n nodes?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(log n)</div>
+          <div class="quiz-option" data-index="2">O(n log n)</div>
+          <div class="quiz-option" data-index="3">O(n^2)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-4-0">Internal path length is the sum of depths of all nodes. If average depth is O(log n)...</div>
+        <div class="hint-text" id="hint-4-1">Sum of n nodes each with expected depth O(log n) equals?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The internal path length sums the depth of all n nodes. Since the expected depth of each node is O(log n), the total is O(n log n). This also represents the total cost of inserting n random elements.
+        </div>
+      </div>
+
+      <!-- Question 5 -->
+      <div class="quiz-question">
+        <h4>Question 5: Which insertion order would give the BEST (minimum) height for values {1, 2, 3, 4, 5, 6, 7}?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">1, 2, 3, 4, 5, 6, 7</div>
+          <div class="quiz-option" data-index="1">4, 2, 6, 1, 3, 5, 7</div>
+          <div class="quiz-option" data-index="2">7, 6, 5, 4, 3, 2, 1</div>
+          <div class="quiz-option" data-index="3">1, 7, 2, 6, 3, 5, 4</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Hint 1</button>
+        <button class="hint-btn" onclick="toggleHint(this, 1)">Hint 2</button>
+        <div class="hint-text" id="hint-5-0">For a perfectly balanced tree, what should the root be? (Hint: the median)</div>
+        <div class="hint-text" id="hint-5-1">After choosing 4 as root, what should be the roots of the left and right subtrees?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Starting with the median (4) as root creates balanced left and right subtrees. Then inserting 2 and 6 (medians of each half) further balances. This produces a perfect binary tree with height 2, which is optimal for 7 nodes.
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <h2>8. Summary</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Insertion order determines structure:</strong> The same values can create trees from perfectly balanced to completely degenerate.</li>
+      <li><strong>Sorted insertion is worst case:</strong> Creates a linked list with height n-1 and O(n) operations.</li>
+      <li><strong>Random insertion gives O(log n) expected height:</strong> Probabilistic analysis shows E[height] = 3 ln n.</li>
+      <li><strong>Connection to Quicksort:</strong> Random BST structure mirrors Quicksort's recursion tree.</li>
+      <li><strong>Practical implications:</strong> If you can't guarantee balanced insertion order, randomizing the input before building a BST gives expected O(log n) height without complex balancing code.</li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-15-bst-operations.html">&larr; Session 15: BST Operations</a>
+      <a href="session-17-balanced-trees.html">Session 17: Balanced Trees (AVL) &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle with localStorage persistence
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerHTML = next === 'dark' ? '&#9728;' : '&#127769;';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').innerHTML = savedTheme === 'dark' ? '&#9728;' : '&#127769;';
+
+    // BST Node class
+    class TreeNode {
+      constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+        this.x = 0;
+        this.y = 0;
+        this.depth = 0;
+      }
+    }
+
+    // BST class
+    class BST {
+      constructor() {
+        this.root = null;
+        this.nodeCount = 0;
+      }
+
+      insert(value) {
+        const newNode = new TreeNode(value);
+        if (!this.root) {
+          this.root = newNode;
+          this.nodeCount = 1;
+          return;
+        }
+
+        let current = this.root;
+        let depth = 0;
+        while (true) {
+          depth++;
+          if (value < current.value) {
+            if (!current.left) {
+              current.left = newNode;
+              newNode.depth = depth;
+              break;
+            }
+            current = current.left;
+          } else {
+            if (!current.right) {
+              current.right = newNode;
+              newNode.depth = depth;
+              break;
+            }
+            current = current.right;
+          }
+        }
+        this.nodeCount++;
+      }
+
+      insertAll(values) {
+        values.forEach(v => this.insert(v));
+      }
+
+      getHeight() {
+        function height(node) {
+          if (!node) return -1;
+          return 1 + Math.max(height(node.left), height(node.right));
+        }
+        return height(this.root);
+      }
+
+      getDepths() {
+        const depths = [];
+        function traverse(node, depth) {
+          if (!node) return;
+          depths.push(depth);
+          traverse(node.left, depth + 1);
+          traverse(node.right, depth + 1);
+        }
+        traverse(this.root, 0);
+        return depths;
+      }
+
+      calculatePositions(canvasWidth, canvasHeight) {
+        if (!this.root) return;
+
+        const height = this.getHeight();
+        const levelHeight = Math.min(50, (canvasHeight - 60) / (height + 1));
+        const nodeRadius = Math.min(18, 200 / (this.nodeCount + 1));
+
+        let positions = [];
+
+        function assignPositions(node, depth, left, right) {
+          if (!node) return;
+
+          const mid = (left + right) / 2;
+          node.x = mid;
+          node.y = 30 + depth * levelHeight;
+          node.depth = depth;
+          positions.push(node);
+
+          assignPositions(node.left, depth + 1, left, mid);
+          assignPositions(node.right, depth + 1, mid, right);
+        }
+
+        assignPositions(this.root, 0, 20, canvasWidth - 20);
+        return { positions, nodeRadius };
+      }
+    }
+
+    // Render BST to SVG
+    function renderTree(containerId, tree, options = {}) {
+      const container = document.getElementById(containerId);
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      if (!tree.root) {
+        container.innerHTML = '<svg><text x="50%" y="50%" text-anchor="middle" fill="var(--text-secondary)" font-size="14">No tree to display</text></svg>';
+        return;
+      }
+
+      const { positions, nodeRadius } = tree.calculatePositions(width, height);
+
+      let svg = `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+
+      // Draw edges first
+      function drawEdges(node) {
+        if (!node) return;
+        if (node.left) {
+          svg += `<line x1="${node.x}" y1="${node.y}" x2="${node.left.x}" y2="${node.left.y}"
+                   stroke="var(--edge-color)" stroke-width="2"/>`;
+          drawEdges(node.left);
+        }
+        if (node.right) {
+          svg += `<line x1="${node.x}" y1="${node.y}" x2="${node.right.x}" y2="${node.right.y}"
+                   stroke="var(--edge-color)" stroke-width="2"/>`;
+          drawEdges(node.right);
+        }
+      }
+      drawEdges(tree.root);
+
+      // Draw nodes
+      const maxDepth = tree.getHeight();
+      const depthColors = options.depthColors || false;
+
+      function drawNodes(node) {
+        if (!node) return;
+
+        let fillColor = 'var(--node-fill)';
+        if (depthColors && maxDepth > 0) {
+          const hue = 200 - (node.depth / maxDepth) * 160; // Blue to red
+          fillColor = `hsl(${hue}, 70%, 50%)`;
+        }
+
+        svg += `<circle cx="${node.x}" cy="${node.y}" r="${nodeRadius}"
+                 fill="${fillColor}" stroke="var(--node-stroke)" stroke-width="2"/>`;
+        svg += `<text x="${node.x}" y="${node.y}" text-anchor="middle" dy="0.35em"
+                 fill="var(--node-text)" font-size="${Math.max(10, nodeRadius - 2)}" font-weight="600">${node.value}</text>`;
+
+        drawNodes(node.left);
+        drawNodes(node.right);
+      }
+      drawNodes(tree.root);
+
+      svg += '</svg>';
+      container.innerHTML = svg;
+    }
+
+    // Shuffle array (Fisher-Yates)
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Generate balanced order
+    function balancedOrder(arr) {
+      const sorted = [...arr].sort((a, b) => a - b);
+      const result = [];
+
+      function addMiddle(left, right) {
+        if (left > right) return;
+        const mid = Math.floor((left + right) / 2);
+        result.push(sorted[mid]);
+        addMiddle(left, mid - 1);
+        addMiddle(mid + 1, right);
+      }
+
+      addMiddle(0, sorted.length - 1);
+      return result;
+    }
+
+    // Section 1: Insertion Order Simulator
+    const insertValuesInput = document.getElementById('insert-values');
+    const currentOrderDisplay = document.getElementById('current-order');
+    let currentInsertTree = new BST();
+
+    function parseValues(str) {
+      return str.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    }
+
+    function updateInsertionTree(order) {
+      currentInsertTree = new BST();
+      currentInsertTree.insertAll(order);
+
+      renderTree('insertion-canvas', currentInsertTree);
+      currentOrderDisplay.textContent = 'Current insertion order: ' + order.join(', ');
+
+      const n = order.length;
+      const h = currentInsertTree.getHeight();
+      const optimal = Math.floor(Math.log2(n));
+
+      document.getElementById('stat-nodes').textContent = n;
+      document.getElementById('stat-height').textContent = h;
+      document.getElementById('stat-optimal').textContent = optimal;
+      document.getElementById('stat-ratio').textContent = (h / Math.max(1, optimal)).toFixed(2) + 'x';
+    }
+
+    document.getElementById('btn-balanced-order').addEventListener('click', () => {
+      const values = parseValues(insertValuesInput.value);
+      if (values.length > 0) {
+        updateInsertionTree(balancedOrder(values));
+      }
+    });
+
+    document.getElementById('btn-sorted-order').addEventListener('click', () => {
+      const values = parseValues(insertValuesInput.value);
+      if (values.length > 0) {
+        updateInsertionTree([...values].sort((a, b) => a - b));
+      }
+    });
+
+    document.getElementById('btn-reverse-order').addEventListener('click', () => {
+      const values = parseValues(insertValuesInput.value);
+      if (values.length > 0) {
+        updateInsertionTree([...values].sort((a, b) => b - a));
+      }
+    });
+
+    document.getElementById('btn-random-order').addEventListener('click', () => {
+      const values = parseValues(insertValuesInput.value);
+      if (values.length > 0) {
+        updateInsertionTree(shuffleArray(values));
+      }
+    });
+
+    document.getElementById('btn-clear-tree').addEventListener('click', () => {
+      currentInsertTree = new BST();
+      document.getElementById('insertion-canvas').innerHTML = '';
+      currentOrderDisplay.textContent = 'Tree cleared. Enter values and choose an insertion order.';
+      document.getElementById('stat-nodes').textContent = '0';
+      document.getElementById('stat-height').textContent = '0';
+      document.getElementById('stat-optimal').textContent = '0';
+      document.getElementById('stat-ratio').textContent = '-';
+    });
+
+    // Initialize with balanced order
+    updateInsertionTree(balancedOrder(parseValues(insertValuesInput.value)));
+
+    // Section 2: Side-by-side comparison
+    function runComparison() {
+      const n = parseInt(document.getElementById('comparison-size').value);
+      const values = Array.from({length: n}, (_, i) => i + 1);
+
+      // Sorted tree
+      const sortedTree = new BST();
+      sortedTree.insertAll([...values].sort((a, b) => a - b));
+      renderTree('sorted-canvas', sortedTree);
+      document.getElementById('sorted-height').textContent = sortedTree.getHeight();
+
+      // Random tree
+      const randomTree = new BST();
+      randomTree.insertAll(shuffleArray(values));
+      renderTree('random-canvas', randomTree);
+      document.getElementById('random-height').textContent = randomTree.getHeight();
+    }
+
+    document.getElementById('btn-run-comparison').addEventListener('click', runComparison);
+    runComparison();
+
+    // Section 4: Height Distribution Simulator
+    function runSimulation() {
+      const n = parseInt(document.getElementById('sim-size').value);
+      const trials = parseInt(document.getElementById('sim-trials').value);
+      const values = Array.from({length: n}, (_, i) => i + 1);
+
+      const heights = [];
+      for (let t = 0; t < trials; t++) {
+        const tree = new BST();
+        tree.insertAll(shuffleArray(values));
+        heights.push(tree.getHeight());
+      }
+
+      const minH = Math.min(...heights);
+      const maxH = Math.max(...heights);
+      const avgH = heights.reduce((a, b) => a + b, 0) / trials;
+      const expectedH = 3 * Math.log(n);
+      const optimalH = Math.floor(Math.log2(n));
+
+      document.getElementById('sim-min').textContent = minH;
+      document.getElementById('sim-max').textContent = maxH;
+      document.getElementById('sim-avg').textContent = avgH.toFixed(1);
+      document.getElementById('sim-expected').textContent = expectedH.toFixed(1);
+      document.getElementById('sim-optimal').textContent = optimalH;
+
+      // Build histogram
+      const histogram = {};
+      for (let h = minH; h <= maxH; h++) {
+        histogram[h] = 0;
+      }
+      heights.forEach(h => histogram[h]++);
+
+      const maxCount = Math.max(...Object.values(histogram));
+      const histContainer = document.getElementById('height-histogram');
+      histContainer.innerHTML = '<div class="histogram-axis"></div>';
+
+      const buckets = Object.keys(histogram).map(Number).sort((a, b) => a - b);
+      const barWidth = Math.min(40, (histContainer.clientWidth - 40) / buckets.length);
+
+      buckets.forEach((h, i) => {
+        const count = histogram[h];
+        const barHeight = (count / maxCount) * 150;
+        const left = 20 + i * (barWidth + 2);
+
+        const bar = document.createElement('div');
+        bar.className = 'histogram-bar';
+        bar.style.left = left + 'px';
+        bar.style.width = barWidth + 'px';
+        bar.style.height = barHeight + 'px';
+        bar.title = `Height ${h}: ${count} trees (${(count/trials*100).toFixed(1)}%)`;
+        histContainer.appendChild(bar);
+
+        const label = document.createElement('div');
+        label.className = 'histogram-label';
+        label.style.left = (left + barWidth/2) + 'px';
+        label.textContent = h;
+        histContainer.appendChild(label);
+      });
+    }
+
+    document.getElementById('btn-run-simulation').addEventListener('click', runSimulation);
+
+    // Section 5: Depth Analysis
+    function generateDepthTree(balanced = false) {
+      const n = parseInt(document.getElementById('depth-size').value);
+      const values = Array.from({length: n}, (_, i) => i + 1);
+
+      const tree = new BST();
+      if (balanced) {
+        tree.insertAll(balancedOrder(values));
+      } else {
+        tree.insertAll(shuffleArray(values));
+      }
+
+      renderTree('depth-canvas', tree, { depthColors: true });
+
+      const depths = tree.getDepths();
+      const avgDepth = depths.reduce((a, b) => a + b, 0) / depths.length;
+      const maxDepth = Math.max(...depths);
+      const internalPath = depths.reduce((a, b) => a + b, 0);
+
+      document.getElementById('depth-avg').textContent = avgDepth.toFixed(2);
+      document.getElementById('depth-max').textContent = maxDepth;
+      document.getElementById('depth-internal').textContent = internalPath;
+
+      // Update legend
+      const legend = document.getElementById('depth-legend');
+      legend.innerHTML = '';
+      for (let d = 0; d <= maxDepth; d++) {
+        const hue = 200 - (d / maxDepth) * 160;
+        const item = document.createElement('div');
+        item.className = 'depth-item';
+        item.innerHTML = `<div class="depth-color" style="background: hsl(${hue}, 70%, 50%)"></div>
+                          <span>Depth ${d}</span>`;
+        legend.appendChild(item);
+      }
+    }
+
+    document.getElementById('btn-new-depth-tree').addEventListener('click', () => generateDepthTree(false));
+    document.getElementById('btn-balanced-depth-tree').addEventListener('click', () => generateDepthTree(true));
+    generateDepthTree(false);
+
+    // Quiz functionality
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintNum) {
+      const question = btn.closest('.quiz-question');
+      const questionNum = Array.from(document.querySelectorAll('.quiz-question')).indexOf(question) + 1;
+      const hint = document.getElementById(`hint-${questionNum}-${hintNum}`);
+
+      if (hint) {
+        hint.classList.toggle('show');
+        const isShown = hint.classList.contains('show');
+        btn.textContent = isShown ? `Hide Hint ${hintNum + 1}` : `Hint ${hintNum + 1}`;
+      }
+    }
+
+    // KaTeX auto-render
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (currentInsertTree.root) {
+        renderTree('insertion-canvas', currentInsertTree);
+      }
+    });
+  </script>
+</body>
+</html>

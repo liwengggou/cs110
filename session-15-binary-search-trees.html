@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 15: Binary Search Trees (BSTs) | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --found: #0F7B6C;
+      --inserting: #9B51E0;
+      --deleting: #EB5757;
+      --successor: #F59E0B;
+      --traversed: #0F7B6C;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 350px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Tree Visualization */
+    .tree-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tree-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node circle {
+      fill: var(--accent);
+      stroke: white;
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node text {
+      fill: white;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .tree-node.comparing circle {
+      fill: var(--comparing);
+      stroke: var(--current-focus);
+      stroke-width: 3;
+    }
+
+    .tree-node.found circle {
+      fill: var(--found);
+      stroke: var(--current-focus);
+      stroke-width: 4;
+      filter: drop-shadow(0 0 10px rgba(15, 123, 108, 0.6));
+    }
+
+    .tree-node.inserting circle {
+      fill: var(--inserting);
+      stroke: var(--current-focus);
+      stroke-width: 3;
+    }
+
+    .tree-node.deleting circle {
+      fill: var(--deleting);
+      stroke: white;
+      stroke-width: 3;
+    }
+
+    .tree-node.successor circle {
+      fill: var(--successor);
+      stroke: white;
+      stroke-width: 3;
+    }
+
+    .tree-node.traversed circle {
+      fill: var(--traversed);
+    }
+
+    .tree-edge {
+      stroke: rgba(255,255,255,0.4);
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .tree-edge.highlighted {
+      stroke: var(--current-focus);
+      stroke-width: 3;
+    }
+
+    /* Input Controls */
+    .input-controls {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .input-controls input[type="number"] {
+      width: 80px;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .input-controls button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .input-controls button:hover {
+      background: var(--accent-hover);
+    }
+
+    .input-controls button.secondary {
+      background: var(--background);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .input-controls button.secondary:hover {
+      background: var(--background-secondary);
+    }
+
+    .input-controls button.danger {
+      background: var(--error);
+    }
+
+    .input-controls button.danger:hover {
+      background: #d63031;
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Output Panel */
+    .output-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .output-panel h4 {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .output-content {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--success);
+      min-height: 1.5rem;
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-box h4 {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .complexity-table th,
+    .complexity-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .complexity-table th {
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .complexity-table td:last-child {
+      font-family: var(--font-mono);
+      color: var(--accent);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-container {
+      margin-top: 1rem;
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-right: 1rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* BST Property Diagram */
+    .bst-property-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .property-box {
+      background: var(--purple);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      text-align: center;
+    }
+
+    .property-arrow {
+      font-size: 2rem;
+      color: var(--text-secondary);
+    }
+
+    .property-node {
+      background: var(--accent);
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0.75rem 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .input-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .input-controls input[type="number"] {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">Moon</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 15</span>
+      <h1>Binary Search Trees (BSTs)</h1>
+      <p class="subtitle">Master efficient searching, insertion, and deletion with the BST property</p>
+      <div class="meta">
+        <span>Duration: ~35 minutes</span>
+        <span>Prerequisites: Binary Trees, Recursion</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Understand</strong> the BST property and how it enables efficient operations</li>
+        <li><strong>Implement</strong> search, insertion, and deletion operations</li>
+        <li><strong>Handle</strong> all three deletion cases: leaf, one child, two children</li>
+        <li><strong>Perform</strong> in-order traversal to produce sorted output</li>
+        <li><strong>Find</strong> successor and predecessor nodes</li>
+        <li><strong>Analyze</strong> O(h) time complexity where h is tree height</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: BST Property -->
+    <h2>1. The BST Property</h2>
+    <p>A Binary Search Tree is a binary tree with a special ordering property: for every node, all values in its left subtree are <strong>smaller</strong>, and all values in its right subtree are <strong>larger</strong>.</p>
+
+    <div class="viz-container">
+      <h3>BST Property Visualization</h3>
+      <div class="viz-canvas" style="min-height: 150px; display: flex; align-items: center; justify-content: center;">
+        <div class="bst-property-diagram">
+          <div class="property-box">Left Subtree<br><small>All values &lt; node</small></div>
+          <div class="property-arrow">&larr;</div>
+          <div class="property-node">Node</div>
+          <div class="property-arrow">&rarr;</div>
+          <div class="property-box">Right Subtree<br><small>All values &gt; node</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The BST property enables binary search in a tree structure. At each node, we can eliminate half the remaining nodes by comparing our target with the current node's value.
+    </div>
+
+    <!-- Section 2: Interactive BST Builder -->
+    <h2>2. Interactive BST Builder</h2>
+    <p>Build your own BST by inserting and deleting nodes. Watch how the tree maintains its structure and the BST property.</p>
+
+    <div class="viz-container">
+      <h3>BST Builder</h3>
+      <div class="step-description" id="builder-description">
+        Enter a value and click Insert to add it to the tree
+      </div>
+
+      <div class="viz-canvas" id="builder-canvas">
+        <svg class="tree-svg" id="builder-svg"></svg>
+      </div>
+
+      <div class="input-controls">
+        <input type="number" id="builder-value" placeholder="Value" min="1" max="99">
+        <button id="builder-insert">Insert</button>
+        <button id="builder-delete" class="danger">Delete</button>
+        <button id="builder-clear" class="secondary">Clear Tree</button>
+        <button id="builder-random" class="secondary">Random Tree</button>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background: var(--accent);"></div> Normal</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--comparing);"></div> Comparing</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--inserting);"></div> Inserting</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--deleting);"></div> Deleting</div>
+      </div>
+    </div>
+
+    <!-- Section 3: Search Operation -->
+    <h2>3. Search Operation</h2>
+    <p>Searching in a BST follows the BST property: go left if the target is smaller, go right if larger. This gives us O(h) time complexity.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Search Animator</h3>
+          <div class="step-description" id="search-description">
+            Enter a value to search for in the BST
+          </div>
+
+          <div class="viz-canvas" id="search-canvas">
+            <svg class="tree-svg" id="search-svg"></svg>
+          </div>
+
+          <div class="input-controls">
+            <input type="number" id="search-value" placeholder="Search value" min="1" max="99">
+            <button id="search-start">Search</button>
+            <button id="search-reset" class="secondary">Reset</button>
+          </div>
+
+          <div class="step-controls">
+            <button id="search-back" title="Step Back">Back</button>
+            <button id="search-play" title="Play/Pause">Play</button>
+            <button id="search-forward" title="Step Forward">Forward</button>
+            <span class="step-indicator" id="search-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="search-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="search-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="search-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">search</span>(<span class="variable">node</span>, <span class="variable">target</span>):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="variable">node</span> <span class="keyword">is</span> <span class="keyword">None</span>:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        <span class="keyword">return</span> <span class="keyword">None</span>  <span class="comment"># Not found</span></span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="variable">target</span> <span class="operator">==</span> <span class="variable">node</span>.<span class="variable">val</span>:</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="keyword">return</span> <span class="variable">node</span>  <span class="comment"># Found!</span></span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">    <span class="keyword">elif</span> <span class="variable">target</span> <span class="operator">&lt;</span> <span class="variable">node</span>.<span class="variable">val</span>:</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">        <span class="keyword">return</span> <span class="function">search</span>(<span class="variable">node</span>.<span class="variable">left</span>, <span class="variable">target</span>)</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">    <span class="keyword">else</span>:</span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">        <span class="keyword">return</span> <span class="function">search</span>(<span class="variable">node</span>.<span class="variable">right</span>, <span class="variable">target</span>)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Insertion -->
+    <h2>4. Insertion Operation</h2>
+    <p>Inserting a new node follows the same path as search: compare at each step and go left or right. The new node is always inserted as a leaf.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Insertion Animator</h3>
+          <div class="step-description" id="insert-description">
+            Enter a value to insert into the BST
+          </div>
+
+          <div class="viz-canvas" id="insert-canvas">
+            <svg class="tree-svg" id="insert-svg"></svg>
+          </div>
+
+          <div class="input-controls">
+            <input type="number" id="insert-value" placeholder="Insert value" min="1" max="99">
+            <button id="insert-start">Insert</button>
+            <button id="insert-reset" class="secondary">Reset Tree</button>
+          </div>
+
+          <div class="step-controls">
+            <button id="insert-back" title="Step Back">Back</button>
+            <button id="insert-play" title="Play/Pause">Play</button>
+            <button id="insert-forward" title="Step Forward">Forward</button>
+            <span class="step-indicator" id="insert-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="insert-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="insert-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="insert-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">insert</span>(<span class="variable">node</span>, <span class="variable">val</span>):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="variable">node</span> <span class="keyword">is</span> <span class="keyword">None</span>:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        <span class="keyword">return</span> <span class="function">Node</span>(<span class="variable">val</span>)</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="variable">val</span> <span class="operator">&lt;</span> <span class="variable">node</span>.<span class="variable">val</span>:</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="variable">node</span>.<span class="variable">left</span> <span class="operator">=</span> <span class="function">insert</span>(<span class="variable">node</span>.<span class="variable">left</span>, <span class="variable">val</span>)</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">    <span class="keyword">else</span>:</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">        <span class="variable">node</span>.<span class="variable">right</span> <span class="operator">=</span> <span class="function">insert</span>(<span class="variable">node</span>.<span class="variable">right</span>, <span class="variable">val</span>)</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">    <span class="keyword">return</span> <span class="variable">node</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> New nodes are always inserted as leaves. The path from root to the insertion point is determined by comparing values at each step - go left if smaller, right if larger.
+    </div>
+
+    <!-- Section 5: Deletion -->
+    <h2>5. Deletion Operation (Three Cases)</h2>
+    <p>Deletion is the most complex BST operation. There are three cases depending on the node being deleted:</p>
+
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Case 1 - Leaf Node:</strong> Simply remove the node</li>
+      <li><strong>Case 2 - One Child:</strong> Replace node with its child</li>
+      <li><strong>Case 3 - Two Children:</strong> Replace with in-order successor (smallest in right subtree)</li>
+    </ul>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Deletion Animator</h3>
+          <div class="step-description" id="delete-description">
+            Enter a value to delete from the BST
+          </div>
+
+          <div class="viz-canvas" id="delete-canvas">
+            <svg class="tree-svg" id="delete-svg"></svg>
+          </div>
+
+          <div class="input-controls">
+            <input type="number" id="delete-value" placeholder="Delete value" min="1" max="99">
+            <button id="delete-start" class="danger">Delete</button>
+            <button id="delete-reset" class="secondary">Reset Tree</button>
+          </div>
+
+          <div class="step-controls">
+            <button id="delete-back" title="Step Back">Back</button>
+            <button id="delete-play" title="Play/Pause">Play</button>
+            <button id="delete-forward" title="Step Forward">Forward</button>
+            <span class="step-indicator" id="delete-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="delete-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="delete-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="background: var(--deleting);"></div> Deleting</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--successor);"></div> Successor</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="delete-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">delete</span>(<span class="variable">node</span>, <span class="variable">val</span>):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="variable">node</span> <span class="keyword">is</span> <span class="keyword">None</span>:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        <span class="keyword">return</span> <span class="keyword">None</span></span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="variable">val</span> <span class="operator">&lt;</span> <span class="variable">node</span>.<span class="variable">val</span>:</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="variable">node</span>.<span class="variable">left</span> <span class="operator">=</span> <span class="function">delete</span>(<span class="variable">node</span>.<span class="variable">left</span>, <span class="variable">val</span>)</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">    <span class="keyword">elif</span> <span class="variable">val</span> <span class="operator">&gt;</span> <span class="variable">node</span>.<span class="variable">val</span>:</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">        <span class="variable">node</span>.<span class="variable">right</span> <span class="operator">=</span> <span class="function">delete</span>(<span class="variable">node</span>.<span class="variable">right</span>, <span class="variable">val</span>)</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">    <span class="keyword">else</span>:  <span class="comment"># Found the node</span></span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">        <span class="keyword">if</span> <span class="variable">node</span>.<span class="variable">left</span> <span class="keyword">is</span> <span class="keyword">None</span>:</span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">            <span class="keyword">return</span> <span class="variable">node</span>.<span class="variable">right</span></span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content">        <span class="keyword">if</span> <span class="variable">node</span>.<span class="variable">right</span> <span class="keyword">is</span> <span class="keyword">None</span>:</span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">            <span class="keyword">return</span> <span class="variable">node</span>.<span class="variable">left</span></span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">        <span class="comment"># Two children: get successor</span></span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">        <span class="variable">succ</span> <span class="operator">=</span> <span class="function">min_node</span>(<span class="variable">node</span>.<span class="variable">right</span>)</span>
+            </div>
+            <div class="code-line" data-line="15">
+              <span class="line-number">15</span>
+              <span class="line-content">        <span class="variable">node</span>.<span class="variable">val</span> <span class="operator">=</span> <span class="variable">succ</span>.<span class="variable">val</span></span>
+            </div>
+            <div class="code-line" data-line="16">
+              <span class="line-number">16</span>
+              <span class="line-content">        <span class="variable">node</span>.<span class="variable">right</span> <span class="operator">=</span> <span class="function">delete</span>(<span class="variable">node</span>.<span class="variable">right</span>, <span class="variable">succ</span>.<span class="variable">val</span>)</span>
+            </div>
+            <div class="code-line" data-line="17">
+              <span class="line-number">17</span>
+              <span class="line-content">    <span class="keyword">return</span> <span class="variable">node</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> When deleting a node with two children, don't forget to delete the successor from its original position after copying its value. Otherwise, you'll have duplicate values in the tree.
+    </div>
+
+    <!-- Section 6: In-Order Traversal -->
+    <h2>6. In-Order Traversal (Sorted Output)</h2>
+    <p>In-order traversal of a BST visits nodes in sorted order: left subtree, then node, then right subtree. This produces a sorted sequence of all values.</p>
+
+    <div class="viz-container">
+      <h3>In-Order Traversal Animator</h3>
+      <div class="step-description" id="inorder-description">
+        Watch how in-order traversal visits nodes in sorted order
+      </div>
+
+      <div class="viz-canvas" id="inorder-canvas">
+        <svg class="tree-svg" id="inorder-svg"></svg>
+      </div>
+
+      <div class="step-controls">
+        <button id="inorder-reset" title="Reset">Reset</button>
+        <button id="inorder-back" title="Step Back">Back</button>
+        <button id="inorder-play" title="Play/Pause">Play</button>
+        <button id="inorder-forward" title="Step Forward">Forward</button>
+        <span class="step-indicator" id="inorder-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="inorder-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="inorder-progress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="output-panel">
+        <h4>Sorted Output</h4>
+        <div class="output-content" id="inorder-output">[ ]</div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The in-order traversal visits nodes in ascending order because we always process the left (smaller) subtree before the current node, and the right (larger) subtree after.
+    </div>
+
+    <!-- Section 7: Successor and Predecessor -->
+    <h2>7. Successor and Predecessor</h2>
+    <p>The <strong>successor</strong> of a node is the smallest node greater than it. The <strong>predecessor</strong> is the largest node smaller than it.</p>
+
+    <div class="viz-container">
+      <h3>Successor/Predecessor Finder</h3>
+      <div class="step-description" id="succ-description">
+        Click on a node to find its successor and predecessor
+      </div>
+
+      <div class="viz-canvas" id="succ-canvas">
+        <svg class="tree-svg" id="succ-svg"></svg>
+      </div>
+
+      <div class="output-panel">
+        <div style="display: flex; gap: 2rem;">
+          <div>
+            <h4>Predecessor</h4>
+            <div class="output-content" id="pred-output">-</div>
+          </div>
+          <div>
+            <h4>Selected Node</h4>
+            <div class="output-content" id="selected-output" style="color: var(--accent);">Click a node</div>
+          </div>
+          <div>
+            <h4>Successor</h4>
+            <div class="output-content" id="succ-output">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background: var(--purple);"></div> Predecessor</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--accent);"></div> Selected</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--successor);"></div> Successor</div>
+      </div>
+    </div>
+
+    <!-- Section 8: Complexity Analysis -->
+    <h2>8. Time Complexity Analysis</h2>
+
+    <div class="complexity-box">
+      <h4>BST Operation Complexities</h4>
+      <table class="complexity-table">
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Average Case</th>
+            <th>Worst Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Search</td>
+            <td>O(log n)</td>
+            <td>O(n)</td>
+          </tr>
+          <tr>
+            <td>Insert</td>
+            <td>O(log n)</td>
+            <td>O(n)</td>
+          </tr>
+          <tr>
+            <td>Delete</td>
+            <td>O(log n)</td>
+            <td>O(n)</td>
+          </tr>
+          <tr>
+            <td>Find Min/Max</td>
+            <td>O(log n)</td>
+            <td>O(n)</td>
+          </tr>
+          <tr>
+            <td>In-order Traversal</td>
+            <td colspan="2" style="text-align: center;">O(n)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+        <strong>Note:</strong> All operations are O(h) where h is the height. For a balanced tree, h = O(log n). For a skewed tree (worst case), h = O(n).
+      </p>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Assuming BST operations are always O(log n). If elements are inserted in sorted order, the BST becomes a linked list with O(n) operations. Self-balancing trees like AVL or Red-Black trees guarantee O(log n).
+    </div>
+
+    <!-- Quiz Section -->
+    <h2>9. Quick Check</h2>
+
+    <div class="quiz-container">
+      <!-- Question 1 -->
+      <div class="quiz-question">
+        <h4>Question 1: What is the in-order traversal output for a BST with root 10, left child 5, and right child 15?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">10, 5, 15</div>
+          <div class="quiz-option" data-index="1">5, 10, 15</div>
+          <div class="quiz-option" data-index="2">15, 10, 5</div>
+          <div class="quiz-option" data-index="3">5, 15, 10</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+          <div class="hint-text" data-hint="0">In-order traversal visits: left subtree, then root, then right subtree.</div>
+          <div class="hint-text" data-hint="1">For a BST, in-order traversal always produces sorted output.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> In-order traversal visits left (5), then root (10), then right (15), producing sorted order.
+        </div>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="quiz-question">
+        <h4>Question 2: When deleting a node with two children from a BST, what typically replaces it?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">The left child</div>
+          <div class="quiz-option" data-index="1">The right child</div>
+          <div class="quiz-option" data-index="2">The in-order successor</div>
+          <div class="quiz-option" data-index="3">The parent node</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+          <div class="hint-text" data-hint="0">We need a value that's greater than all left subtree nodes and less than all right subtree nodes.</div>
+          <div class="hint-text" data-hint="1">The successor is the smallest node that's larger than the deleted node - found by going right once, then left as far as possible.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The in-order successor (smallest in right subtree) maintains the BST property because it's larger than all left descendants and smaller than all other right descendants.
+        </div>
+      </div>
+
+      <!-- Question 3 -->
+      <div class="quiz-question">
+        <h4>Question 3: What is the worst-case time complexity for searching in a BST with n nodes?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">O(1)</div>
+          <div class="quiz-option" data-index="1">O(log n)</div>
+          <div class="quiz-option" data-index="2">O(n)</div>
+          <div class="quiz-option" data-index="3">O(n log n)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+          <div class="hint-text" data-hint="0">Consider what happens if you insert 1, 2, 3, 4, 5 in order.</div>
+          <div class="hint-text" data-hint="1">A skewed BST is essentially a linked list - you may need to visit every node.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> In the worst case (skewed tree), the BST degenerates to a linked list with height n, requiring O(n) comparisons.
+        </div>
+      </div>
+
+      <!-- Question 4 -->
+      <div class="quiz-question">
+        <h4>Question 4: In a BST, where is the minimum value located?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">The leftmost node</div>
+          <div class="quiz-option" data-index="1">The rightmost node</div>
+          <div class="quiz-option" data-index="2">The root node</div>
+          <div class="quiz-option" data-index="3">Any leaf node</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+          <div class="hint-text" data-hint="0">Remember the BST property: left child < parent < right child.</div>
+          <div class="hint-text" data-hint="1">Keep going left as far as possible - each step takes you to a smaller value.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Due to the BST property, the minimum is always at the leftmost node. Keep traversing left until you can't go further.
+        </div>
+      </div>
+
+      <!-- Question 5 -->
+      <div class="quiz-question">
+        <h4>Question 5: If a BST has height h, what is the time complexity of the insert operation?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(1)</div>
+          <div class="quiz-option" data-index="1">O(h)</div>
+          <div class="quiz-option" data-index="2">O(n)</div>
+          <div class="quiz-option" data-index="3">O(h^2)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint(this, 1)">Show Hint 2</button>
+          <div class="hint-text" data-hint="0">Insertion follows a path from root to a leaf position.</div>
+          <div class="hint-text" data-hint="1">The longest possible path from root to any leaf is the height of the tree.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Insert traverses from root to a leaf position, making at most h comparisons where h is the height. This is O(h).
+        </div>
+      </div>
+    </div>
+
+    <!-- Dive Deeper -->
+    <h2>10. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://visualgo.net/en/bst" target="_blank">VisuAlgo - BST Visualization</a></li>
+      <li><a href="https://www.cs.usfca.edu/~galles/visualization/BST.html" target="_blank">USFCA - BST Visualization</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Binary_search_tree" target="_blank">Wikipedia - Binary Search Tree</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-14-binary-trees.html">&larr; Session 14: Binary Trees</a>
+      <a href="session-16-avl-trees.html">Session 16: AVL Trees &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // ==================== Theme Toggle ====================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'Sun' : 'Moon';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'Sun' : 'Moon';
+
+    // ==================== BST Node Class ====================
+    class BSTNode {
+      constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+        this.x = 0;
+        this.y = 0;
+      }
+    }
+
+    // ==================== BST Class ====================
+    class BST {
+      constructor() {
+        this.root = null;
+      }
+
+      insert(val) {
+        if (this.root === null) {
+          this.root = new BSTNode(val);
+          return;
+        }
+        this._insertHelper(this.root, val);
+      }
+
+      _insertHelper(node, val) {
+        if (val < node.val) {
+          if (node.left === null) {
+            node.left = new BSTNode(val);
+          } else {
+            this._insertHelper(node.left, val);
+          }
+        } else {
+          if (node.right === null) {
+            node.right = new BSTNode(val);
+          } else {
+            this._insertHelper(node.right, val);
+          }
+        }
+      }
+
+      search(val) {
+        return this._searchHelper(this.root, val);
+      }
+
+      _searchHelper(node, val) {
+        if (node === null) return null;
+        if (val === node.val) return node;
+        if (val < node.val) return this._searchHelper(node.left, val);
+        return this._searchHelper(node.right, val);
+      }
+
+      delete(val) {
+        this.root = this._deleteHelper(this.root, val);
+      }
+
+      _deleteHelper(node, val) {
+        if (node === null) return null;
+
+        if (val < node.val) {
+          node.left = this._deleteHelper(node.left, val);
+        } else if (val > node.val) {
+          node.right = this._deleteHelper(node.right, val);
+        } else {
+          // Found the node to delete
+          if (node.left === null) return node.right;
+          if (node.right === null) return node.left;
+
+          // Two children: get successor
+          let succ = this._minNode(node.right);
+          node.val = succ.val;
+          node.right = this._deleteHelper(node.right, succ.val);
+        }
+        return node;
+      }
+
+      _minNode(node) {
+        while (node.left !== null) {
+          node = node.left;
+        }
+        return node;
+      }
+
+      _maxNode(node) {
+        while (node.right !== null) {
+          node = node.right;
+        }
+        return node;
+      }
+
+      contains(val) {
+        return this.search(val) !== null;
+      }
+
+      inorder() {
+        const result = [];
+        this._inorderHelper(this.root, result);
+        return result;
+      }
+
+      _inorderHelper(node, result) {
+        if (node === null) return;
+        this._inorderHelper(node.left, result);
+        result.push(node.val);
+        this._inorderHelper(node.right, result);
+      }
+
+      getNodes() {
+        const nodes = [];
+        this._collectNodes(this.root, nodes);
+        return nodes;
+      }
+
+      _collectNodes(node, nodes) {
+        if (node === null) return;
+        nodes.push(node);
+        this._collectNodes(node.left, nodes);
+        this._collectNodes(node.right, nodes);
+      }
+
+      clone() {
+        const newBST = new BST();
+        if (this.root) {
+          newBST.root = this._cloneNode(this.root);
+        }
+        return newBST;
+      }
+
+      _cloneNode(node) {
+        if (node === null) return null;
+        const newNode = new BSTNode(node.val);
+        newNode.left = this._cloneNode(node.left);
+        newNode.right = this._cloneNode(node.right);
+        return newNode;
+      }
+
+      findSuccessor(val) {
+        let successor = null;
+        let current = this.root;
+
+        while (current !== null) {
+          if (val < current.val) {
+            successor = current;
+            current = current.left;
+          } else if (val > current.val) {
+            current = current.right;
+          } else {
+            // Found the node
+            if (current.right !== null) {
+              return this._minNode(current.right);
+            }
+            break;
+          }
+        }
+        return successor;
+      }
+
+      findPredecessor(val) {
+        let predecessor = null;
+        let current = this.root;
+
+        while (current !== null) {
+          if (val > current.val) {
+            predecessor = current;
+            current = current.right;
+          } else if (val < current.val) {
+            current = current.left;
+          } else {
+            // Found the node
+            if (current.left !== null) {
+              return this._maxNode(current.left);
+            }
+            break;
+          }
+        }
+        return predecessor;
+      }
+    }
+
+    // ==================== Tree Renderer ====================
+    class TreeRenderer {
+      constructor(svgId, canvasId) {
+        this.svg = document.getElementById(svgId);
+        this.canvas = document.getElementById(canvasId);
+        this.nodeRadius = 22;
+        this.levelHeight = 60;
+        this.highlightedNodes = new Map(); // val -> class
+        this.highlightedEdges = new Set(); // "parentVal-childVal"
+        this.onClick = null;
+      }
+
+      calculatePositions(node, level, left, right) {
+        if (node === null) return;
+
+        const mid = (left + right) / 2;
+        node.x = mid;
+        node.y = level * this.levelHeight + 40;
+
+        this.calculatePositions(node.left, level + 1, left, mid);
+        this.calculatePositions(node.right, level + 1, mid, right);
+      }
+
+      render(bst) {
+        const rect = this.canvas.getBoundingClientRect();
+        const width = rect.width || 600;
+        const height = rect.height || 350;
+
+        this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        this.svg.innerHTML = '';
+
+        if (bst.root === null) return;
+
+        this.calculatePositions(bst.root, 0, 0, width);
+        this.renderEdges(bst.root);
+        this.renderNodes(bst.root);
+      }
+
+      renderEdges(node) {
+        if (node === null) return;
+
+        if (node.left !== null) {
+          const edgeKey = `${node.val}-${node.left.val}`;
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', node.x);
+          line.setAttribute('y1', node.y);
+          line.setAttribute('x2', node.left.x);
+          line.setAttribute('y2', node.left.y);
+          line.setAttribute('class', 'tree-edge' + (this.highlightedEdges.has(edgeKey) ? ' highlighted' : ''));
+          this.svg.appendChild(line);
+          this.renderEdges(node.left);
+        }
+
+        if (node.right !== null) {
+          const edgeKey = `${node.val}-${node.right.val}`;
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', node.x);
+          line.setAttribute('y1', node.y);
+          line.setAttribute('x2', node.right.x);
+          line.setAttribute('y2', node.right.y);
+          line.setAttribute('class', 'tree-edge' + (this.highlightedEdges.has(edgeKey) ? ' highlighted' : ''));
+          this.svg.appendChild(line);
+          this.renderEdges(node.right);
+        }
+      }
+
+      renderNodes(node) {
+        if (node === null) return;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const highlight = this.highlightedNodes.get(node.val) || '';
+        g.setAttribute('class', 'tree-node ' + highlight);
+        g.setAttribute('data-val', node.val);
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x);
+        circle.setAttribute('cy', node.y);
+        circle.setAttribute('r', this.nodeRadius);
+        g.appendChild(circle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y);
+        text.textContent = node.val;
+        g.appendChild(text);
+
+        if (this.onClick) {
+          g.style.cursor = 'pointer';
+          g.addEventListener('click', () => this.onClick(node.val));
+        }
+
+        this.svg.appendChild(g);
+
+        this.renderNodes(node.left);
+        this.renderNodes(node.right);
+      }
+
+      setHighlight(val, className) {
+        if (className) {
+          this.highlightedNodes.set(val, className);
+        } else {
+          this.highlightedNodes.delete(val);
+        }
+      }
+
+      clearHighlights() {
+        this.highlightedNodes.clear();
+        this.highlightedEdges.clear();
+      }
+
+      highlightEdge(parentVal, childVal) {
+        this.highlightedEdges.add(`${parentVal}-${childVal}`);
+      }
+    }
+
+    // ==================== Animation Controller ====================
+    class AnimationController {
+      constructor(options) {
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.playBtn = document.getElementById(options.playBtnId);
+        this.backBtn = document.getElementById(options.backBtnId);
+        this.forwardBtn = document.getElementById(options.forwardBtnId);
+        this.resetBtn = document.getElementById(options.resetBtnId);
+        this.progressBar = document.getElementById(options.progressId);
+        this.stepIndicator = document.getElementById(options.stepIndicatorId);
+        this.speedSelect = document.getElementById(options.speedId);
+        this.description = document.getElementById(options.descriptionId);
+        this.codePanel = options.codePanelId ? document.getElementById(options.codePanelId) : null;
+
+        this.onRender = options.onRender || (() => {});
+
+        this.setupControls();
+      }
+
+      setupControls() {
+        if (this.playBtn) {
+          this.playBtn.addEventListener('click', () => {
+            this.isPlaying ? this.pause() : this.play();
+          });
+        }
+
+        if (this.backBtn) {
+          this.backBtn.addEventListener('click', () => this.stepBackward());
+        }
+
+        if (this.forwardBtn) {
+          this.forwardBtn.addEventListener('click', () => this.stepForward());
+        }
+
+        if (this.resetBtn) {
+          this.resetBtn.addEventListener('click', () => this.reset());
+        }
+
+        if (this.speedSelect) {
+          this.speedSelect.addEventListener('change', (e) => {
+            this.speed = parseFloat(e.target.value);
+            if (this.isPlaying) {
+              this.pause();
+              this.play();
+            }
+          });
+        }
+      }
+
+      setSteps(steps) {
+        this.steps = steps;
+        this.currentStep = 0;
+        this.render();
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (step && this.description) {
+          this.description.textContent = step.desc || '';
+        }
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        if (this.progressBar) {
+          this.progressBar.style.width = `${progress}%`;
+        }
+        if (this.stepIndicator) {
+          this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+        }
+
+        // Highlight code
+        if (this.codePanel && step && step.line) {
+          this.codePanel.querySelectorAll('.code-line').forEach(line => {
+            line.classList.remove('highlighted', 'executed');
+            const lineNum = parseInt(line.dataset.line);
+            if (lineNum === step.line) {
+              line.classList.add('highlighted');
+            }
+          });
+        }
+
+        this.onRender(step);
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        if (this.playBtn) {
+          this.playBtn.textContent = 'Pause';
+          this.playBtn.classList.add('playing');
+        }
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1000 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        if (this.playBtn) {
+          this.playBtn.textContent = 'Play';
+          this.playBtn.classList.remove('playing');
+        }
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    // ==================== Builder Section ====================
+    const builderBST = new BST();
+    const builderRenderer = new TreeRenderer('builder-svg', 'builder-canvas');
+    const builderDesc = document.getElementById('builder-description');
+
+    function updateBuilder() {
+      builderRenderer.clearHighlights();
+      builderRenderer.render(builderBST);
+    }
+
+    // Initialize with sample tree
+    [50, 30, 70, 20, 40, 60, 80].forEach(v => builderBST.insert(v));
+    updateBuilder();
+
+    document.getElementById('builder-insert').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('builder-value').value);
+      if (isNaN(val) || val < 1 || val > 99) {
+        builderDesc.textContent = 'Please enter a value between 1 and 99';
+        return;
+      }
+      if (builderBST.contains(val)) {
+        builderDesc.textContent = `Value ${val} already exists in the tree`;
+        return;
+      }
+      builderBST.insert(val);
+      builderRenderer.setHighlight(val, 'inserting');
+      builderRenderer.render(builderBST);
+      builderDesc.textContent = `Inserted ${val} into the BST`;
+      setTimeout(() => {
+        builderRenderer.clearHighlights();
+        builderRenderer.render(builderBST);
+      }, 1000);
+      document.getElementById('builder-value').value = '';
+    });
+
+    document.getElementById('builder-delete').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('builder-value').value);
+      if (isNaN(val)) {
+        builderDesc.textContent = 'Please enter a value to delete';
+        return;
+      }
+      if (!builderBST.contains(val)) {
+        builderDesc.textContent = `Value ${val} not found in the tree`;
+        return;
+      }
+      builderRenderer.setHighlight(val, 'deleting');
+      builderRenderer.render(builderBST);
+      builderDesc.textContent = `Deleting ${val} from the BST...`;
+      setTimeout(() => {
+        builderBST.delete(val);
+        builderRenderer.clearHighlights();
+        builderRenderer.render(builderBST);
+        builderDesc.textContent = `Deleted ${val} from the BST`;
+      }, 800);
+      document.getElementById('builder-value').value = '';
+    });
+
+    document.getElementById('builder-clear').addEventListener('click', () => {
+      builderBST.root = null;
+      updateBuilder();
+      builderDesc.textContent = 'Tree cleared. Insert values to build a new BST.';
+    });
+
+    document.getElementById('builder-random').addEventListener('click', () => {
+      builderBST.root = null;
+      const values = [];
+      while (values.length < 7) {
+        const v = Math.floor(Math.random() * 90) + 5;
+        if (!values.includes(v)) {
+          values.push(v);
+        }
+      }
+      values.forEach(v => builderBST.insert(v));
+      updateBuilder();
+      builderDesc.textContent = `Created random BST with values: ${values.join(', ')}`;
+    });
+
+    // ==================== Search Section ====================
+    const searchBST = new BST();
+    [50, 30, 70, 20, 40, 60, 80].forEach(v => searchBST.insert(v));
+    const searchRenderer = new TreeRenderer('search-svg', 'search-canvas');
+    searchRenderer.render(searchBST);
+
+    const searchController = new AnimationController({
+      playBtnId: 'search-play',
+      backBtnId: 'search-back',
+      forwardBtnId: 'search-forward',
+      resetBtnId: 'search-reset',
+      progressId: 'search-progress',
+      stepIndicatorId: 'search-step-indicator',
+      speedId: 'search-speed',
+      descriptionId: 'search-description',
+      codePanelId: 'search-code',
+      onRender: (step) => {
+        searchRenderer.clearHighlights();
+        if (step && step.highlights) {
+          step.highlights.forEach(h => searchRenderer.setHighlight(h.val, h.class));
+        }
+        if (step && step.edges) {
+          step.edges.forEach(e => searchRenderer.highlightEdge(e[0], e[1]));
+        }
+        searchRenderer.render(searchBST);
+      }
+    });
+
+    function generateSearchSteps(target) {
+      const steps = [];
+      let current = searchBST.root;
+      const path = [];
+
+      steps.push({
+        desc: `Searching for ${target} - start at root`,
+        line: 1,
+        highlights: [],
+        edges: []
+      });
+
+      while (current !== null) {
+        path.push(current.val);
+
+        if (target === current.val) {
+          steps.push({
+            desc: `Found ${target}! Target equals current node value.`,
+            line: 5,
+            highlights: path.map((v, i) => ({ val: v, class: i === path.length - 1 ? 'found' : 'comparing' })),
+            edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+          });
+          break;
+        } else if (target < current.val) {
+          steps.push({
+            desc: `${target} < ${current.val}, go left`,
+            line: 6,
+            highlights: path.map((v, i) => ({ val: v, class: i === path.length - 1 ? 'comparing' : '' })),
+            edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+          });
+          current = current.left;
+        } else {
+          steps.push({
+            desc: `${target} > ${current.val}, go right`,
+            line: 8,
+            highlights: path.map((v, i) => ({ val: v, class: i === path.length - 1 ? 'comparing' : '' })),
+            edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+          });
+          current = current.right;
+        }
+
+        if (current === null) {
+          steps.push({
+            desc: `Reached null - ${target} not found in BST`,
+            line: 3,
+            highlights: path.map(v => ({ val: v, class: 'comparing' })),
+            edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+          });
+        }
+      }
+
+      return steps;
+    }
+
+    document.getElementById('search-start').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('search-value').value);
+      if (isNaN(val)) {
+        document.getElementById('search-description').textContent = 'Please enter a value to search for';
+        return;
+      }
+      const steps = generateSearchSteps(val);
+      searchController.setSteps(steps);
+    });
+
+    document.getElementById('search-reset').addEventListener('click', () => {
+      searchRenderer.clearHighlights();
+      searchRenderer.render(searchBST);
+      searchController.setSteps([{ desc: 'Enter a value to search for in the BST' }]);
+    });
+
+    // ==================== Insert Section ====================
+    let insertBST = new BST();
+    [50, 30, 70, 20, 40].forEach(v => insertBST.insert(v));
+    const insertRenderer = new TreeRenderer('insert-svg', 'insert-canvas');
+    insertRenderer.render(insertBST);
+
+    const insertController = new AnimationController({
+      playBtnId: 'insert-play',
+      backBtnId: 'insert-back',
+      forwardBtnId: 'insert-forward',
+      resetBtnId: null,
+      progressId: 'insert-progress',
+      stepIndicatorId: 'insert-step-indicator',
+      speedId: 'insert-speed',
+      descriptionId: 'insert-description',
+      codePanelId: 'insert-code',
+      onRender: (step) => {
+        if (step && step.bst) {
+          insertRenderer.clearHighlights();
+          if (step.highlights) {
+            step.highlights.forEach(h => insertRenderer.setHighlight(h.val, h.class));
+          }
+          if (step.edges) {
+            step.edges.forEach(e => insertRenderer.highlightEdge(e[0], e[1]));
+          }
+          insertRenderer.render(step.bst);
+        }
+      }
+    });
+
+    function generateInsertSteps(target) {
+      const steps = [];
+      const tempBST = insertBST.clone();
+      let current = tempBST.root;
+      const path = [];
+
+      if (current === null) {
+        tempBST.insert(target);
+        steps.push({
+          desc: `Tree is empty, insert ${target} as root`,
+          line: 3,
+          bst: tempBST.clone(),
+          highlights: [{ val: target, class: 'inserting' }],
+          edges: []
+        });
+        return steps;
+      }
+
+      steps.push({
+        desc: `Inserting ${target} - start at root`,
+        line: 1,
+        bst: tempBST.clone(),
+        highlights: [],
+        edges: []
+      });
+
+      while (true) {
+        path.push(current.val);
+
+        if (target < current.val) {
+          steps.push({
+            desc: `${target} < ${current.val}, go left`,
+            line: 4,
+            bst: tempBST.clone(),
+            highlights: path.map((v, i) => ({ val: v, class: i === path.length - 1 ? 'comparing' : '' })),
+            edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+          });
+
+          if (current.left === null) {
+            current.left = new BSTNode(target);
+            path.push(target);
+            steps.push({
+              desc: `Left is null - insert ${target} here!`,
+              line: 3,
+              bst: tempBST.clone(),
+              highlights: path.map((v, i) => ({ val: v, class: i === path.length - 1 ? 'inserting' : '' })),
+              edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+            });
+            break;
+          }
+          current = current.left;
+        } else {
+          steps.push({
+            desc: `${target} >= ${current.val}, go right`,
+            line: 6,
+            bst: tempBST.clone(),
+            highlights: path.map((v, i) => ({ val: v, class: i === path.length - 1 ? 'comparing' : '' })),
+            edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+          });
+
+          if (current.right === null) {
+            current.right = new BSTNode(target);
+            path.push(target);
+            steps.push({
+              desc: `Right is null - insert ${target} here!`,
+              line: 3,
+              bst: tempBST.clone(),
+              highlights: path.map((v, i) => ({ val: v, class: i === path.length - 1 ? 'inserting' : '' })),
+              edges: path.slice(0, -1).map((v, i) => [v, path[i + 1]])
+            });
+            break;
+          }
+          current = current.right;
+        }
+      }
+
+      // Update the actual BST
+      insertBST = tempBST;
+
+      return steps;
+    }
+
+    document.getElementById('insert-start').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('insert-value').value);
+      if (isNaN(val) || val < 1 || val > 99) {
+        document.getElementById('insert-description').textContent = 'Please enter a value between 1 and 99';
+        return;
+      }
+      if (insertBST.contains(val)) {
+        document.getElementById('insert-description').textContent = `Value ${val} already exists in the tree`;
+        return;
+      }
+      const steps = generateInsertSteps(val);
+      insertController.setSteps(steps);
+      document.getElementById('insert-value').value = '';
+    });
+
+    document.getElementById('insert-reset').addEventListener('click', () => {
+      insertBST = new BST();
+      [50, 30, 70, 20, 40].forEach(v => insertBST.insert(v));
+      insertRenderer.clearHighlights();
+      insertRenderer.render(insertBST);
+      insertController.setSteps([{ desc: 'Enter a value to insert into the BST', bst: insertBST }]);
+    });
+
+    // ==================== Delete Section ====================
+    let deleteBST = new BST();
+    [50, 30, 70, 20, 40, 60, 80, 35, 45].forEach(v => deleteBST.insert(v));
+    const deleteRenderer = new TreeRenderer('delete-svg', 'delete-canvas');
+    deleteRenderer.render(deleteBST);
+
+    const deleteController = new AnimationController({
+      playBtnId: 'delete-play',
+      backBtnId: 'delete-back',
+      forwardBtnId: 'delete-forward',
+      resetBtnId: null,
+      progressId: 'delete-progress',
+      stepIndicatorId: 'delete-step-indicator',
+      speedId: 'delete-speed',
+      descriptionId: 'delete-description',
+      codePanelId: 'delete-code',
+      onRender: (step) => {
+        if (step && step.bst) {
+          deleteRenderer.clearHighlights();
+          if (step.highlights) {
+            step.highlights.forEach(h => deleteRenderer.setHighlight(h.val, h.class));
+          }
+          deleteRenderer.render(step.bst);
+        }
+      }
+    });
+
+    function generateDeleteSteps(target) {
+      const steps = [];
+      let tempBST = deleteBST.clone();
+
+      // Find the node and determine case
+      const node = tempBST.search(target);
+      if (!node) {
+        steps.push({
+          desc: `Value ${target} not found in BST`,
+          line: 3,
+          bst: tempBST.clone(),
+          highlights: []
+        });
+        return steps;
+      }
+
+      steps.push({
+        desc: `Deleting ${target} - finding the node...`,
+        line: 1,
+        bst: tempBST.clone(),
+        highlights: [{ val: target, class: 'deleting' }]
+      });
+
+      const hasLeft = node.left !== null;
+      const hasRight = node.right !== null;
+
+      if (!hasLeft && !hasRight) {
+        // Case 1: Leaf node
+        steps.push({
+          desc: `Case 1: ${target} is a leaf node - simply remove it`,
+          line: 9,
+          bst: tempBST.clone(),
+          highlights: [{ val: target, class: 'deleting' }]
+        });
+        tempBST.delete(target);
+        steps.push({
+          desc: `Removed leaf node ${target}`,
+          line: 10,
+          bst: tempBST.clone(),
+          highlights: []
+        });
+      } else if (!hasLeft || !hasRight) {
+        // Case 2: One child
+        const child = hasLeft ? node.left : node.right;
+        steps.push({
+          desc: `Case 2: ${target} has one child (${child.val}) - replace with child`,
+          line: hasLeft ? 11 : 9,
+          bst: tempBST.clone(),
+          highlights: [
+            { val: target, class: 'deleting' },
+            { val: child.val, class: 'successor' }
+          ]
+        });
+        tempBST.delete(target);
+        steps.push({
+          desc: `Replaced ${target} with its child ${child.val}`,
+          line: hasLeft ? 12 : 10,
+          bst: tempBST.clone(),
+          highlights: [{ val: child.val, class: 'inserting' }]
+        });
+      } else {
+        // Case 3: Two children
+        const successor = tempBST._minNode(node.right);
+        steps.push({
+          desc: `Case 3: ${target} has two children - find in-order successor`,
+          line: 13,
+          bst: tempBST.clone(),
+          highlights: [{ val: target, class: 'deleting' }]
+        });
+        steps.push({
+          desc: `In-order successor is ${successor.val} (smallest in right subtree)`,
+          line: 14,
+          bst: tempBST.clone(),
+          highlights: [
+            { val: target, class: 'deleting' },
+            { val: successor.val, class: 'successor' }
+          ]
+        });
+        steps.push({
+          desc: `Copy successor value ${successor.val} to replace ${target}`,
+          line: 15,
+          bst: tempBST.clone(),
+          highlights: [
+            { val: target, class: 'deleting' },
+            { val: successor.val, class: 'successor' }
+          ]
+        });
+        tempBST.delete(target);
+        steps.push({
+          desc: `Deleted ${target}, now tree is restructured`,
+          line: 17,
+          bst: tempBST.clone(),
+          highlights: [{ val: successor.val, class: 'inserting' }]
+        });
+      }
+
+      deleteBST = tempBST;
+      return steps;
+    }
+
+    document.getElementById('delete-start').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('delete-value').value);
+      if (isNaN(val)) {
+        document.getElementById('delete-description').textContent = 'Please enter a value to delete';
+        return;
+      }
+      if (!deleteBST.contains(val)) {
+        document.getElementById('delete-description').textContent = `Value ${val} not found in the tree`;
+        return;
+      }
+      const steps = generateDeleteSteps(val);
+      deleteController.setSteps(steps);
+      document.getElementById('delete-value').value = '';
+    });
+
+    document.getElementById('delete-reset').addEventListener('click', () => {
+      deleteBST = new BST();
+      [50, 30, 70, 20, 40, 60, 80, 35, 45].forEach(v => deleteBST.insert(v));
+      deleteRenderer.clearHighlights();
+      deleteRenderer.render(deleteBST);
+      deleteController.setSteps([{ desc: 'Enter a value to delete from the BST', bst: deleteBST }]);
+    });
+
+    // ==================== In-Order Traversal Section ====================
+    const inorderBST = new BST();
+    [50, 30, 70, 20, 40, 60, 80].forEach(v => inorderBST.insert(v));
+    const inorderRenderer = new TreeRenderer('inorder-svg', 'inorder-canvas');
+    inorderRenderer.render(inorderBST);
+
+    function generateInorderSteps() {
+      const steps = [];
+      const output = [];
+      const visited = new Set();
+
+      function traverse(node) {
+        if (node === null) return;
+
+        traverse(node.left);
+
+        visited.add(node.val);
+        output.push(node.val);
+        steps.push({
+          desc: `Visit node ${node.val} - add to output`,
+          highlights: Array.from(visited).map(v => ({
+            val: v,
+            class: v === node.val ? 'found' : 'traversed'
+          })),
+          output: [...output]
+        });
+
+        traverse(node.right);
+      }
+
+      steps.push({
+        desc: 'Starting in-order traversal (Left, Root, Right)',
+        highlights: [],
+        output: []
+      });
+
+      traverse(inorderBST.root);
+
+      steps.push({
+        desc: `Traversal complete! Output is sorted: [${output.join(', ')}]`,
+        highlights: output.map(v => ({ val: v, class: 'traversed' })),
+        output: output
+      });
+
+      return steps;
+    }
+
+    const inorderOutput = document.getElementById('inorder-output');
+
+    const inorderController = new AnimationController({
+      playBtnId: 'inorder-play',
+      backBtnId: 'inorder-back',
+      forwardBtnId: 'inorder-forward',
+      resetBtnId: 'inorder-reset',
+      progressId: 'inorder-progress',
+      stepIndicatorId: 'inorder-step-indicator',
+      speedId: 'inorder-speed',
+      descriptionId: 'inorder-description',
+      onRender: (step) => {
+        inorderRenderer.clearHighlights();
+        if (step && step.highlights) {
+          step.highlights.forEach(h => inorderRenderer.setHighlight(h.val, h.class));
+        }
+        inorderRenderer.render(inorderBST);
+        if (step && step.output !== undefined) {
+          inorderOutput.textContent = `[ ${step.output.join(', ')} ]`;
+        }
+      }
+    });
+
+    // Initialize in-order steps
+    inorderController.setSteps(generateInorderSteps());
+
+    // ==================== Successor/Predecessor Section ====================
+    const succBST = new BST();
+    [50, 30, 70, 20, 40, 60, 80, 35, 45, 55, 65].forEach(v => succBST.insert(v));
+    const succRenderer = new TreeRenderer('succ-svg', 'succ-canvas');
+    succRenderer.render(succBST);
+
+    const predOutput = document.getElementById('pred-output');
+    const selectedOutput = document.getElementById('selected-output');
+    const succOutput = document.getElementById('succ-output');
+
+    succRenderer.onClick = (val) => {
+      const pred = succBST.findPredecessor(val);
+      const succ = succBST.findSuccessor(val);
+
+      succRenderer.clearHighlights();
+      succRenderer.setHighlight(val, 'comparing');
+      if (pred) succRenderer.setHighlight(pred.val, 'inserting'); // purple for pred
+      if (succ) succRenderer.setHighlight(succ.val, 'successor');
+      succRenderer.render(succBST);
+
+      predOutput.textContent = pred ? pred.val : 'None';
+      selectedOutput.textContent = val;
+      succOutput.textContent = succ ? succ.val : 'None';
+
+      document.getElementById('succ-description').textContent =
+        `Node ${val}: Predecessor = ${pred ? pred.val : 'None'}, Successor = ${succ ? succ.val : 'None'}`;
+    };
+
+    // ==================== Quiz Functionality ====================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintIndex) {
+      const container = btn.parentElement;
+      const hints = container.querySelectorAll('.hint-text');
+      const hint = hints[hintIndex];
+
+      if (hint) {
+        hint.classList.toggle('show');
+        btn.textContent = hint.classList.contains('show') ? `Hide Hint ${hintIndex + 1}` : `Show Hint ${hintIndex + 1}`;
+      }
+    }
+
+    // ==================== KaTeX auto-render ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 19: Aspects of Graphs | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --node-default: #2EAADC;
+      --node-visited: #0F7B6C;
+      --node-current: #F1C40F;
+      --node-queued: #9B51E0;
+      --edge-default: #6B6B6B;
+      --edge-visited: #0F7B6C;
+      --edge-current: #F1C40F;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      height: 350px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .viz-canvas.small {
+      height: 250px;
+    }
+
+    /* Graph Visualization */
+    .graph-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .graph-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .graph-node circle {
+      fill: var(--node-default);
+      stroke: white;
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .graph-node.visited circle {
+      fill: var(--node-visited);
+    }
+
+    .graph-node.current circle {
+      fill: var(--node-current);
+      filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.8));
+    }
+
+    .graph-node.queued circle {
+      fill: var(--node-queued);
+    }
+
+    .graph-node text {
+      fill: white;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .graph-edge {
+      stroke: var(--edge-default);
+      stroke-width: 2;
+      fill: none;
+      transition: all 0.3s ease;
+    }
+
+    .graph-edge.visited {
+      stroke: var(--edge-visited);
+      stroke-width: 3;
+    }
+
+    .graph-edge.current {
+      stroke: var(--edge-current);
+      stroke-width: 4;
+    }
+
+    .graph-edge.directed {
+      marker-end: url(#arrowhead);
+    }
+
+    .edge-weight {
+      fill: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-anchor: middle;
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Stack/Queue Visualization */
+    .data-structure-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .data-structure-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stack-queue-viz {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      min-height: 40px;
+      align-items: center;
+    }
+
+    .stack-queue-item {
+      padding: 0.5rem 0.75rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      font-weight: 600;
+      animation: pop-in 0.3s ease;
+    }
+
+    .stack-queue-item.current {
+      background: var(--node-current);
+      color: #333;
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Graph Builder */
+    .graph-builder-controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .control-group label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .control-group input {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      width: 60px;
+    }
+
+    .control-group button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .control-group button:hover {
+      background: var(--accent-hover);
+    }
+
+    .control-group button.secondary {
+      background: var(--background-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .control-group button.secondary:hover {
+      background: var(--border);
+    }
+
+    /* Representation Panels */
+    .representation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .representation-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .representation-panel h4 {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.875rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .complexity-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.125rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .representation-content {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    /* Matrix Table */
+    .matrix-table {
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .matrix-table th, .matrix-table td {
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.5rem;
+      text-align: center;
+      min-width: 30px;
+    }
+
+    .matrix-table th {
+      background: var(--background-secondary);
+    }
+
+    .matrix-table td.has-edge {
+      background: rgba(46, 170, 220, 0.3);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .complexity-table th, .complexity-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .complexity-table th {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .complexity-table code {
+      font-size: 0.875rem;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Code Panel */
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--node-current);
+      margin-left: -3px;
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Tree Visualization */
+    .tree-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node circle {
+      fill: var(--node-default);
+      stroke: white;
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node.visited circle {
+      fill: var(--node-visited);
+    }
+
+    .tree-node.current circle {
+      fill: var(--node-current);
+      filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.8));
+    }
+
+    .tree-node text {
+      fill: white;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .tree-edge {
+      stroke: var(--edge-default);
+      stroke-width: 2;
+      fill: none;
+      transition: all 0.3s ease;
+    }
+
+    .tree-edge.visited {
+      stroke: var(--edge-visited);
+      stroke-width: 3;
+    }
+
+    /* Traversal Result */
+    .traversal-result {
+      display: flex;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      min-height: 40px;
+    }
+
+    .traversal-item {
+      padding: 0.25rem 0.5rem;
+      background: var(--node-visited);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      animation: pop-in 0.3s ease;
+    }
+
+    /* Topological Sort */
+    .course-node {
+      cursor: pointer;
+    }
+
+    .course-node rect {
+      fill: var(--node-default);
+      stroke: white;
+      stroke-width: 2;
+      rx: 4;
+      transition: all 0.3s ease;
+    }
+
+    .course-node.visited rect {
+      fill: var(--node-visited);
+    }
+
+    .course-node.current rect {
+      fill: var(--node-current);
+      filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.8));
+    }
+
+    .course-node.in-stack rect {
+      fill: var(--node-queued);
+    }
+
+    .course-node text {
+      fill: white;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Comparison Grid */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .comparison-item {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+    }
+
+    .comparison-item h4 {
+      margin: 0 0 0.5rem 0;
+      color: var(--accent);
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0.75rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .graph-builder-controls { flex-direction: column; }
+      .control-group { width: 100%; justify-content: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">M</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 19</span>
+      <h1>Aspects of Graphs</h1>
+      <p class="subtitle">Master graph representations, traversal algorithms, and their applications</p>
+      <div class="meta">
+        <span>~40 minutes</span>
+        <span>Prerequisites: Session 18 (Trees)</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Define</strong> graph terminology: vertices, edges, paths, and levels</li>
+        <li><strong>Compare</strong> directed vs. undirected and weighted vs. unweighted graphs</li>
+        <li><strong>Implement</strong> graphs using adjacency matrix, edge list, and adjacency list</li>
+        <li><strong>Trace</strong> DFS and BFS traversals step by step</li>
+        <li><strong>Apply</strong> graph algorithms to solve real-world problems like course scheduling</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Graph Fundamentals -->
+    <h2>1. Graph Fundamentals</h2>
+    <p>A <strong>graph</strong> is a data structure consisting of <strong>vertices</strong> (nodes) connected by <strong>edges</strong>. Unlike trees, graphs can have cycles and multiple paths between nodes.</p>
+
+    <div class="comparison-grid">
+      <div class="comparison-item">
+        <h4>Key Terminology</h4>
+        <ul>
+          <li><strong>Vertex (Node):</strong> A point in the graph</li>
+          <li><strong>Edge:</strong> A connection between two vertices</li>
+          <li><strong>Path:</strong> A sequence of vertices connected by edges</li>
+          <li><strong>Cycle:</strong> A path that starts and ends at the same vertex</li>
+          <li><strong>Degree:</strong> Number of edges connected to a vertex</li>
+        </ul>
+      </div>
+      <div class="comparison-item">
+        <h4>Graph Types</h4>
+        <ul>
+          <li><strong>Directed:</strong> Edges have direction (A → B)</li>
+          <li><strong>Undirected:</strong> Edges have no direction (A - B)</li>
+          <li><strong>Weighted:</strong> Edges have associated values</li>
+          <li><strong>Unweighted:</strong> All edges are equal</li>
+          <li><strong>Connected:</strong> Path exists between any two vertices</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Trees are special graphs! A tree is a connected, acyclic graph with exactly N-1 edges for N nodes. Graphs generalize trees by allowing cycles and disconnected components.
+    </div>
+
+    <!-- Section 2: Interactive Graph Builder -->
+    <h2>2. Interactive Graph Builder</h2>
+    <p>Build your own graph by adding nodes and edges. See how different representations change as you modify the graph.</p>
+
+    <div class="viz-container">
+      <h3>Graph Builder</h3>
+
+      <div class="graph-builder-controls">
+        <div class="control-group">
+          <button onclick="addNode()">+ Add Node</button>
+          <button onclick="clearGraph()" class="secondary">Clear Graph</button>
+        </div>
+        <div class="control-group">
+          <label>From:</label>
+          <input type="text" id="edge-from" placeholder="A" maxlength="1">
+          <label>To:</label>
+          <input type="text" id="edge-to" placeholder="B" maxlength="1">
+          <label>Weight:</label>
+          <input type="number" id="edge-weight" placeholder="1" value="1" min="1" max="99">
+          <button onclick="addEdge()">+ Add Edge</button>
+        </div>
+        <div class="control-group">
+          <label>
+            <input type="checkbox" id="directed-toggle" onchange="toggleDirected()"> Directed
+          </label>
+          <label>
+            <input type="checkbox" id="weighted-toggle" onchange="toggleWeighted()"> Weighted
+          </label>
+        </div>
+      </div>
+
+      <div class="viz-canvas" id="graph-builder-canvas">
+        <svg class="graph-svg" id="graph-builder-svg">
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="22" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="var(--edge-default)" />
+            </marker>
+            <marker id="arrowhead-visited" markerWidth="10" markerHeight="7" refX="22" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="var(--edge-visited)" />
+            </marker>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-default);"></div>
+          <span>Unvisited Node</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-current);"></div>
+          <span>Current Node</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-visited);"></div>
+          <span>Visited Node</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--node-queued);"></div>
+          <span>In Queue/Stack</span>
+        </div>
+      </div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Build a graph with 5 nodes and create a cycle (e.g., A → B → C → A). Toggle between directed and undirected to see how the visualization changes!
+      </div>
+    </div>
+
+    <!-- Section 3: Graph Representations -->
+    <h2>3. Graph Representations</h2>
+    <p>There are three common ways to represent graphs in code, each with different space and time trade-offs.</p>
+
+    <div class="representation-grid">
+      <div class="representation-panel">
+        <h4>
+          Adjacency Matrix
+          <span class="complexity-badge">O(V²) space</span>
+        </h4>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+          2D array where matrix[i][j] = 1 if edge exists
+        </p>
+        <div class="representation-content" id="adj-matrix-content">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+      <div class="representation-panel">
+        <h4>
+          Edge List
+          <span class="complexity-badge">O(E) space</span>
+        </h4>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+          List of all edges as (from, to, weight) tuples
+        </p>
+        <div class="representation-content" id="edge-list-content">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+      <div class="representation-panel">
+        <h4>
+          Adjacency List
+          <span class="complexity-badge">O(V+E) space</span>
+        </h4>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+          Dictionary mapping each vertex to its neighbors
+        </p>
+        <div class="representation-content" id="adj-list-content">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h4>Time Complexity Comparison</h4>
+      <table class="complexity-table">
+        <tr>
+          <th>Operation</th>
+          <th>Adjacency Matrix</th>
+          <th>Edge List</th>
+          <th>Adjacency List</th>
+        </tr>
+        <tr>
+          <td>Check if edge exists</td>
+          <td><code>O(1)</code></td>
+          <td><code>O(E)</code></td>
+          <td><code>O(degree)</code></td>
+        </tr>
+        <tr>
+          <td>Get all neighbors</td>
+          <td><code>O(V)</code></td>
+          <td><code>O(E)</code></td>
+          <td><code>O(degree)</code></td>
+        </tr>
+        <tr>
+          <td>Add edge</td>
+          <td><code>O(1)</code></td>
+          <td><code>O(1)</code></td>
+          <td><code>O(1)</code></td>
+        </tr>
+        <tr>
+          <td>Space</td>
+          <td><code>O(V²)</code></td>
+          <td><code>O(E)</code></td>
+          <td><code>O(V+E)</code></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Use adjacency matrix for dense graphs (many edges), adjacency list for sparse graphs (few edges). Most real-world graphs are sparse, so adjacency list is the most common choice.
+    </div>
+
+    <!-- Section 4: Stacks and Queues -->
+    <h2>4. Stacks and Queues</h2>
+    <p>Before diving into graph traversals, let's understand the data structures that power them.</p>
+
+    <div class="comparison-grid">
+      <div class="comparison-item">
+        <h4>Stack (LIFO)</h4>
+        <p><strong>Last In, First Out</strong></p>
+        <ul>
+          <li><code>push(item)</code>: Add to top</li>
+          <li><code>pop()</code>: Remove from top</li>
+          <li>Used in: DFS, recursion, undo operations</li>
+        </ul>
+        <pre style="background: var(--code-bg); padding: 0.5rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem;">
+stack = []
+stack.append('A')  # push
+stack.append('B')
+stack.pop()        # returns 'B'</pre>
+      </div>
+      <div class="comparison-item">
+        <h4>Queue (FIFO)</h4>
+        <p><strong>First In, First Out</strong></p>
+        <ul>
+          <li><code>enqueue(item)</code>: Add to back</li>
+          <li><code>dequeue()</code>: Remove from front</li>
+          <li>Used in: BFS, task scheduling, printers</li>
+        </ul>
+        <pre style="background: var(--code-bg); padding: 0.5rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem;">
+from collections import deque
+queue = deque()
+queue.append('A')   # enqueue
+queue.append('B')
+queue.popleft()     # returns 'A'</pre>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Using <code>list.pop(0)</code> for queue operations is O(n)! Use <code>collections.deque</code> for O(1) operations on both ends.
+    </div>
+
+    <!-- Section 5: DFS Animation -->
+    <h2>5. Depth-First Search (DFS)</h2>
+    <p>DFS explores as far as possible along each branch before backtracking. It uses a <strong>stack</strong> (or recursion) to track which nodes to visit next.</p>
+
+    <div class="viz-container">
+      <h3>DFS Step-by-Step Animator</h3>
+      <div class="step-description" id="dfs-description">
+        Press Play to watch DFS traverse the graph
+      </div>
+
+      <div class="viz-canvas" id="dfs-canvas">
+        <svg class="graph-svg" id="dfs-svg"></svg>
+      </div>
+
+      <div class="data-structure-panel">
+        <h4>Stack (LIFO)</h4>
+        <div class="stack-queue-viz" id="dfs-stack"></div>
+      </div>
+
+      <div class="data-structure-panel">
+        <h4>Visited Order</h4>
+        <div class="traversal-result" id="dfs-visited"></div>
+      </div>
+
+      <div class="step-controls">
+        <button id="dfs-reset" title="Reset">|&lt;</button>
+        <button id="dfs-back" title="Step Back">&lt;&lt;</button>
+        <button id="dfs-play" title="Play/Pause">Play</button>
+        <button id="dfs-forward" title="Step Forward">&gt;&gt;</button>
+        <span class="step-indicator" id="dfs-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="dfs-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="dfs-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showDFSTab('iterative')">Iterative DFS</button>
+      <button class="tab-btn" onclick="showDFSTab('recursive')">Recursive DFS</button>
+    </div>
+
+    <div class="tab-content active" id="dfs-iterative">
+      <div class="code-panel">
+        <div class="code-header">
+          <span class="language-badge">Python</span>
+        </div>
+        <div class="code-content">
+          <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">dfs_iterative</span>(<span class="variable">graph</span>, <span class="variable">start</span>):</span></div>
+          <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="variable">visited</span> <span class="operator">=</span> <span class="function">set</span>()</span></div>
+          <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="variable">stack</span> <span class="operator">=</span> [<span class="variable">start</span>]</span></div>
+          <div class="code-line"><span class="line-number">4</span><span class="line-content">    <span class="variable">result</span> <span class="operator">=</span> []</span></div>
+          <div class="code-line"><span class="line-number">5</span><span class="line-content"></span></div>
+          <div class="code-line"><span class="line-number">6</span><span class="line-content">    <span class="keyword">while</span> <span class="variable">stack</span>:</span></div>
+          <div class="code-line"><span class="line-number">7</span><span class="line-content">        <span class="variable">node</span> <span class="operator">=</span> <span class="variable">stack</span>.<span class="function">pop</span>()</span></div>
+          <div class="code-line"><span class="line-number">8</span><span class="line-content">        <span class="keyword">if</span> <span class="variable">node</span> <span class="keyword">not in</span> <span class="variable">visited</span>:</span></div>
+          <div class="code-line"><span class="line-number">9</span><span class="line-content">            <span class="variable">visited</span>.<span class="function">add</span>(<span class="variable">node</span>)</span></div>
+          <div class="code-line"><span class="line-number">10</span><span class="line-content">            <span class="variable">result</span>.<span class="function">append</span>(<span class="variable">node</span>)</span></div>
+          <div class="code-line"><span class="line-number">11</span><span class="line-content">            <span class="comment"># Add neighbors in reverse for left-to-right order</span></span></div>
+          <div class="code-line"><span class="line-number">12</span><span class="line-content">            <span class="keyword">for</span> <span class="variable">neighbor</span> <span class="keyword">in</span> <span class="function">reversed</span>(<span class="variable">graph</span>[<span class="variable">node</span>]):</span></div>
+          <div class="code-line"><span class="line-number">13</span><span class="line-content">                <span class="keyword">if</span> <span class="variable">neighbor</span> <span class="keyword">not in</span> <span class="variable">visited</span>:</span></div>
+          <div class="code-line"><span class="line-number">14</span><span class="line-content">                    <span class="variable">stack</span>.<span class="function">append</span>(<span class="variable">neighbor</span>)</span></div>
+          <div class="code-line"><span class="line-number">15</span><span class="line-content">    <span class="keyword">return</span> <span class="variable">result</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="dfs-recursive">
+      <div class="code-panel">
+        <div class="code-header">
+          <span class="language-badge">Python</span>
+        </div>
+        <div class="code-content">
+          <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">dfs_recursive</span>(<span class="variable">graph</span>, <span class="variable">node</span>, <span class="variable">visited</span><span class="operator">=</span><span class="keyword">None</span>):</span></div>
+          <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="keyword">if</span> <span class="variable">visited</span> <span class="keyword">is</span> <span class="keyword">None</span>:</span></div>
+          <div class="code-line"><span class="line-number">3</span><span class="line-content">        <span class="variable">visited</span> <span class="operator">=</span> <span class="function">set</span>()</span></div>
+          <div class="code-line"><span class="line-number">4</span><span class="line-content"></span></div>
+          <div class="code-line"><span class="line-number">5</span><span class="line-content">    <span class="variable">visited</span>.<span class="function">add</span>(<span class="variable">node</span>)</span></div>
+          <div class="code-line"><span class="line-number">6</span><span class="line-content">    <span class="function">print</span>(<span class="variable">node</span>)  <span class="comment"># Process the node</span></span></div>
+          <div class="code-line"><span class="line-number">7</span><span class="line-content"></span></div>
+          <div class="code-line"><span class="line-number">8</span><span class="line-content">    <span class="keyword">for</span> <span class="variable">neighbor</span> <span class="keyword">in</span> <span class="variable">graph</span>[<span class="variable">node</span>]:</span></div>
+          <div class="code-line"><span class="line-number">9</span><span class="line-content">        <span class="keyword">if</span> <span class="variable">neighbor</span> <span class="keyword">not in</span> <span class="variable">visited</span>:</span></div>
+          <div class="code-line"><span class="line-number">10</span><span class="line-content">            <span class="function">dfs_recursive</span>(<span class="variable">graph</span>, <span class="variable">neighbor</span>, <span class="variable">visited</span>)</span></div>
+          <div class="code-line"><span class="line-number">11</span><span class="line-content"></span></div>
+          <div class="code-line"><span class="line-number">12</span><span class="line-content">    <span class="keyword">return</span> <span class="variable">visited</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> DFS is ideal for: finding paths, detecting cycles, topological sorting, and solving puzzles (like mazes). Time complexity is O(V+E) because we visit each vertex and edge once.
+    </div>
+
+    <!-- Section 6: BFS Animation -->
+    <h2>6. Breadth-First Search (BFS)</h2>
+    <p>BFS explores all neighbors at the current level before moving to the next level. It uses a <strong>queue</strong> to track nodes to visit.</p>
+
+    <div class="viz-container">
+      <h3>BFS Step-by-Step Animator</h3>
+      <div class="step-description" id="bfs-description">
+        Press Play to watch BFS traverse the graph
+      </div>
+
+      <div class="viz-canvas" id="bfs-canvas">
+        <svg class="graph-svg" id="bfs-svg"></svg>
+      </div>
+
+      <div class="data-structure-panel">
+        <h4>Queue (FIFO)</h4>
+        <div class="stack-queue-viz" id="bfs-queue"></div>
+      </div>
+
+      <div class="data-structure-panel">
+        <h4>Visited Order (by Level)</h4>
+        <div class="traversal-result" id="bfs-visited"></div>
+      </div>
+
+      <div class="step-controls">
+        <button id="bfs-reset" title="Reset">|&lt;</button>
+        <button id="bfs-back" title="Step Back">&lt;&lt;</button>
+        <button id="bfs-play" title="Play/Pause">Play</button>
+        <button id="bfs-forward" title="Step Forward">&gt;&gt;</button>
+        <span class="step-indicator" id="bfs-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="bfs-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="bfs-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="language-badge">Python</span>
+      </div>
+      <div class="code-content">
+        <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">from</span> collections <span class="keyword">import</span> deque</span></div>
+        <div class="code-line"><span class="line-number">2</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">3</span><span class="line-content"><span class="keyword">def</span> <span class="function">bfs</span>(<span class="variable">graph</span>, <span class="variable">start</span>):</span></div>
+        <div class="code-line"><span class="line-number">4</span><span class="line-content">    <span class="variable">visited</span> <span class="operator">=</span> <span class="function">set</span>([<span class="variable">start</span>])</span></div>
+        <div class="code-line"><span class="line-number">5</span><span class="line-content">    <span class="variable">queue</span> <span class="operator">=</span> <span class="function">deque</span>([<span class="variable">start</span>])</span></div>
+        <div class="code-line"><span class="line-number">6</span><span class="line-content">    <span class="variable">result</span> <span class="operator">=</span> []</span></div>
+        <div class="code-line"><span class="line-number">7</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">8</span><span class="line-content">    <span class="keyword">while</span> <span class="variable">queue</span>:</span></div>
+        <div class="code-line"><span class="line-number">9</span><span class="line-content">        <span class="variable">node</span> <span class="operator">=</span> <span class="variable">queue</span>.<span class="function">popleft</span>()</span></div>
+        <div class="code-line"><span class="line-number">10</span><span class="line-content">        <span class="variable">result</span>.<span class="function">append</span>(<span class="variable">node</span>)</span></div>
+        <div class="code-line"><span class="line-number">11</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">12</span><span class="line-content">        <span class="keyword">for</span> <span class="variable">neighbor</span> <span class="keyword">in</span> <span class="variable">graph</span>[<span class="variable">node</span>]:</span></div>
+        <div class="code-line"><span class="line-number">13</span><span class="line-content">            <span class="keyword">if</span> <span class="variable">neighbor</span> <span class="keyword">not in</span> <span class="variable">visited</span>:</span></div>
+        <div class="code-line"><span class="line-number">14</span><span class="line-content">                <span class="variable">visited</span>.<span class="function">add</span>(<span class="variable">neighbor</span>)</span></div>
+        <div class="code-line"><span class="line-number">15</span><span class="line-content">                <span class="variable">queue</span>.<span class="function">append</span>(<span class="variable">neighbor</span>)</span></div>
+        <div class="code-line"><span class="line-number">16</span><span class="line-content">    <span class="keyword">return</span> <span class="variable">result</span></span></div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> BFS is ideal for: finding shortest paths (unweighted), level-order traversal, and finding all nodes within a certain distance. Also O(V+E) time complexity.
+    </div>
+
+    <!-- Section 7: Tree Traversals -->
+    <h2>7. Tree Traversals Comparison</h2>
+    <p>Trees have special traversal orders based on when we "visit" each node relative to its children.</p>
+
+    <div class="viz-container">
+      <h3>Tree Traversal Comparator</h3>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="runTreeTraversal('preorder')">Pre-order</button>
+        <button class="tab-btn" onclick="runTreeTraversal('inorder')">In-order</button>
+        <button class="tab-btn" onclick="runTreeTraversal('postorder')">Post-order</button>
+        <button class="tab-btn" onclick="runTreeTraversal('levelorder')">Level-order</button>
+      </div>
+
+      <div class="step-description" id="tree-description">
+        Select a traversal type and press Play
+      </div>
+
+      <div class="viz-canvas small" id="tree-canvas">
+        <svg class="graph-svg" id="tree-svg"></svg>
+      </div>
+
+      <div class="data-structure-panel">
+        <h4>Traversal Result</h4>
+        <div class="traversal-result" id="tree-result"></div>
+      </div>
+
+      <div class="step-controls">
+        <button id="tree-reset" title="Reset">|&lt;</button>
+        <button id="tree-back" title="Step Back">&lt;&lt;</button>
+        <button id="tree-play" title="Play/Pause">Play</button>
+        <button id="tree-forward" title="Step Forward">&gt;&gt;</button>
+        <span class="step-indicator" id="tree-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="tree-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="tree-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison-grid">
+      <div class="comparison-item">
+        <h4>Pre-order (Root-Left-Right)</h4>
+        <p>Visit root BEFORE children. Used for: copying trees, prefix expressions.</p>
+        <code>process(node) -> left -> right</code>
+      </div>
+      <div class="comparison-item">
+        <h4>In-order (Left-Root-Right)</h4>
+        <p>Visit root BETWEEN children. Used for: BST sorted output.</p>
+        <code>left -> process(node) -> right</code>
+      </div>
+      <div class="comparison-item">
+        <h4>Post-order (Left-Right-Root)</h4>
+        <p>Visit root AFTER children. Used for: deleting trees, postfix expressions.</p>
+        <code>left -> right -> process(node)</code>
+      </div>
+      <div class="comparison-item">
+        <h4>Level-order (BFS)</h4>
+        <p>Visit level by level. Used for: printing tree by levels, shortest path in trees.</p>
+        <code>level 0 -> level 1 -> level 2 -> ...</code>
+      </div>
+    </div>
+
+    <!-- Section 8: Trees vs Graphs -->
+    <h2>8. Trees vs. Graphs</h2>
+
+    <div class="complexity-box">
+      <table class="complexity-table">
+        <tr>
+          <th>Property</th>
+          <th>Tree</th>
+          <th>Graph</th>
+        </tr>
+        <tr>
+          <td>Cycles</td>
+          <td>No cycles (acyclic)</td>
+          <td>May have cycles</td>
+        </tr>
+        <tr>
+          <td>Root</td>
+          <td>Has a designated root</td>
+          <td>No root (any start point)</td>
+        </tr>
+        <tr>
+          <td>Edges</td>
+          <td>Exactly N-1 edges for N nodes</td>
+          <td>Any number of edges</td>
+        </tr>
+        <tr>
+          <td>Path uniqueness</td>
+          <td>Exactly one path between any two nodes</td>
+          <td>Multiple paths possible</td>
+        </tr>
+        <tr>
+          <td>Connectivity</td>
+          <td>Always connected</td>
+          <td>May be disconnected</td>
+        </tr>
+        <tr>
+          <td>Direction</td>
+          <td>Parent-child relationship</td>
+          <td>Directed or undirected</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Section 9: Topological Sort -->
+    <h2>9. Topological Ordering</h2>
+    <p>Topological sort orders vertices so that for every directed edge (u, v), u comes before v. This is only possible for <strong>Directed Acyclic Graphs (DAGs)</strong>.</p>
+
+    <div class="viz-container">
+      <h3>Course Scheduling Example</h3>
+      <div class="step-description" id="topo-description">
+        Watch how topological sort determines a valid course order
+      </div>
+
+      <div class="viz-canvas" id="topo-canvas">
+        <svg class="graph-svg" id="topo-svg"></svg>
+      </div>
+
+      <div class="data-structure-panel">
+        <h4>Topological Order (Valid Course Sequence)</h4>
+        <div class="traversal-result" id="topo-result"></div>
+      </div>
+
+      <div class="data-structure-panel">
+        <h4>DFS Stack (Courses Being Processed)</h4>
+        <div class="stack-queue-viz" id="topo-stack"></div>
+      </div>
+
+      <div class="step-controls">
+        <button id="topo-reset" title="Reset">|&lt;</button>
+        <button id="topo-back" title="Step Back">&lt;&lt;</button>
+        <button id="topo-play" title="Play/Pause">Play</button>
+        <button id="topo-forward" title="Step Forward">&gt;&gt;</button>
+        <span class="step-indicator" id="topo-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="topo-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="topo-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="language-badge">Python</span>
+      </div>
+      <div class="code-content">
+        <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">topological_sort</span>(<span class="variable">graph</span>):</span></div>
+        <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="variable">visited</span> <span class="operator">=</span> <span class="function">set</span>()</span></div>
+        <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="variable">result</span> <span class="operator">=</span> []</span></div>
+        <div class="code-line"><span class="line-number">4</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">5</span><span class="line-content">    <span class="keyword">def</span> <span class="function">dfs</span>(<span class="variable">node</span>):</span></div>
+        <div class="code-line"><span class="line-number">6</span><span class="line-content">        <span class="variable">visited</span>.<span class="function">add</span>(<span class="variable">node</span>)</span></div>
+        <div class="code-line"><span class="line-number">7</span><span class="line-content">        <span class="keyword">for</span> <span class="variable">neighbor</span> <span class="keyword">in</span> <span class="variable">graph</span>.<span class="function">get</span>(<span class="variable">node</span>, []):</span></div>
+        <div class="code-line"><span class="line-number">8</span><span class="line-content">            <span class="keyword">if</span> <span class="variable">neighbor</span> <span class="keyword">not in</span> <span class="variable">visited</span>:</span></div>
+        <div class="code-line"><span class="line-number">9</span><span class="line-content">                <span class="function">dfs</span>(<span class="variable">neighbor</span>)</span></div>
+        <div class="code-line"><span class="line-number">10</span><span class="line-content">        <span class="variable">result</span>.<span class="function">append</span>(<span class="variable">node</span>)  <span class="comment"># Add AFTER visiting all children</span></span></div>
+        <div class="code-line"><span class="line-number">11</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">12</span><span class="line-content">    <span class="keyword">for</span> <span class="variable">node</span> <span class="keyword">in</span> <span class="variable">graph</span>:</span></div>
+        <div class="code-line"><span class="line-number">13</span><span class="line-content">        <span class="keyword">if</span> <span class="variable">node</span> <span class="keyword">not in</span> <span class="variable">visited</span>:</span></div>
+        <div class="code-line"><span class="line-number">14</span><span class="line-content">            <span class="function">dfs</span>(<span class="variable">node</span>)</span></div>
+        <div class="code-line"><span class="line-number">15</span><span class="line-content"></span></div>
+        <div class="code-line"><span class="line-number">16</span><span class="line-content">    <span class="keyword">return</span> <span class="variable">result</span>[::<span class="operator">-</span><span class="number">1</span>]  <span class="comment"># Reverse for correct order</span></span></div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Topological sort is used in: build systems (Makefile), course prerequisites, task scheduling, and dependency resolution. If a cycle exists, topological sort is impossible!
+    </div>
+
+    <!-- Section 10: Quiz -->
+    <h2>10. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question" id="quiz-1">
+        <h4>Question 1: Which data structure does DFS use?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Queue (FIFO)</div>
+          <div class="quiz-option" data-index="1">Stack (LIFO)</div>
+          <div class="quiz-option" data-index="2">Heap</div>
+          <div class="quiz-option" data-index="3">Array</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text" data-hint="0">Think about the order in which DFS explores nodes - it goes deep before going wide.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text" data-hint="1">LIFO means the last node added is the first one explored - this creates the "deep" exploration pattern.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> DFS uses a Stack (LIFO - Last In, First Out). When we push neighbors onto the stack, we explore the most recently added node first, going as deep as possible before backtracking.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-2">
+        <h4>Question 2: What is the time complexity of BFS for a graph with V vertices and E edges?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">O(V)</div>
+          <div class="quiz-option" data-index="1">O(E)</div>
+          <div class="quiz-option" data-index="2">O(V + E)</div>
+          <div class="quiz-option" data-index="3">O(V * E)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text" data-hint="0">Consider what BFS does: it visits every vertex and examines every edge.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text" data-hint="1">Each vertex is dequeued once (V operations), and for each vertex, we look at its edges (total E edge examinations).</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> BFS visits each vertex once (O(V)) and examines each edge once (O(E)), giving O(V + E) total time complexity. This is optimal for graph traversal!
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-3">
+        <h4>Question 3: Which graph representation is best for checking if edge (A, B) exists in a sparse graph?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Adjacency Matrix - O(1) lookup</div>
+          <div class="quiz-option" data-index="1">Edge List - O(E) lookup</div>
+          <div class="quiz-option" data-index="2">Adjacency List - O(degree) lookup</div>
+          <div class="quiz-option" data-index="3">All are equally good</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text" data-hint="0">In a sparse graph, the number of edges E is much smaller than V^2. Consider the space-time trade-off.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text" data-hint="1">While adjacency matrix has O(1) lookup, it uses O(V^2) space. For sparse graphs, adjacency list is more practical with O(V+E) space and O(degree) lookup, where degree is typically small.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> For sparse graphs, adjacency list is the best choice. While adjacency matrix offers O(1) lookup, it wastes O(V^2) space. Adjacency list uses O(V+E) space and O(degree) lookup, which is efficient when the average degree is small (sparse graph).
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-4">
+        <h4>Question 4: Which traversal visits nodes in sorted order for a Binary Search Tree?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Pre-order</div>
+          <div class="quiz-option" data-index="1">In-order</div>
+          <div class="quiz-option" data-index="2">Post-order</div>
+          <div class="quiz-option" data-index="3">Level-order</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text" data-hint="0">In a BST, left children are smaller than the parent, and right children are larger.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text" data-hint="1">If we visit left subtree first (smaller values), then the node, then right subtree (larger values), we get sorted order!</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> In-order traversal (Left-Root-Right) visits nodes in sorted order for a BST because it processes all smaller values (left subtree) before the current node, then all larger values (right subtree).
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-5">
+        <h4>Question 5: When is topological sort impossible?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">When the graph contains a cycle</div>
+          <div class="quiz-option" data-index="1">When the graph is undirected</div>
+          <div class="quiz-option" data-index="2">When the graph has multiple components</div>
+          <div class="quiz-option" data-index="3">When the graph is weighted</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text" data-hint="0">Topological sort requires that for every edge (u, v), u appears before v in the ordering.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text" data-hint="1">If A depends on B, and B depends on A (a cycle), which should come first? This creates an impossible constraint!</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Topological sort is only possible for Directed Acyclic Graphs (DAGs). If a cycle exists (A -> B -> C -> A), there's no valid ordering since each node in the cycle would need to come before another node in the cycle.
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-18-trees.html">&larr; Session 18: Trees</a>
+      <a href="session-20-shortest-paths.html">Session 20: Shortest Paths &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'L' : 'M';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'L' : 'M';
+
+    // ===============================
+    // Graph Builder
+    // ===============================
+    let graphNodes = [];
+    let graphEdges = [];
+    let isDirected = false;
+    let isWeighted = false;
+    let nodeCounter = 0;
+    const nodeLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    function addNode() {
+      if (nodeCounter >= 26) return;
+      const label = nodeLabels[nodeCounter];
+      const svg = document.getElementById('graph-builder-svg');
+      const rect = svg.getBoundingClientRect();
+
+      // Position nodes in a circle
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const radius = Math.min(centerX, centerY) - 40;
+      const angle = (2 * Math.PI * nodeCounter) / Math.max(6, nodeCounter + 1);
+
+      graphNodes.push({
+        id: label,
+        x: centerX + radius * Math.cos(angle - Math.PI / 2),
+        y: centerY + radius * Math.sin(angle - Math.PI / 2)
+      });
+      nodeCounter++;
+      renderGraph();
+      updateRepresentations();
+    }
+
+    function addEdge() {
+      const from = document.getElementById('edge-from').value.toUpperCase();
+      const to = document.getElementById('edge-to').value.toUpperCase();
+      const weight = parseInt(document.getElementById('edge-weight').value) || 1;
+
+      const fromNode = graphNodes.find(n => n.id === from);
+      const toNode = graphNodes.find(n => n.id === to);
+
+      if (!fromNode || !toNode || from === to) {
+        alert('Invalid nodes! Make sure both nodes exist and are different.');
+        return;
+      }
+
+      // Check if edge already exists
+      const exists = graphEdges.some(e => e.from === from && e.to === to);
+      if (exists) {
+        alert('Edge already exists!');
+        return;
+      }
+
+      graphEdges.push({ from, to, weight });
+
+      // For undirected graphs, add reverse edge
+      if (!isDirected) {
+        const reverseExists = graphEdges.some(e => e.from === to && e.to === from);
+        if (!reverseExists) {
+          graphEdges.push({ from: to, to: from, weight });
+        }
+      }
+
+      renderGraph();
+      updateRepresentations();
+
+      // Clear inputs
+      document.getElementById('edge-from').value = '';
+      document.getElementById('edge-to').value = '';
+    }
+
+    function clearGraph() {
+      graphNodes = [];
+      graphEdges = [];
+      nodeCounter = 0;
+      renderGraph();
+      updateRepresentations();
+    }
+
+    function toggleDirected() {
+      isDirected = document.getElementById('directed-toggle').checked;
+
+      if (!isDirected) {
+        // Add reverse edges for existing edges
+        const newEdges = [];
+        graphEdges.forEach(e => {
+          newEdges.push(e);
+          const reverseExists = graphEdges.some(re => re.from === e.to && re.to === e.from);
+          if (!reverseExists) {
+            newEdges.push({ from: e.to, to: e.from, weight: e.weight });
+          }
+        });
+        graphEdges = newEdges;
+      } else {
+        // Remove duplicate reverse edges
+        const seen = new Set();
+        graphEdges = graphEdges.filter(e => {
+          const key = `${e.from}-${e.to}`;
+          const reverseKey = `${e.to}-${e.from}`;
+          if (seen.has(reverseKey)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      renderGraph();
+      updateRepresentations();
+    }
+
+    function toggleWeighted() {
+      isWeighted = document.getElementById('weighted-toggle').checked;
+      renderGraph();
+      updateRepresentations();
+    }
+
+    function renderGraph() {
+      const svg = document.getElementById('graph-builder-svg');
+      const rect = svg.getBoundingClientRect();
+
+      let html = `
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="22" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="var(--edge-default)" />
+          </marker>
+        </defs>
+      `;
+
+      // Draw edges
+      graphEdges.forEach(edge => {
+        const from = graphNodes.find(n => n.id === edge.from);
+        const to = graphNodes.find(n => n.id === edge.to);
+        if (!from || !to) return;
+
+        const dirClass = isDirected ? 'directed' : '';
+        html += `<line class="graph-edge ${dirClass}"
+          x1="${from.x}" y1="${from.y}"
+          x2="${to.x}" y2="${to.y}"
+          ${isDirected ? 'marker-end="url(#arrowhead)"' : ''} />`;
+
+        if (isWeighted) {
+          const midX = (from.x + to.x) / 2;
+          const midY = (from.y + to.y) / 2;
+          html += `<text class="edge-weight" x="${midX}" y="${midY - 8}">${edge.weight}</text>`;
+        }
+      });
+
+      // Draw nodes
+      graphNodes.forEach(node => {
+        html += `
+          <g class="graph-node" transform="translate(${node.x}, ${node.y})">
+            <circle r="20" />
+            <text>${node.id}</text>
+          </g>
+        `;
+      });
+
+      svg.innerHTML = html;
+    }
+
+    function updateRepresentations() {
+      // Adjacency Matrix
+      const matrixContent = document.getElementById('adj-matrix-content');
+      if (graphNodes.length === 0) {
+        matrixContent.innerHTML = '<em>Add nodes to see the matrix</em>';
+      } else {
+        let table = '<table class="matrix-table"><tr><th></th>';
+        graphNodes.forEach(n => table += `<th>${n.id}</th>`);
+        table += '</tr>';
+
+        graphNodes.forEach(row => {
+          table += `<tr><th>${row.id}</th>`;
+          graphNodes.forEach(col => {
+            const edge = graphEdges.find(e => e.from === row.id && e.to === col.id);
+            const val = edge ? (isWeighted ? edge.weight : 1) : 0;
+            table += `<td class="${val ? 'has-edge' : ''}">${val}</td>`;
+          });
+          table += '</tr>';
+        });
+        table += '</table>';
+        matrixContent.innerHTML = table;
+      }
+
+      // Edge List
+      const edgeListContent = document.getElementById('edge-list-content');
+      if (graphEdges.length === 0) {
+        edgeListContent.innerHTML = '<em>Add edges to see the list</em>';
+      } else {
+        const uniqueEdges = isDirected ? graphEdges :
+          graphEdges.filter(e => e.from < e.to);
+        const edgeStr = uniqueEdges.map(e =>
+          isWeighted ? `(${e.from}, ${e.to}, ${e.weight})` : `(${e.from}, ${e.to})`
+        ).join('\n');
+        edgeListContent.textContent = `edges = [\n  ${edgeStr.split('\n').join(',\n  ')}\n]`;
+      }
+
+      // Adjacency List
+      const adjListContent = document.getElementById('adj-list-content');
+      if (graphNodes.length === 0) {
+        adjListContent.innerHTML = '<em>Add nodes to see the list</em>';
+      } else {
+        const adjList = {};
+        graphNodes.forEach(n => adjList[n.id] = []);
+        graphEdges.forEach(e => {
+          if (isWeighted) {
+            adjList[e.from].push(`(${e.to}, ${e.weight})`);
+          } else {
+            if (!adjList[e.from].includes(e.to)) {
+              adjList[e.from].push(e.to);
+            }
+          }
+        });
+
+        let listStr = 'graph = {\n';
+        Object.keys(adjList).sort().forEach(k => {
+          listStr += `  '${k}': [${adjList[k].join(', ')}],\n`;
+        });
+        listStr += '}';
+        adjListContent.textContent = listStr;
+      }
+    }
+
+    // Initialize with a sample graph
+    function initSampleGraph() {
+      graphNodes = [
+        { id: 'A', x: 150, y: 80 },
+        { id: 'B', x: 80, y: 180 },
+        { id: 'C', x: 220, y: 180 },
+        { id: 'D', x: 80, y: 280 },
+        { id: 'E', x: 220, y: 280 }
+      ];
+      nodeCounter = 5;
+      graphEdges = [
+        { from: 'A', to: 'B', weight: 1 },
+        { from: 'B', to: 'A', weight: 1 },
+        { from: 'A', to: 'C', weight: 1 },
+        { from: 'C', to: 'A', weight: 1 },
+        { from: 'B', to: 'D', weight: 1 },
+        { from: 'D', to: 'B', weight: 1 },
+        { from: 'C', to: 'E', weight: 1 },
+        { from: 'E', to: 'C', weight: 1 },
+        { from: 'D', to: 'E', weight: 1 },
+        { from: 'E', to: 'D', weight: 1 }
+      ];
+      renderGraph();
+      updateRepresentations();
+    }
+
+    // ===============================
+    // DFS Animator
+    // ===============================
+    class TraversalAnimator {
+      constructor(prefix, traversalType) {
+        this.prefix = prefix;
+        this.traversalType = traversalType;
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.initControls();
+        this.generateSteps();
+        this.render();
+      }
+
+      initControls() {
+        document.getElementById(`${this.prefix}-play`).addEventListener('click', () => {
+          this.isPlaying ? this.pause() : this.play();
+        });
+        document.getElementById(`${this.prefix}-reset`).addEventListener('click', () => this.reset());
+        document.getElementById(`${this.prefix}-back`).addEventListener('click', () => this.stepBackward());
+        document.getElementById(`${this.prefix}-forward`).addEventListener('click', () => this.stepForward());
+        document.getElementById(`${this.prefix}-speed`).addEventListener('change', (e) => {
+          this.speed = parseFloat(e.target.value);
+          if (this.isPlaying) {
+            this.pause();
+            this.play();
+          }
+        });
+      }
+
+      generateSteps() {
+        // Sample graph for DFS/BFS
+        const graph = {
+          'A': ['B', 'C'],
+          'B': ['A', 'D', 'E'],
+          'C': ['A', 'F'],
+          'D': ['B'],
+          'E': ['B', 'F'],
+          'F': ['C', 'E']
+        };
+
+        const nodePositions = {
+          'A': { x: 200, y: 60 },
+          'B': { x: 100, y: 150 },
+          'C': { x: 300, y: 150 },
+          'D': { x: 50, y: 260 },
+          'E': { x: 150, y: 260 },
+          'F': { x: 300, y: 260 }
+        };
+
+        this.graph = graph;
+        this.nodePositions = nodePositions;
+        this.steps = [];
+
+        if (this.traversalType === 'dfs') {
+          this.generateDFSSteps();
+        } else {
+          this.generateBFSSteps();
+        }
+      }
+
+      generateDFSSteps() {
+        const graph = this.graph;
+        const visited = new Set();
+        const stack = ['A'];
+
+        this.steps.push({
+          desc: 'Initialize: Push starting node A onto stack',
+          stack: ['A'],
+          visited: [],
+          current: null,
+          queued: ['A'],
+          edges: []
+        });
+
+        while (stack.length > 0) {
+          const node = stack.pop();
+
+          if (visited.has(node)) {
+            this.steps.push({
+              desc: `Pop ${node} from stack - already visited, skip`,
+              stack: [...stack],
+              visited: [...visited],
+              current: node,
+              queued: [...stack],
+              edges: this.steps[this.steps.length - 1]?.edges || []
+            });
+            continue;
+          }
+
+          visited.add(node);
+          const visitedEdges = this.steps[this.steps.length - 1]?.edges || [];
+
+          this.steps.push({
+            desc: `Pop ${node} from stack and mark as visited`,
+            stack: [...stack],
+            visited: [...visited],
+            current: node,
+            queued: [...stack],
+            edges: [...visitedEdges]
+          });
+
+          const neighbors = graph[node].filter(n => !visited.has(n)).reverse();
+          for (const neighbor of neighbors) {
+            stack.push(neighbor);
+            visitedEdges.push({ from: node, to: neighbor });
+          }
+
+          if (neighbors.length > 0) {
+            this.steps.push({
+              desc: `Push unvisited neighbors [${neighbors.reverse().join(', ')}] onto stack`,
+              stack: [...stack],
+              visited: [...visited],
+              current: node,
+              queued: [...stack],
+              edges: [...visitedEdges]
+            });
+          }
+        }
+
+        this.steps.push({
+          desc: 'DFS Complete! Stack is empty.',
+          stack: [],
+          visited: [...visited],
+          current: null,
+          queued: [],
+          edges: this.steps[this.steps.length - 1]?.edges || []
+        });
+      }
+
+      generateBFSSteps() {
+        const graph = this.graph;
+        const visited = new Set(['A']);
+        const queue = ['A'];
+
+        this.steps.push({
+          desc: 'Initialize: Enqueue starting node A',
+          queue: ['A'],
+          visited: ['A'],
+          current: null,
+          queued: ['A'],
+          edges: []
+        });
+
+        while (queue.length > 0) {
+          const node = queue.shift();
+          const visitedEdges = this.steps[this.steps.length - 1]?.edges || [];
+
+          this.steps.push({
+            desc: `Dequeue ${node} and process it`,
+            queue: [...queue],
+            visited: [...visited],
+            current: node,
+            queued: [...queue],
+            edges: [...visitedEdges]
+          });
+
+          const neighbors = graph[node].filter(n => !visited.has(n));
+          for (const neighbor of neighbors) {
+            visited.add(neighbor);
+            queue.push(neighbor);
+            visitedEdges.push({ from: node, to: neighbor });
+          }
+
+          if (neighbors.length > 0) {
+            this.steps.push({
+              desc: `Enqueue unvisited neighbors [${neighbors.join(', ')}]`,
+              queue: [...queue],
+              visited: [...visited],
+              current: node,
+              queued: [...queue],
+              edges: [...visitedEdges]
+            });
+          }
+        }
+
+        this.steps.push({
+          desc: 'BFS Complete! Queue is empty.',
+          queue: [],
+          visited: [...visited],
+          current: null,
+          queued: [],
+          edges: this.steps[this.steps.length - 1]?.edges || []
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        const svg = document.getElementById(`${this.prefix}-svg`);
+        const graph = this.graph;
+        const positions = this.nodePositions;
+
+        // Draw edges
+        let html = '';
+        const allEdges = [];
+        Object.keys(graph).forEach(from => {
+          graph[from].forEach(to => {
+            if (from < to) {
+              allEdges.push({ from, to });
+            }
+          });
+        });
+
+        allEdges.forEach(edge => {
+          const from = positions[edge.from];
+          const to = positions[edge.to];
+          const isVisited = step.edges?.some(e =>
+            (e.from === edge.from && e.to === edge.to) ||
+            (e.from === edge.to && e.to === edge.from)
+          );
+          html += `<line class="graph-edge ${isVisited ? 'visited' : ''}"
+            x1="${from.x}" y1="${from.y}"
+            x2="${to.x}" y2="${to.y}" />`;
+        });
+
+        // Draw nodes
+        Object.keys(positions).forEach(id => {
+          const pos = positions[id];
+          let nodeClass = 'graph-node';
+          if (step.current === id) {
+            nodeClass += ' current';
+          } else if (step.visited?.includes(id)) {
+            nodeClass += ' visited';
+          } else if (step.queued?.includes(id)) {
+            nodeClass += ' queued';
+          }
+
+          html += `
+            <g class="${nodeClass}" transform="translate(${pos.x}, ${pos.y})">
+              <circle r="22" />
+              <text>${id}</text>
+            </g>
+          `;
+        });
+
+        svg.innerHTML = html;
+
+        // Update description
+        document.getElementById(`${this.prefix}-description`).textContent = step.desc;
+
+        // Update stack/queue visualization
+        const dsContainer = document.getElementById(`${this.prefix}-${this.traversalType === 'dfs' ? 'stack' : 'queue'}`);
+        const dsData = this.traversalType === 'dfs' ? step.stack : step.queue;
+        dsContainer.innerHTML = dsData.map((item, i) =>
+          `<div class="stack-queue-item ${i === dsData.length - 1 && this.traversalType === 'dfs' ? 'current' : ''} ${i === 0 && this.traversalType === 'bfs' ? 'current' : ''}">${item}</div>`
+        ).join('');
+
+        // Update visited order
+        const visitedContainer = document.getElementById(`${this.prefix}-visited`);
+        visitedContainer.innerHTML = step.visited.map(item =>
+          `<div class="traversal-item">${item}</div>`
+        ).join('');
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        document.getElementById(`${this.prefix}-progress`).style.width = `${progress}%`;
+        document.getElementById(`${this.prefix}-step-indicator`).textContent =
+          `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById(`${this.prefix}-play`).textContent = 'Pause';
+        document.getElementById(`${this.prefix}-play`).classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1200 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById(`${this.prefix}-play`).textContent = 'Play';
+        document.getElementById(`${this.prefix}-play`).classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    // ===============================
+    // Tree Traversal Animator
+    // ===============================
+    class TreeTraversalAnimator {
+      constructor() {
+        this.prefix = 'tree';
+        this.traversalType = 'preorder';
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        // Binary tree structure
+        this.tree = {
+          value: 'A',
+          left: {
+            value: 'B',
+            left: { value: 'D', left: null, right: null },
+            right: { value: 'E', left: null, right: null }
+          },
+          right: {
+            value: 'C',
+            left: { value: 'F', left: null, right: null },
+            right: { value: 'G', left: null, right: null }
+          }
+        };
+
+        this.nodePositions = {
+          'A': { x: 200, y: 40 },
+          'B': { x: 100, y: 100 },
+          'C': { x: 300, y: 100 },
+          'D': { x: 50, y: 170 },
+          'E': { x: 150, y: 170 },
+          'F': { x: 250, y: 170 },
+          'G': { x: 350, y: 170 }
+        };
+
+        this.initControls();
+        this.generateSteps();
+        this.render();
+      }
+
+      initControls() {
+        document.getElementById(`${this.prefix}-play`).addEventListener('click', () => {
+          this.isPlaying ? this.pause() : this.play();
+        });
+        document.getElementById(`${this.prefix}-reset`).addEventListener('click', () => this.reset());
+        document.getElementById(`${this.prefix}-back`).addEventListener('click', () => this.stepBackward());
+        document.getElementById(`${this.prefix}-forward`).addEventListener('click', () => this.stepForward());
+        document.getElementById(`${this.prefix}-speed`).addEventListener('change', (e) => {
+          this.speed = parseFloat(e.target.value);
+          if (this.isPlaying) {
+            this.pause();
+            this.play();
+          }
+        });
+      }
+
+      setTraversalType(type) {
+        this.traversalType = type;
+        this.reset();
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        this.steps = [];
+        const result = [];
+
+        const traverse = (node, type) => {
+          if (!node) return;
+
+          if (type === 'preorder') {
+            this.steps.push({
+              desc: `Visit ${node.value} (Root first)`,
+              current: node.value,
+              visited: [...result],
+              processing: node.value
+            });
+            result.push(node.value);
+            this.steps.push({
+              desc: `Added ${node.value} to result`,
+              current: node.value,
+              visited: [...result],
+              processing: null
+            });
+            traverse(node.left, type);
+            traverse(node.right, type);
+          } else if (type === 'inorder') {
+            traverse(node.left, type);
+            this.steps.push({
+              desc: `Visit ${node.value} (After left subtree)`,
+              current: node.value,
+              visited: [...result],
+              processing: node.value
+            });
+            result.push(node.value);
+            this.steps.push({
+              desc: `Added ${node.value} to result`,
+              current: node.value,
+              visited: [...result],
+              processing: null
+            });
+            traverse(node.right, type);
+          } else if (type === 'postorder') {
+            traverse(node.left, type);
+            traverse(node.right, type);
+            this.steps.push({
+              desc: `Visit ${node.value} (After both subtrees)`,
+              current: node.value,
+              visited: [...result],
+              processing: node.value
+            });
+            result.push(node.value);
+            this.steps.push({
+              desc: `Added ${node.value} to result`,
+              current: node.value,
+              visited: [...result],
+              processing: null
+            });
+          }
+        };
+
+        if (this.traversalType === 'levelorder') {
+          const queue = [this.tree];
+          this.steps.push({
+            desc: 'Start level-order (BFS): Enqueue root',
+            current: null,
+            visited: [],
+            processing: null
+          });
+
+          while (queue.length > 0) {
+            const node = queue.shift();
+            this.steps.push({
+              desc: `Dequeue and visit ${node.value}`,
+              current: node.value,
+              visited: [...result],
+              processing: node.value
+            });
+            result.push(node.value);
+            this.steps.push({
+              desc: `Added ${node.value} to result`,
+              current: node.value,
+              visited: [...result],
+              processing: null
+            });
+
+            if (node.left) queue.push(node.left);
+            if (node.right) queue.push(node.right);
+          }
+        } else {
+          this.steps.push({
+            desc: `Start ${this.traversalType} traversal from root`,
+            current: null,
+            visited: [],
+            processing: null
+          });
+          traverse(this.tree, this.traversalType);
+        }
+
+        this.steps.push({
+          desc: `${this.traversalType.charAt(0).toUpperCase() + this.traversalType.slice(1)} traversal complete!`,
+          current: null,
+          visited: result,
+          processing: null
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        const svg = document.getElementById(`${this.prefix}-svg`);
+        const positions = this.nodePositions;
+
+        // Draw edges
+        let html = '';
+        const edges = [
+          ['A', 'B'], ['A', 'C'],
+          ['B', 'D'], ['B', 'E'],
+          ['C', 'F'], ['C', 'G']
+        ];
+
+        edges.forEach(([from, to]) => {
+          const fromPos = positions[from];
+          const toPos = positions[to];
+          const isVisited = step.visited?.includes(from) && step.visited?.includes(to);
+          html += `<line class="tree-edge ${isVisited ? 'visited' : ''}"
+            x1="${fromPos.x}" y1="${fromPos.y}"
+            x2="${toPos.x}" y2="${toPos.y}" />`;
+        });
+
+        // Draw nodes
+        Object.keys(positions).forEach(id => {
+          const pos = positions[id];
+          let nodeClass = 'tree-node';
+          if (step.current === id) {
+            nodeClass += ' current';
+          } else if (step.visited?.includes(id)) {
+            nodeClass += ' visited';
+          }
+
+          html += `
+            <g class="${nodeClass}" transform="translate(${pos.x}, ${pos.y})">
+              <circle r="18" />
+              <text>${id}</text>
+            </g>
+          `;
+        });
+
+        svg.innerHTML = html;
+
+        // Update description
+        document.getElementById(`${this.prefix}-description`).textContent = step.desc;
+
+        // Update result
+        const resultContainer = document.getElementById(`${this.prefix}-result`);
+        resultContainer.innerHTML = step.visited.map(item =>
+          `<div class="traversal-item">${item}</div>`
+        ).join('');
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        document.getElementById(`${this.prefix}-progress`).style.width = `${progress}%`;
+        document.getElementById(`${this.prefix}-step-indicator`).textContent =
+          `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById(`${this.prefix}-play`).textContent = 'Pause';
+        document.getElementById(`${this.prefix}-play`).classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 800 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById(`${this.prefix}-play`).textContent = 'Play';
+        document.getElementById(`${this.prefix}-play`).classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    // ===============================
+    // Topological Sort Animator
+    // ===============================
+    class TopologicalSortAnimator {
+      constructor() {
+        this.prefix = 'topo';
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        // Course dependency graph
+        this.graph = {
+          'CS101': ['CS201', 'CS202'],
+          'CS201': ['CS301'],
+          'CS202': ['CS301', 'CS303'],
+          'MATH101': ['CS202'],
+          'CS301': ['CS401'],
+          'CS303': ['CS401'],
+          'CS401': []
+        };
+
+        this.nodePositions = {
+          'CS101': { x: 100, y: 60 },
+          'MATH101': { x: 300, y: 60 },
+          'CS201': { x: 60, y: 150 },
+          'CS202': { x: 200, y: 150 },
+          'CS301': { x: 100, y: 240 },
+          'CS303': { x: 280, y: 240 },
+          'CS401': { x: 190, y: 320 }
+        };
+
+        this.initControls();
+        this.generateSteps();
+        this.render();
+      }
+
+      initControls() {
+        document.getElementById(`${this.prefix}-play`).addEventListener('click', () => {
+          this.isPlaying ? this.pause() : this.play();
+        });
+        document.getElementById(`${this.prefix}-reset`).addEventListener('click', () => this.reset());
+        document.getElementById(`${this.prefix}-back`).addEventListener('click', () => this.stepBackward());
+        document.getElementById(`${this.prefix}-forward`).addEventListener('click', () => this.stepForward());
+        document.getElementById(`${this.prefix}-speed`).addEventListener('change', (e) => {
+          this.speed = parseFloat(e.target.value);
+          if (this.isPlaying) {
+            this.pause();
+            this.play();
+          }
+        });
+      }
+
+      generateSteps() {
+        this.steps = [];
+        const visited = new Set();
+        const result = [];
+        const callStack = [];
+        const graph = this.graph;
+
+        this.steps.push({
+          desc: 'Start topological sort: Find all courses with no prerequisites first',
+          current: null,
+          visited: [],
+          result: [],
+          stack: [],
+          inStack: []
+        });
+
+        const dfs = (node) => {
+          visited.add(node);
+          callStack.push(node);
+
+          this.steps.push({
+            desc: `Start DFS from ${node}`,
+            current: node,
+            visited: [...visited],
+            result: [...result],
+            stack: [...callStack],
+            inStack: [...callStack]
+          });
+
+          for (const neighbor of graph[node] || []) {
+            if (!visited.has(neighbor)) {
+              this.steps.push({
+                desc: `${node} requires ${neighbor} - exploring ${neighbor}`,
+                current: node,
+                visited: [...visited],
+                result: [...result],
+                stack: [...callStack],
+                inStack: [...callStack],
+                highlightEdge: { from: node, to: neighbor }
+              });
+              dfs(neighbor);
+            }
+          }
+
+          callStack.pop();
+          result.push(node);
+
+          this.steps.push({
+            desc: `All dependencies of ${node} processed - add ${node} to result`,
+            current: node,
+            visited: [...visited],
+            result: [...result],
+            stack: [...callStack],
+            inStack: [...callStack]
+          });
+        };
+
+        for (const node of Object.keys(graph)) {
+          if (!visited.has(node)) {
+            dfs(node);
+          }
+        }
+
+        const finalOrder = [...result].reverse();
+        this.steps.push({
+          desc: `Topological sort complete! Valid order: ${finalOrder.join(' -> ')}`,
+          current: null,
+          visited: [...visited],
+          result: finalOrder,
+          stack: [],
+          inStack: []
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        const svg = document.getElementById(`${this.prefix}-svg`);
+        const positions = this.nodePositions;
+        const graph = this.graph;
+
+        let html = `
+          <defs>
+            <marker id="topo-arrow" markerWidth="10" markerHeight="7" refX="45" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="var(--edge-default)" />
+            </marker>
+            <marker id="topo-arrow-visited" markerWidth="10" markerHeight="7" refX="45" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="var(--edge-visited)" />
+            </marker>
+          </defs>
+        `;
+
+        // Draw edges
+        Object.keys(graph).forEach(from => {
+          graph[from].forEach(to => {
+            const fromPos = positions[from];
+            const toPos = positions[to];
+            const isHighlight = step.highlightEdge?.from === from && step.highlightEdge?.to === to;
+            const isVisited = step.visited?.includes(from) && step.visited?.includes(to);
+
+            html += `<line class="graph-edge directed ${isVisited ? 'visited' : ''} ${isHighlight ? 'current' : ''}"
+              x1="${fromPos.x}" y1="${fromPos.y}"
+              x2="${toPos.x}" y2="${toPos.y}"
+              marker-end="url(#${isVisited ? 'topo-arrow-visited' : 'topo-arrow'})" />`;
+          });
+        });
+
+        // Draw nodes
+        Object.keys(positions).forEach(id => {
+          const pos = positions[id];
+          let nodeClass = 'course-node';
+          if (step.current === id) {
+            nodeClass += ' current';
+          } else if (step.inStack?.includes(id)) {
+            nodeClass += ' in-stack';
+          } else if (step.visited?.includes(id)) {
+            nodeClass += ' visited';
+          }
+
+          html += `
+            <g class="${nodeClass}" transform="translate(${pos.x}, ${pos.y})">
+              <rect x="-40" y="-15" width="80" height="30" />
+              <text>${id}</text>
+            </g>
+          `;
+        });
+
+        svg.innerHTML = html;
+
+        // Update description
+        document.getElementById(`${this.prefix}-description`).textContent = step.desc;
+
+        // Update stack
+        const stackContainer = document.getElementById(`${this.prefix}-stack`);
+        stackContainer.innerHTML = (step.stack || []).map((item, i) =>
+          `<div class="stack-queue-item ${i === step.stack.length - 1 ? 'current' : ''}">${item}</div>`
+        ).join('');
+
+        // Update result
+        const resultContainer = document.getElementById(`${this.prefix}-result`);
+        resultContainer.innerHTML = (step.result || []).map(item =>
+          `<div class="traversal-item">${item}</div>`
+        ).join('');
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        document.getElementById(`${this.prefix}-progress`).style.width = `${progress}%`;
+        document.getElementById(`${this.prefix}-step-indicator`).textContent =
+          `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById(`${this.prefix}-play`).textContent = 'Pause';
+        document.getElementById(`${this.prefix}-play`).classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1500 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById(`${this.prefix}-play`).textContent = 'Play';
+        document.getElementById(`${this.prefix}-play`).classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    // ===============================
+    // Tab Functions
+    // ===============================
+    function showDFSTab(tab) {
+      document.querySelectorAll('#dfs-iterative, #dfs-recursive').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById(`dfs-${tab}`).classList.add('active');
+
+      document.querySelectorAll('.tabs .tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active',
+          (tab === 'iterative' && i === 0) || (tab === 'recursive' && i === 1)
+        );
+      });
+    }
+
+    let treeAnimator;
+    function runTreeTraversal(type) {
+      document.querySelectorAll('.viz-container .tabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase().includes(type.replace('order', ''))) {
+          btn.classList.add('active');
+        }
+      });
+
+      if (treeAnimator) {
+        treeAnimator.setTraversalType(type);
+      }
+    }
+
+    // ===============================
+    // Quiz Functions
+    // ===============================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintNum) {
+      const question = btn.closest('.quiz-question');
+      const hints = question.querySelectorAll('.hint-text');
+      const hintBtns = question.querySelectorAll('.hint-btn');
+
+      const hint = question.querySelector(`.hint-text[data-hint="${hintNum}"]`);
+      hint.classList.toggle('show');
+
+      if (hint.classList.contains('show')) {
+        btn.textContent = `Hide Hint ${hintNum + 1}`;
+        // Show next hint button if available
+        if (hintNum === 0 && hintBtns[1]) {
+          hintBtns[1].style.display = 'inline';
+        }
+      } else {
+        btn.textContent = `Show Hint ${hintNum + 1}`;
+      }
+    }
+
+    // ===============================
+    // Initialize Everything
+    // ===============================
+    document.addEventListener('DOMContentLoaded', () => {
+      initSampleGraph();
+
+      // Initialize animators
+      const dfsAnimator = new TraversalAnimator('dfs', 'dfs');
+      const bfsAnimator = new TraversalAnimator('bfs', 'bfs');
+      treeAnimator = new TreeTraversalAnimator();
+      const topoAnimator = new TopologicalSortAnimator();
+
+      // KaTeX auto-render
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

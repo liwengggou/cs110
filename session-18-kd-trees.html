@@ -1,0 +1,2354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 18: k-d Trees | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --x-split: #E74C3C;
+      --y-split: #3498DB;
+      --hypersphere: rgba(241, 196, 15, 0.3);
+      --pruned: rgba(235, 87, 87, 0.2);
+      --visited: rgba(46, 170, 220, 0.3);
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      height: 400px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    .viz-canvas.no-cursor {
+      cursor: default;
+    }
+
+    /* Split View */
+    .split-view {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .split-view .viz-canvas {
+      flex: 1;
+      height: 350px;
+    }
+
+    .tree-panel {
+      flex: 0 0 300px;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      overflow: auto;
+      max-height: 350px;
+    }
+
+    .tree-panel h4 {
+      margin-bottom: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tree Node */
+    .tree-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0.5rem 0;
+    }
+
+    .tree-node-value {
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .tree-node-value.x-split {
+      background: var(--x-split);
+    }
+
+    .tree-node-value.y-split {
+      background: var(--y-split);
+    }
+
+    .tree-node-value.highlight {
+      box-shadow: 0 0 10px var(--current-focus);
+      transform: scale(1.1);
+    }
+
+    .tree-children {
+      display: flex;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .tree-children::before {
+      content: '';
+      position: absolute;
+      top: -0.25rem;
+      left: 25%;
+      right: 25%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-controls button.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .complexity-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+    }
+
+    .complexity-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .complexity-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0.75rem 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+      margin-right: 1rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .comparison-table th {
+      background: var(--background-secondary);
+      font-weight: 600;
+    }
+
+    .comparison-table td {
+      background: var(--background);
+    }
+
+    .comparison-table tr:hover td {
+      background: var(--code-bg);
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* SVG Points and Lines */
+    .kd-point {
+      transition: all 0.3s ease;
+    }
+
+    .kd-point:hover {
+      r: 8;
+    }
+
+    .kd-point.highlight {
+      stroke: var(--current-focus);
+      stroke-width: 3;
+      filter: drop-shadow(0 0 6px var(--current-focus));
+    }
+
+    .kd-point.visited {
+      stroke: var(--success);
+      stroke-width: 2;
+    }
+
+    .kd-point.candidate {
+      stroke: var(--purple);
+      stroke-width: 3;
+      filter: drop-shadow(0 0 6px var(--purple));
+    }
+
+    .kd-point.query {
+      fill: var(--current-focus);
+      stroke: #fff;
+      stroke-width: 2;
+    }
+
+    .split-line {
+      stroke-width: 2;
+      opacity: 0.8;
+    }
+
+    .split-line.x-split {
+      stroke: var(--x-split);
+    }
+
+    .split-line.y-split {
+      stroke: var(--y-split);
+    }
+
+    .bounding-box {
+      fill: none;
+      stroke-width: 1;
+      stroke-dasharray: 4,4;
+      opacity: 0.5;
+    }
+
+    .hypersphere {
+      fill: var(--hypersphere);
+      stroke: var(--current-focus);
+      stroke-width: 2;
+      stroke-dasharray: 5,5;
+    }
+
+    .pruned-region {
+      fill: var(--pruned);
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .split-view {
+        flex-direction: column;
+      }
+
+      .tree-panel {
+        flex: 1;
+        max-height: 250px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .legend { flex-direction: column; gap: 0.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">Moon</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 18</span>
+      <h1>k-d Trees</h1>
+      <p class="subtitle">Efficient multidimensional search through space partitioning</p>
+      <div class="meta">
+        <span>Time: ~35 minutes</span>
+        <span>Prerequisites: Binary Search Trees, Recursion</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Understand</strong> k-dimensional space organization and partitioning</li>
+        <li><strong>Build</strong> k-d trees using alternating dimensions and median selection</li>
+        <li><strong>Visualize</strong> space partitioning and bounding boxes</li>
+        <li><strong>Implement</strong> nearest neighbor search with hypersphere pruning</li>
+        <li><strong>Compare</strong> k-d trees with standard BSTs and understand when to use each</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Introduction to k-d Trees -->
+    <h2>1. What is a k-d Tree?</h2>
+    <p>A <strong>k-d tree</strong> (k-dimensional tree) is a binary search tree that organizes points in k-dimensional space. Instead of comparing a single key like a regular BST, a k-d tree alternates between dimensions at each level of the tree.</p>
+
+    <p>For 2D points, we alternate between comparing x-coordinates (at even depths) and y-coordinates (at odd depths). This creates a recursive partitioning of space into rectangular regions.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> While a BST partitions a 1D line into left and right halves, a k-d tree partitions k-dimensional space into hyperrectangular regions. In 2D, this means alternating between vertical (x) and horizontal (y) splits.
+    </div>
+
+    <!-- Section 2: Interactive k-d Tree Builder -->
+    <h2>2. Interactive k-d Tree Builder</h2>
+    <p>Click on the canvas below to add points and watch the k-d tree being constructed. The tree alternates between x-splits (red vertical lines) and y-splits (blue horizontal lines).</p>
+
+    <div class="viz-container">
+      <h3>Build Your Own k-d Tree</h3>
+      <div class="step-description" id="builder-description">
+        Click anywhere on the canvas to add points. The k-d tree will be built automatically.
+      </div>
+
+      <div class="split-view">
+        <div>
+          <svg id="builder-canvas" class="viz-canvas" viewBox="0 0 500 350"></svg>
+        </div>
+        <div class="tree-panel">
+          <h4>Tree Structure</h4>
+          <div id="builder-tree">
+            <p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center; padding: 2rem;">
+              Add points to see the tree structure
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="builder-clear">Clear All</button>
+        <button id="builder-random">Add 5 Random</button>
+        <button id="builder-balanced">Build Balanced Tree</button>
+        <span class="step-indicator" id="builder-points-count">Points: 0</span>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--x-split);"></div>
+          <span>X-split (vertical)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--y-split);"></div>
+          <span>Y-split (horizontal)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--accent);"></div>
+          <span>Point</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try This:</strong> Add points one by one and observe how each new point creates a split line. Then click "Build Balanced Tree" to see how median-based construction creates a more balanced structure!
+    </div>
+
+    <!-- Section 3: Space Partitioning -->
+    <h2>3. Space Partitioning and Bounding Boxes</h2>
+    <p>Each node in a k-d tree represents a rectangular region of space called a <strong>bounding box</strong>. As we traverse down the tree, these regions become smaller. This property is crucial for efficient nearest neighbor search.</p>
+
+    <div class="viz-container">
+      <h3>Bounding Box Visualizer</h3>
+      <div class="step-description" id="partition-description">
+        Hover over tree nodes to see their corresponding bounding regions
+      </div>
+
+      <div class="split-view">
+        <div>
+          <svg id="partition-canvas" class="viz-canvas no-cursor" viewBox="0 0 500 350"></svg>
+        </div>
+        <div class="tree-panel">
+          <h4>Interactive Tree</h4>
+          <div id="partition-tree"></div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="partition-reset">Reset View</button>
+        <button id="partition-show-all">Show All Regions</button>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Each node's bounding box contains all points in its subtree. When searching, if the target is outside a node's bounding box, we might be able to prune that entire subtree!
+    </div>
+
+    <!-- Section 4: Building Balanced k-d Trees -->
+    <h2>4. Building Balanced k-d Trees</h2>
+    <p>To build a balanced k-d tree, we use the <strong>median</strong> point at each level. This ensures roughly equal numbers of points on each side, giving us O(log n) height.</p>
+
+    <div class="viz-container">
+      <h3>Median-Based Construction Animation</h3>
+      <div class="step-description" id="construct-description">
+        Watch how selecting medians creates a balanced tree
+      </div>
+
+      <svg id="construct-canvas" class="viz-canvas no-cursor" viewBox="0 0 500 350"></svg>
+
+      <div class="step-controls">
+        <button id="construct-reset" title="Reset">Reset</button>
+        <button id="construct-back" title="Step Back">Back</button>
+        <button id="construct-play" title="Play/Pause">Play</button>
+        <button id="construct-forward" title="Step Forward">Next</button>
+        <span class="step-indicator" id="construct-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="construct-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="construct-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Using insertion order instead of medians. If you insert points one by one in sorted order, you get an unbalanced tree with O(n) height instead of O(log n).
+    </div>
+
+    <!-- Section 5: Nearest Neighbor Search -->
+    <h2>5. Nearest Neighbor Search</h2>
+    <p>The most important operation on k-d trees is <strong>nearest neighbor search</strong>. We use a candidate hypersphere (circle in 2D) to prune branches that cannot contain closer points.</p>
+
+    <div class="viz-container">
+      <h3>Nearest Neighbor Search Animation</h3>
+      <div class="step-description" id="nn-description">
+        Click a point on the canvas to set a query point, then watch the search
+      </div>
+
+      <div class="split-view">
+        <div>
+          <svg id="nn-canvas" class="viz-canvas" viewBox="0 0 500 350"></svg>
+        </div>
+        <div class="tree-panel">
+          <h4>Search Progress</h4>
+          <div id="nn-info">
+            <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+              <strong>Current Best:</strong> <span id="nn-best">None</span>
+            </p>
+            <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+              <strong>Best Distance:</strong> <span id="nn-distance">Infinity</span>
+            </p>
+            <p style="font-size: 0.875rem;">
+              <strong>Nodes Visited:</strong> <span id="nn-visited">0</span>
+            </p>
+          </div>
+          <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border);">
+          <div id="nn-tree"></div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="nn-reset" title="Reset">Reset</button>
+        <button id="nn-back" title="Step Back">Back</button>
+        <button id="nn-play" title="Play/Pause">Play</button>
+        <button id="nn-forward" title="Step Forward">Next</button>
+        <span class="step-indicator" id="nn-step-indicator">Click canvas to set query</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="nn-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="nn-progress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--current-focus);"></div>
+          <span>Query point</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--purple);"></div>
+          <span>Current best</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--hypersphere); border: 2px dashed var(--current-focus);"></div>
+          <span>Search radius</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--pruned);"></div>
+          <span>Pruned region</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The pruning condition is: if the distance from the query point to the splitting plane is greater than our current best distance, we can skip the other side of the split. This is what makes k-d tree search efficient!
+    </div>
+
+    <!-- Section 6: Algorithm Details -->
+    <h2>6. Nearest Neighbor Algorithm</h2>
+    <p>The nearest neighbor algorithm combines recursive descent with smart pruning:</p>
+
+    <div class="viz-container" style="background: var(--code-bg);">
+      <pre style="font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.6; overflow-x: auto;"><code><span style="color: #c678dd;">def</span> <span style="color: #61afef;">nearest_neighbor</span>(node, query, depth=0, best=None, best_dist=float('inf')):
+    <span style="color: #c678dd;">if</span> node <span style="color: #c678dd;">is</span> None:
+        <span style="color: #c678dd;">return</span> best, best_dist
+
+    <span style="color: #5c6370;"># Calculate distance to current node</span>
+    dist = distance(query, node.point)
+    <span style="color: #c678dd;">if</span> dist < best_dist:
+        best, best_dist = node.point, dist
+
+    <span style="color: #5c6370;"># Determine which dimension to compare</span>
+    axis = depth % k
+
+    <span style="color: #5c6370;"># Decide which subtree to search first</span>
+    <span style="color: #c678dd;">if</span> query[axis] < node.point[axis]:
+        near_subtree, far_subtree = node.left, node.right
+    <span style="color: #c678dd;">else</span>:
+        near_subtree, far_subtree = node.right, node.left
+
+    <span style="color: #5c6370;"># Search the near subtree first</span>
+    best, best_dist = nearest_neighbor(near_subtree, query, depth+1, best, best_dist)
+
+    <span style="color: #5c6370;"># Check if we need to search the far subtree</span>
+    <span style="color: #5c6370;"># (pruning condition: distance to splitting plane)</span>
+    <span style="color: #c678dd;">if</span> abs(query[axis] - node.point[axis]) < best_dist:
+        best, best_dist = nearest_neighbor(far_subtree, query, depth+1, best, best_dist)
+
+    <span style="color: #c678dd;">return</span> best, best_dist</code></pre>
+    </div>
+
+    <!-- Section 7: Comparison with BSTs -->
+    <h2>7. Comparison: k-d Trees vs. BSTs</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Binary Search Tree</th>
+          <th>k-d Tree</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dimensions</td>
+          <td>1-dimensional (single key)</td>
+          <td>k-dimensional (k keys)</td>
+        </tr>
+        <tr>
+          <td>Split Criteria</td>
+          <td>Single comparison at each node</td>
+          <td>Alternating dimensions</td>
+        </tr>
+        <tr>
+          <td>Space Partitioning</td>
+          <td>Left/right halves of a line</td>
+          <td>Hyperrectangular regions</td>
+        </tr>
+        <tr>
+          <td>Nearest Neighbor</td>
+          <td>O(n) - must check all nodes</td>
+          <td>O(log n) average with pruning</td>
+        </tr>
+        <tr>
+          <td>Range Search</td>
+          <td>O(n) for 2D ranges</td>
+          <td>O(sqrt(n) + k) for 2D</td>
+        </tr>
+        <tr>
+          <td>Best Use Case</td>
+          <td>Sorted data, 1D queries</td>
+          <td>Spatial data, proximity queries</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="complexity-box">
+      <h3>Complexity Analysis</h3>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-label">Build (balanced)</div>
+          <div class="complexity-value">O(n log n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Search</div>
+          <div class="complexity-value">O(log n) avg</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Nearest Neighbor</div>
+          <div class="complexity-value">O(log n) avg</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Space</div>
+          <div class="complexity-value">O(n)</div>
+        </div>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+        Note: Worst case for search operations is O(n) when the tree is unbalanced or in high dimensions.
+      </p>
+    </div>
+
+    <!-- Section 8: Quiz -->
+    <h2>8. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question" data-hints='["Think about what dimension is compared at depth 2.", "At depth 0 we use x, at depth 1 we use y, at depth 2 we use..."]'>
+        <h4>Question 1: In a 2D k-d tree, at depth 2 (root is depth 0), which coordinate is used for splitting?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">x-coordinate</div>
+          <div class="quiz-option" data-index="1">y-coordinate</div>
+          <div class="quiz-option" data-index="2">Both coordinates</div>
+          <div class="quiz-option" data-index="3">Neither (leaf level)</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> We use depth % 2 to determine the axis. At depth 2: 2 % 2 = 0, so we use the x-coordinate (axis 0).
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Consider what balanced means in terms of tree height.", "Using medians ensures equal numbers of points on each side."]'>
+        <h4>Question 2: Why do we use median points when building a balanced k-d tree?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Medians are faster to compute</div>
+          <div class="quiz-option" data-index="1">Medians ensure roughly equal points on each side</div>
+          <div class="quiz-option" data-index="2">Medians minimize the total number of nodes</div>
+          <div class="quiz-option" data-index="3">Medians are required by the k-d tree definition</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> By choosing the median, we guarantee that half the points go to the left subtree and half to the right, giving us O(log n) tree height.
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Think about when we can skip searching the far subtree.", "We prune when the splitting plane is farther than our current best distance."]'>
+        <h4>Question 3: In nearest neighbor search, when can we prune the far subtree?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">When the far subtree is empty</div>
+          <div class="quiz-option" data-index="1">When we have already found a point</div>
+          <div class="quiz-option" data-index="2">When the distance to the splitting plane exceeds our best distance</div>
+          <div class="quiz-option" data-index="3">When the far subtree has fewer points</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> If the perpendicular distance from our query point to the splitting plane is greater than our current best distance, no point on the other side can be closer.
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Think about how a k-d tree organizes space differently than a BST.", "Consider the problem of finding all points within a circle."]'>
+        <h4>Question 4: What makes k-d trees better than BSTs for spatial queries?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">They partition space in multiple dimensions, enabling efficient pruning</div>
+          <div class="quiz-option" data-index="1">They have lower memory overhead</div>
+          <div class="quiz-option" data-index="2">They are always perfectly balanced</div>
+          <div class="quiz-option" data-index="3">They support faster insertion</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> k-d trees create spatial partitions that allow pruning entire regions of space. A BST only partitions along one dimension, making it inefficient for multi-dimensional queries.
+        </div>
+      </div>
+
+      <div class="quiz-question" data-hints='["Consider what happens as k increases.", "More dimensions means more possible directions to search."]'>
+        <h4>Question 5: What happens to k-d tree performance as the number of dimensions increases?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Performance improves because we have more splitting options</div>
+          <div class="quiz-option" data-index="1">Performance degrades - known as the curse of dimensionality</div>
+          <div class="quiz-option" data-index="2">Performance stays the same regardless of dimensions</div>
+          <div class="quiz-option" data-index="3">Performance improves for nearest neighbor but degrades for range search</div>
+        </div>
+        <button class="hint-btn" onclick="showHint(this, 0)">Show Hint 1</button>
+        <button class="hint-btn" onclick="showHint(this, 1)">Show Hint 2</button>
+        <div class="hint-text"></div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> This is called the "curse of dimensionality." In high dimensions, the pruning becomes less effective because distances in each dimension contribute less to the total distance, and we end up visiting most nodes.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Why Do We Care -->
+    <h2>9. Real-World Applications</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Computer Graphics:</strong> Ray tracing, collision detection, photon mapping</li>
+      <li><strong>Machine Learning:</strong> k-nearest neighbors classification, clustering</li>
+      <li><strong>Robotics:</strong> Path planning, obstacle avoidance</li>
+      <li><strong>Geographic Systems:</strong> Finding nearby locations, spatial indexing</li>
+      <li><strong>Image Processing:</strong> Color quantization, texture synthesis</li>
+      <li><strong>Database Systems:</strong> Multidimensional indexing, range queries</li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-17-heaps.html">&larr; Session 17: Heaps</a>
+      <a href="session-19-graphs.html">Session 19: Introduction to Graphs &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // ==================== Theme Toggle ====================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'Sun' : 'Moon';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'Sun' : 'Moon';
+
+    // ==================== Utility Functions ====================
+    function distance(p1, p2) {
+      return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+    }
+
+    function getRandomPoints(count, width, height, margin = 30) {
+      const points = [];
+      for (let i = 0; i < count; i++) {
+        points.push({
+          x: margin + Math.random() * (width - 2 * margin),
+          y: margin + Math.random() * (height - 2 * margin)
+        });
+      }
+      return points;
+    }
+
+    // ==================== k-d Tree Node Class ====================
+    class KDNode {
+      constructor(point, axis, left = null, right = null) {
+        this.point = point;
+        this.axis = axis; // 0 for x, 1 for y
+        this.left = left;
+        this.right = right;
+        this.bounds = null; // Bounding box
+      }
+    }
+
+    // ==================== k-d Tree Class ====================
+    class KDTree {
+      constructor(k = 2) {
+        this.k = k;
+        this.root = null;
+      }
+
+      // Build tree from points using median selection
+      buildBalanced(points, depth = 0) {
+        if (points.length === 0) return null;
+
+        const axis = depth % this.k;
+        const sorted = [...points].sort((a, b) =>
+          axis === 0 ? a.x - b.x : a.y - b.y
+        );
+
+        const mid = Math.floor(sorted.length / 2);
+        const node = new KDNode(sorted[mid], axis);
+
+        node.left = this.buildBalanced(sorted.slice(0, mid), depth + 1);
+        node.right = this.buildBalanced(sorted.slice(mid + 1), depth + 1);
+
+        return node;
+      }
+
+      // Insert a single point
+      insert(point, node = this.root, depth = 0) {
+        const axis = depth % this.k;
+
+        if (node === null) {
+          return new KDNode(point, axis);
+        }
+
+        const val = axis === 0 ? point.x : point.y;
+        const nodeVal = axis === 0 ? node.point.x : node.point.y;
+
+        if (val < nodeVal) {
+          node.left = this.insert(point, node.left, depth + 1);
+        } else {
+          node.right = this.insert(point, node.right, depth + 1);
+        }
+
+        return node;
+      }
+
+      // Calculate bounding boxes for all nodes
+      calculateBounds(node, bounds = { minX: 0, maxX: 500, minY: 0, maxY: 350 }) {
+        if (node === null) return;
+
+        node.bounds = { ...bounds };
+
+        if (node.axis === 0) { // x-split
+          this.calculateBounds(node.left, { ...bounds, maxX: node.point.x });
+          this.calculateBounds(node.right, { ...bounds, minX: node.point.x });
+        } else { // y-split
+          this.calculateBounds(node.left, { ...bounds, maxY: node.point.y });
+          this.calculateBounds(node.right, { ...bounds, minY: node.point.y });
+        }
+      }
+
+      // Get all points in tree
+      getAllPoints(node = this.root, points = []) {
+        if (node === null) return points;
+        points.push(node.point);
+        this.getAllPoints(node.left, points);
+        this.getAllPoints(node.right, points);
+        return points;
+      }
+    }
+
+    // ==================== Section 2: Interactive Builder ====================
+    const builderCanvas = document.getElementById('builder-canvas');
+    const builderTree = document.getElementById('builder-tree');
+    const builderDescription = document.getElementById('builder-description');
+    const builderPointsCount = document.getElementById('builder-points-count');
+
+    let builderPoints = [];
+    let builderKDTree = new KDTree();
+
+    function renderBuilder() {
+      // Clear canvas
+      builderCanvas.innerHTML = '';
+
+      // Build tree if we have points
+      if (builderPoints.length > 0) {
+        builderKDTree.root = builderKDTree.buildBalanced(builderPoints);
+        builderKDTree.calculateBounds(builderKDTree.root);
+
+        // Draw split lines
+        drawSplitLines(builderCanvas, builderKDTree.root, 0, 0, 500, 0, 350);
+      }
+
+      // Draw points
+      builderPoints.forEach((p, i) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', p.x);
+        circle.setAttribute('cy', p.y);
+        circle.setAttribute('r', 6);
+        circle.setAttribute('fill', 'var(--accent)');
+        circle.setAttribute('class', 'kd-point');
+        circle.setAttribute('data-index', i);
+        builderCanvas.appendChild(circle);
+      });
+
+      // Update tree visualization
+      renderTreeStructure(builderTree, builderKDTree.root);
+
+      // Update count
+      builderPointsCount.textContent = `Points: ${builderPoints.length}`;
+    }
+
+    function drawSplitLines(svg, node, depth, minX, maxX, minY, maxY) {
+      if (node === null) return;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+
+      if (node.axis === 0) { // x-split (vertical line)
+        line.setAttribute('x1', node.point.x);
+        line.setAttribute('y1', minY);
+        line.setAttribute('x2', node.point.x);
+        line.setAttribute('y2', maxY);
+        line.setAttribute('class', 'split-line x-split');
+
+        drawSplitLines(svg, node.left, depth + 1, minX, node.point.x, minY, maxY);
+        drawSplitLines(svg, node.right, depth + 1, node.point.x, maxX, minY, maxY);
+      } else { // y-split (horizontal line)
+        line.setAttribute('x1', minX);
+        line.setAttribute('y1', node.point.y);
+        line.setAttribute('x2', maxX);
+        line.setAttribute('y2', node.point.y);
+        line.setAttribute('class', 'split-line y-split');
+
+        drawSplitLines(svg, node.left, depth + 1, minX, maxX, minY, node.point.y);
+        drawSplitLines(svg, node.right, depth + 1, minX, maxX, node.point.y, maxY);
+      }
+
+      svg.appendChild(line);
+    }
+
+    function renderTreeStructure(container, node, depth = 0) {
+      if (builderPoints.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center; padding: 2rem;">Add points to see the tree structure</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+
+      function createNodeElement(node, depth) {
+        if (node === null) return null;
+
+        const div = document.createElement('div');
+        div.className = 'tree-node';
+
+        const valueSpan = document.createElement('span');
+        valueSpan.className = `tree-node-value ${node.axis === 0 ? 'x-split' : 'y-split'}`;
+        valueSpan.textContent = `(${Math.round(node.point.x)}, ${Math.round(node.point.y)})`;
+        div.appendChild(valueSpan);
+
+        const children = document.createElement('div');
+        children.className = 'tree-children';
+
+        const leftChild = createNodeElement(node.left, depth + 1);
+        const rightChild = createNodeElement(node.right, depth + 1);
+
+        if (leftChild || rightChild) {
+          if (leftChild) children.appendChild(leftChild);
+          else {
+            const empty = document.createElement('span');
+            empty.style.color = 'var(--text-secondary)';
+            empty.style.fontSize = '0.75rem';
+            empty.textContent = 'null';
+            children.appendChild(empty);
+          }
+
+          if (rightChild) children.appendChild(rightChild);
+          else {
+            const empty = document.createElement('span');
+            empty.style.color = 'var(--text-secondary)';
+            empty.style.fontSize = '0.75rem';
+            empty.textContent = 'null';
+            children.appendChild(empty);
+          }
+
+          div.appendChild(children);
+        }
+
+        return div;
+      }
+
+      const treeEl = createNodeElement(node, 0);
+      if (treeEl) container.appendChild(treeEl);
+    }
+
+    // Builder canvas click handler
+    builderCanvas.addEventListener('click', (e) => {
+      const rect = builderCanvas.getBoundingClientRect();
+      const scaleX = 500 / rect.width;
+      const scaleY = 350 / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      builderPoints.push({ x, y });
+      builderDescription.textContent = `Added point (${Math.round(x)}, ${Math.round(y)}). Tree updated!`;
+      renderBuilder();
+    });
+
+    // Builder controls
+    document.getElementById('builder-clear').addEventListener('click', () => {
+      builderPoints = [];
+      builderDescription.textContent = 'Canvas cleared. Click to add new points.';
+      renderBuilder();
+    });
+
+    document.getElementById('builder-random').addEventListener('click', () => {
+      const newPoints = getRandomPoints(5, 500, 350);
+      builderPoints.push(...newPoints);
+      builderDescription.textContent = `Added 5 random points. Total: ${builderPoints.length} points.`;
+      renderBuilder();
+    });
+
+    document.getElementById('builder-balanced').addEventListener('click', () => {
+      if (builderPoints.length < 3) {
+        builderDescription.textContent = 'Add at least 3 points first!';
+        return;
+      }
+      builderDescription.textContent = 'Rebuilt as balanced tree using medians.';
+      renderBuilder();
+    });
+
+    // Initialize builder
+    renderBuilder();
+
+    // ==================== Section 3: Space Partitioning ====================
+    const partitionCanvas = document.getElementById('partition-canvas');
+    const partitionTree = document.getElementById('partition-tree');
+    const partitionDescription = document.getElementById('partition-description');
+
+    let partitionPoints = [
+      { x: 250, y: 175 },
+      { x: 125, y: 87 },
+      { x: 375, y: 87 },
+      { x: 62, y: 175 },
+      { x: 187, y: 175 },
+      { x: 312, y: 262 },
+      { x: 437, y: 262 }
+    ];
+    let partitionTree_ = new KDTree();
+    let highlightedBounds = null;
+
+    function renderPartition() {
+      partitionCanvas.innerHTML = '';
+
+      partitionTree_.root = partitionTree_.buildBalanced(partitionPoints);
+      partitionTree_.calculateBounds(partitionTree_.root);
+
+      // Draw highlighted bounds if any
+      if (highlightedBounds) {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', highlightedBounds.minX);
+        rect.setAttribute('y', highlightedBounds.minY);
+        rect.setAttribute('width', highlightedBounds.maxX - highlightedBounds.minX);
+        rect.setAttribute('height', highlightedBounds.maxY - highlightedBounds.minY);
+        rect.setAttribute('fill', 'var(--visited)');
+        rect.setAttribute('stroke', 'var(--accent)');
+        rect.setAttribute('stroke-width', '2');
+        partitionCanvas.appendChild(rect);
+      }
+
+      // Draw split lines
+      drawSplitLines(partitionCanvas, partitionTree_.root, 0, 0, 500, 0, 350);
+
+      // Draw points
+      partitionPoints.forEach((p, i) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', p.x);
+        circle.setAttribute('cy', p.y);
+        circle.setAttribute('r', 6);
+        circle.setAttribute('fill', 'var(--accent)');
+        circle.setAttribute('class', 'kd-point');
+        partitionCanvas.appendChild(circle);
+      });
+
+      // Render tree with hover handlers
+      renderPartitionTree();
+    }
+
+    function renderPartitionTree() {
+      partitionTree.innerHTML = '';
+
+      function createNodeElement(node, depth) {
+        if (node === null) return null;
+
+        const div = document.createElement('div');
+        div.className = 'tree-node';
+
+        const valueSpan = document.createElement('span');
+        valueSpan.className = `tree-node-value ${node.axis === 0 ? 'x-split' : 'y-split'}`;
+        valueSpan.textContent = `(${Math.round(node.point.x)}, ${Math.round(node.point.y)})`;
+        valueSpan.style.cursor = 'pointer';
+
+        valueSpan.addEventListener('mouseenter', () => {
+          highlightedBounds = node.bounds;
+          partitionDescription.textContent = `Bounding box for (${Math.round(node.point.x)}, ${Math.round(node.point.y)}): [${Math.round(node.bounds.minX)}-${Math.round(node.bounds.maxX)}, ${Math.round(node.bounds.minY)}-${Math.round(node.bounds.maxY)}]`;
+          renderPartition();
+        });
+
+        valueSpan.addEventListener('mouseleave', () => {
+          highlightedBounds = null;
+          partitionDescription.textContent = 'Hover over tree nodes to see their corresponding bounding regions';
+          renderPartition();
+        });
+
+        div.appendChild(valueSpan);
+
+        const children = document.createElement('div');
+        children.className = 'tree-children';
+
+        const leftChild = createNodeElement(node.left, depth + 1);
+        const rightChild = createNodeElement(node.right, depth + 1);
+
+        if (leftChild || rightChild) {
+          if (leftChild) children.appendChild(leftChild);
+          else {
+            const empty = document.createElement('span');
+            empty.style.color = 'var(--text-secondary)';
+            empty.style.fontSize = '0.75rem';
+            empty.textContent = 'null';
+            children.appendChild(empty);
+          }
+
+          if (rightChild) children.appendChild(rightChild);
+          else {
+            const empty = document.createElement('span');
+            empty.style.color = 'var(--text-secondary)';
+            empty.style.fontSize = '0.75rem';
+            empty.textContent = 'null';
+            children.appendChild(empty);
+          }
+
+          div.appendChild(children);
+        }
+
+        return div;
+      }
+
+      const treeEl = createNodeElement(partitionTree_.root, 0);
+      if (treeEl) partitionTree.appendChild(treeEl);
+    }
+
+    document.getElementById('partition-reset').addEventListener('click', () => {
+      highlightedBounds = null;
+      partitionDescription.textContent = 'Hover over tree nodes to see their corresponding bounding regions';
+      renderPartition();
+    });
+
+    let showAllRegions = false;
+    document.getElementById('partition-show-all').addEventListener('click', () => {
+      showAllRegions = !showAllRegions;
+
+      if (showAllRegions) {
+        partitionCanvas.innerHTML = '';
+        partitionTree_.root = partitionTree_.buildBalanced(partitionPoints);
+        partitionTree_.calculateBounds(partitionTree_.root);
+
+        // Draw all bounding boxes
+        function drawAllBounds(node, colors, idx = 0) {
+          if (node === null) return idx;
+
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', node.bounds.minX + 1);
+          rect.setAttribute('y', node.bounds.minY + 1);
+          rect.setAttribute('width', Math.max(0, node.bounds.maxX - node.bounds.minX - 2));
+          rect.setAttribute('height', Math.max(0, node.bounds.maxY - node.bounds.minY - 2));
+          rect.setAttribute('fill', `hsla(${(idx * 47) % 360}, 70%, 50%, 0.1)`);
+          rect.setAttribute('stroke', `hsla(${(idx * 47) % 360}, 70%, 50%, 0.5)`);
+          rect.setAttribute('stroke-width', '1');
+          partitionCanvas.appendChild(rect);
+
+          idx = drawAllBounds(node.left, colors, idx + 1);
+          idx = drawAllBounds(node.right, colors, idx + 1);
+          return idx;
+        }
+
+        drawAllBounds(partitionTree_.root, []);
+
+        // Draw split lines and points on top
+        drawSplitLines(partitionCanvas, partitionTree_.root, 0, 0, 500, 0, 350);
+
+        partitionPoints.forEach((p) => {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', p.x);
+          circle.setAttribute('cy', p.y);
+          circle.setAttribute('r', 6);
+          circle.setAttribute('fill', 'var(--accent)');
+          circle.setAttribute('class', 'kd-point');
+          partitionCanvas.appendChild(circle);
+        });
+
+        partitionDescription.textContent = 'Showing all bounding regions with unique colors';
+      } else {
+        partitionDescription.textContent = 'Hover over tree nodes to see their corresponding bounding regions';
+        renderPartition();
+      }
+    });
+
+    renderPartition();
+
+    // ==================== Section 4: Construction Animation ====================
+    const constructCanvas = document.getElementById('construct-canvas');
+    const constructDescription = document.getElementById('construct-description');
+    const constructProgress = document.getElementById('construct-progress');
+    const constructStepIndicator = document.getElementById('construct-step-indicator');
+
+    let constructPoints = [
+      { x: 350, y: 100 },
+      { x: 150, y: 200 },
+      { x: 400, y: 250 },
+      { x: 100, y: 75 },
+      { x: 250, y: 150 },
+      { x: 300, y: 300 },
+      { x: 450, y: 175 }
+    ];
+    let constructSteps = [];
+    let constructStep = 0;
+    let constructPlaying = false;
+    let constructInterval = null;
+    let constructSpeed = 1;
+
+    function generateConstructSteps() {
+      constructSteps = [];
+
+      function buildStep(points, depth, boundsDesc) {
+        if (points.length === 0) return null;
+
+        const axis = depth % 2;
+        const axisName = axis === 0 ? 'x' : 'y';
+        const sorted = [...points].sort((a, b) =>
+          axis === 0 ? a.x - b.x : a.y - b.y
+        );
+
+        constructSteps.push({
+          type: 'sort',
+          points: sorted,
+          axis,
+          desc: `Sort ${points.length} points by ${axisName}-coordinate`,
+          bounds: boundsDesc
+        });
+
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted[mid];
+
+        constructSteps.push({
+          type: 'select',
+          points: sorted,
+          median,
+          medianIndex: mid,
+          axis,
+          desc: `Select median: (${Math.round(median.x)}, ${Math.round(median.y)})`,
+          bounds: boundsDesc
+        });
+
+        constructSteps.push({
+          type: 'split',
+          median,
+          axis,
+          leftPoints: sorted.slice(0, mid),
+          rightPoints: sorted.slice(mid + 1),
+          desc: `Split: ${mid} points left, ${sorted.length - mid - 1} points right`,
+          bounds: boundsDesc
+        });
+
+        // Recursively process left and right
+        if (sorted.slice(0, mid).length > 0) {
+          buildStep(sorted.slice(0, mid), depth + 1, 'left subtree');
+        }
+        if (sorted.slice(mid + 1).length > 0) {
+          buildStep(sorted.slice(mid + 1), depth + 1, 'right subtree');
+        }
+      }
+
+      constructSteps.push({
+        type: 'init',
+        points: constructPoints,
+        desc: `Starting with ${constructPoints.length} points. Building balanced k-d tree...`
+      });
+
+      buildStep(constructPoints, 0, 'root');
+
+      constructSteps.push({
+        type: 'done',
+        desc: 'Construction complete! Balanced k-d tree built.'
+      });
+    }
+
+    function renderConstruct() {
+      constructCanvas.innerHTML = '';
+
+      const step = constructSteps[constructStep];
+      if (!step) return;
+
+      // Always draw the final tree structure for context
+      const tree = new KDTree();
+      tree.root = tree.buildBalanced(constructPoints);
+
+      // Draw split lines (faded)
+      function drawFadedSplits(node, minX, maxX, minY, maxY) {
+        if (node === null) return;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+
+        if (node.axis === 0) {
+          line.setAttribute('x1', node.point.x);
+          line.setAttribute('y1', minY);
+          line.setAttribute('x2', node.point.x);
+          line.setAttribute('y2', maxY);
+          line.setAttribute('stroke', 'var(--x-split)');
+          line.setAttribute('stroke-width', '1');
+          line.setAttribute('opacity', '0.2');
+
+          drawFadedSplits(node.left, minX, node.point.x, minY, maxY);
+          drawFadedSplits(node.right, node.point.x, maxX, minY, maxY);
+        } else {
+          line.setAttribute('x1', minX);
+          line.setAttribute('y1', node.point.y);
+          line.setAttribute('x2', maxX);
+          line.setAttribute('y2', node.point.y);
+          line.setAttribute('stroke', 'var(--y-split)');
+          line.setAttribute('stroke-width', '1');
+          line.setAttribute('opacity', '0.2');
+
+          drawFadedSplits(node.left, minX, maxX, minY, node.point.y);
+          drawFadedSplits(node.right, minX, maxX, node.point.y, maxY);
+        }
+
+        constructCanvas.appendChild(line);
+      }
+
+      if (step.type !== 'init') {
+        drawFadedSplits(tree.root, 0, 500, 0, 350);
+      }
+
+      // Draw points based on current step
+      constructPoints.forEach((p) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', p.x);
+        circle.setAttribute('cy', p.y);
+        circle.setAttribute('r', 6);
+        circle.setAttribute('fill', 'var(--accent)');
+        circle.setAttribute('class', 'kd-point');
+
+        // Highlight based on step type
+        if (step.type === 'select' && step.median === p) {
+          circle.setAttribute('class', 'kd-point highlight');
+          circle.setAttribute('r', 10);
+        } else if (step.type === 'split') {
+          if (step.median === p) {
+            circle.setAttribute('class', 'kd-point highlight');
+            circle.setAttribute('r', 10);
+          }
+        }
+
+        constructCanvas.appendChild(circle);
+      });
+
+      // Draw current split line if selecting/splitting
+      if (step.type === 'select' || step.type === 'split') {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        if (step.axis === 0) {
+          line.setAttribute('x1', step.median.x);
+          line.setAttribute('y1', 0);
+          line.setAttribute('x2', step.median.x);
+          line.setAttribute('y2', 350);
+          line.setAttribute('stroke', 'var(--x-split)');
+        } else {
+          line.setAttribute('x1', 0);
+          line.setAttribute('y1', step.median.y);
+          line.setAttribute('x2', 500);
+          line.setAttribute('y2', step.median.y);
+          line.setAttribute('stroke', 'var(--y-split)');
+        }
+        line.setAttribute('stroke-width', '3');
+        line.setAttribute('opacity', '0.8');
+        constructCanvas.appendChild(line);
+      }
+
+      // Add point labels for sorted order
+      if (step.type === 'sort' && step.points) {
+        step.points.forEach((p, i) => {
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', p.x);
+          text.setAttribute('y', p.y - 12);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('fill', 'white');
+          text.setAttribute('font-size', '10');
+          text.textContent = i + 1;
+          constructCanvas.appendChild(text);
+        });
+      }
+
+      constructDescription.textContent = step.desc;
+
+      const progress = constructSteps.length > 1 ? (constructStep / (constructSteps.length - 1)) * 100 : 0;
+      constructProgress.style.width = `${progress}%`;
+      constructStepIndicator.textContent = `Step ${constructStep + 1} of ${constructSteps.length}`;
+    }
+
+    generateConstructSteps();
+    renderConstruct();
+
+    document.getElementById('construct-play').addEventListener('click', () => {
+      if (constructPlaying) {
+        constructPlaying = false;
+        clearInterval(constructInterval);
+        document.getElementById('construct-play').textContent = 'Play';
+        document.getElementById('construct-play').classList.remove('playing');
+      } else {
+        if (constructStep >= constructSteps.length - 1) constructStep = 0;
+        constructPlaying = true;
+        document.getElementById('construct-play').textContent = 'Pause';
+        document.getElementById('construct-play').classList.add('playing');
+        constructInterval = setInterval(() => {
+          if (constructStep < constructSteps.length - 1) {
+            constructStep++;
+            renderConstruct();
+          } else {
+            constructPlaying = false;
+            clearInterval(constructInterval);
+            document.getElementById('construct-play').textContent = 'Play';
+            document.getElementById('construct-play').classList.remove('playing');
+          }
+        }, 1500 / constructSpeed);
+      }
+    });
+
+    document.getElementById('construct-reset').addEventListener('click', () => {
+      constructPlaying = false;
+      clearInterval(constructInterval);
+      document.getElementById('construct-play').textContent = 'Play';
+      document.getElementById('construct-play').classList.remove('playing');
+      constructStep = 0;
+      renderConstruct();
+    });
+
+    document.getElementById('construct-back').addEventListener('click', () => {
+      if (constructStep > 0) {
+        constructStep--;
+        renderConstruct();
+      }
+    });
+
+    document.getElementById('construct-forward').addEventListener('click', () => {
+      if (constructStep < constructSteps.length - 1) {
+        constructStep++;
+        renderConstruct();
+      }
+    });
+
+    document.getElementById('construct-speed').addEventListener('change', (e) => {
+      constructSpeed = parseFloat(e.target.value);
+      if (constructPlaying) {
+        clearInterval(constructInterval);
+        constructInterval = setInterval(() => {
+          if (constructStep < constructSteps.length - 1) {
+            constructStep++;
+            renderConstruct();
+          } else {
+            constructPlaying = false;
+            clearInterval(constructInterval);
+            document.getElementById('construct-play').textContent = 'Play';
+            document.getElementById('construct-play').classList.remove('playing');
+          }
+        }, 1500 / constructSpeed);
+      }
+    });
+
+    // ==================== Section 5: Nearest Neighbor Search ====================
+    const nnCanvas = document.getElementById('nn-canvas');
+    const nnDescription = document.getElementById('nn-description');
+    const nnProgress = document.getElementById('nn-progress');
+    const nnStepIndicator = document.getElementById('nn-step-indicator');
+    const nnTree = document.getElementById('nn-tree');
+    const nnBest = document.getElementById('nn-best');
+    const nnDistance = document.getElementById('nn-distance');
+    const nnVisited = document.getElementById('nn-visited');
+
+    let nnPoints = [
+      { x: 250, y: 175 },
+      { x: 100, y: 100 },
+      { x: 400, y: 75 },
+      { x: 150, y: 280 },
+      { x: 350, y: 200 },
+      { x: 75, y: 200 },
+      { x: 450, y: 300 }
+    ];
+    let nnQuery = null;
+    let nnSteps = [];
+    let nnStep = 0;
+    let nnPlaying = false;
+    let nnInterval = null;
+    let nnSpeed = 1;
+    let nnKDTree = new KDTree();
+
+    function generateNNSteps() {
+      if (!nnQuery) return;
+
+      nnSteps = [];
+      nnKDTree.root = nnKDTree.buildBalanced(nnPoints);
+      nnKDTree.calculateBounds(nnKDTree.root);
+
+      let visitCount = 0;
+
+      function search(node, query, depth, best, bestDist, bounds) {
+        if (node === null) return { best, bestDist };
+
+        visitCount++;
+        const dist = distance(query, node.point);
+
+        nnSteps.push({
+          type: 'visit',
+          node: node.point,
+          query,
+          dist,
+          best,
+          bestDist,
+          visitCount,
+          bounds: node.bounds,
+          desc: `Visit (${Math.round(node.point.x)}, ${Math.round(node.point.y)}). Distance: ${dist.toFixed(1)}`
+        });
+
+        if (dist < bestDist) {
+          best = node.point;
+          bestDist = dist;
+
+          nnSteps.push({
+            type: 'update',
+            node: node.point,
+            query,
+            best,
+            bestDist,
+            visitCount,
+            bounds: node.bounds,
+            desc: `New best! (${Math.round(best.x)}, ${Math.round(best.y)}) at distance ${bestDist.toFixed(1)}`
+          });
+        }
+
+        const axis = depth % 2;
+        const queryVal = axis === 0 ? query.x : query.y;
+        const nodeVal = axis === 0 ? node.point.x : node.point.y;
+        const diff = queryVal - nodeVal;
+
+        const nearSubtree = diff < 0 ? node.left : node.right;
+        const farSubtree = diff < 0 ? node.right : node.left;
+        const nearName = diff < 0 ? 'left' : 'right';
+        const farName = diff < 0 ? 'right' : 'left';
+
+        // Search near subtree first
+        if (nearSubtree) {
+          nnSteps.push({
+            type: 'descend',
+            direction: nearName,
+            query,
+            best,
+            bestDist,
+            visitCount,
+            desc: `Descend to ${nearName} subtree (query ${axis === 0 ? 'x' : 'y'} ${diff < 0 ? '<' : '>='} split)`
+          });
+
+          const result = search(nearSubtree, query, depth + 1, best, bestDist);
+          best = result.best;
+          bestDist = result.bestDist;
+        }
+
+        // Check if we need to search far subtree
+        const planeDistance = Math.abs(diff);
+
+        if (planeDistance < bestDist) {
+          if (farSubtree) {
+            nnSteps.push({
+              type: 'check-far',
+              planeDistance,
+              bestDist,
+              farSubtree: farName,
+              query,
+              best,
+              visitCount,
+              desc: `Plane distance (${planeDistance.toFixed(1)}) < best (${bestDist.toFixed(1)}). Must check ${farName} subtree!`
+            });
+
+            const result = search(farSubtree, query, depth + 1, best, bestDist);
+            best = result.best;
+            bestDist = result.bestDist;
+          }
+        } else {
+          if (farSubtree) {
+            nnSteps.push({
+              type: 'prune',
+              planeDistance,
+              bestDist,
+              farSubtree: farName,
+              prunedBounds: farSubtree.bounds,
+              query,
+              best,
+              visitCount,
+              desc: `Plane distance (${planeDistance.toFixed(1)}) >= best (${bestDist.toFixed(1)}). PRUNE ${farName} subtree!`
+            });
+          }
+        }
+
+        return { best, bestDist };
+      }
+
+      nnSteps.push({
+        type: 'start',
+        query,
+        desc: `Starting search for nearest neighbor to (${Math.round(nnQuery.x)}, ${Math.round(nnQuery.y)})`
+      });
+
+      const result = search(nnKDTree.root, nnQuery, 0, null, Infinity);
+
+      nnSteps.push({
+        type: 'done',
+        best: result.best,
+        bestDist: result.bestDist,
+        visitCount,
+        query,
+        desc: `Found! Nearest: (${Math.round(result.best.x)}, ${Math.round(result.best.y)}) at distance ${result.bestDist.toFixed(1)}`
+      });
+    }
+
+    function renderNN() {
+      nnCanvas.innerHTML = '';
+
+      // Build tree for visualization
+      nnKDTree.root = nnKDTree.buildBalanced(nnPoints);
+      nnKDTree.calculateBounds(nnKDTree.root);
+
+      const step = nnSteps[nnStep];
+
+      // Draw pruned regions first (if any)
+      if (step && step.type === 'prune' && step.prunedBounds) {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', step.prunedBounds.minX);
+        rect.setAttribute('y', step.prunedBounds.minY);
+        rect.setAttribute('width', step.prunedBounds.maxX - step.prunedBounds.minX);
+        rect.setAttribute('height', step.prunedBounds.maxY - step.prunedBounds.minY);
+        rect.setAttribute('class', 'pruned-region');
+        nnCanvas.appendChild(rect);
+      }
+
+      // Draw split lines
+      drawSplitLines(nnCanvas, nnKDTree.root, 0, 0, 500, 0, 350);
+
+      // Draw hypersphere (search radius)
+      if (step && nnQuery && step.bestDist && step.bestDist < Infinity) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', nnQuery.x);
+        circle.setAttribute('cy', nnQuery.y);
+        circle.setAttribute('r', step.bestDist);
+        circle.setAttribute('class', 'hypersphere');
+        nnCanvas.appendChild(circle);
+      }
+
+      // Draw points
+      nnPoints.forEach((p) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', p.x);
+        circle.setAttribute('cy', p.y);
+        circle.setAttribute('r', 6);
+        circle.setAttribute('fill', 'var(--accent)');
+        circle.setAttribute('class', 'kd-point');
+
+        if (step) {
+          if (step.best && step.best.x === p.x && step.best.y === p.y) {
+            circle.setAttribute('class', 'kd-point candidate');
+            circle.setAttribute('r', 8);
+          }
+          if (step.node && step.node.x === p.x && step.node.y === p.y && step.type === 'visit') {
+            circle.setAttribute('class', 'kd-point highlight');
+            circle.setAttribute('r', 8);
+          }
+        }
+
+        nnCanvas.appendChild(circle);
+      });
+
+      // Draw query point
+      if (nnQuery) {
+        const queryCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        queryCircle.setAttribute('cx', nnQuery.x);
+        queryCircle.setAttribute('cy', nnQuery.y);
+        queryCircle.setAttribute('r', 8);
+        queryCircle.setAttribute('class', 'kd-point query');
+        nnCanvas.appendChild(queryCircle);
+
+        // Add crosshair
+        const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line1.setAttribute('x1', nnQuery.x - 12);
+        line1.setAttribute('y1', nnQuery.y);
+        line1.setAttribute('x2', nnQuery.x + 12);
+        line1.setAttribute('y2', nnQuery.y);
+        line1.setAttribute('stroke', 'var(--current-focus)');
+        line1.setAttribute('stroke-width', '2');
+        nnCanvas.appendChild(line1);
+
+        const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line2.setAttribute('x1', nnQuery.x);
+        line2.setAttribute('y1', nnQuery.y - 12);
+        line2.setAttribute('x2', nnQuery.x);
+        line2.setAttribute('y2', nnQuery.y + 12);
+        line2.setAttribute('stroke', 'var(--current-focus)');
+        line2.setAttribute('stroke-width', '2');
+        nnCanvas.appendChild(line2);
+      }
+
+      // Update info panel
+      if (step) {
+        nnDescription.textContent = step.desc;
+
+        if (step.best) {
+          nnBest.textContent = `(${Math.round(step.best.x)}, ${Math.round(step.best.y)})`;
+        } else {
+          nnBest.textContent = 'None';
+        }
+
+        if (step.bestDist !== undefined && step.bestDist < Infinity) {
+          nnDistance.textContent = step.bestDist.toFixed(1);
+        } else {
+          nnDistance.textContent = 'Infinity';
+        }
+
+        if (step.visitCount !== undefined) {
+          nnVisited.textContent = step.visitCount;
+        }
+
+        const progress = nnSteps.length > 1 ? (nnStep / (nnSteps.length - 1)) * 100 : 0;
+        nnProgress.style.width = `${progress}%`;
+        nnStepIndicator.textContent = `Step ${nnStep + 1} of ${nnSteps.length}`;
+      } else {
+        nnDescription.textContent = 'Click a point on the canvas to set a query point, then watch the search';
+        nnBest.textContent = 'None';
+        nnDistance.textContent = 'Infinity';
+        nnVisited.textContent = '0';
+        nnStepIndicator.textContent = 'Click canvas to set query';
+      }
+    }
+
+    // Canvas click to set query point
+    nnCanvas.addEventListener('click', (e) => {
+      const rect = nnCanvas.getBoundingClientRect();
+      const scaleX = 500 / rect.width;
+      const scaleY = 350 / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      nnQuery = { x, y };
+      nnStep = 0;
+      nnPlaying = false;
+      clearInterval(nnInterval);
+      document.getElementById('nn-play').textContent = 'Play';
+      document.getElementById('nn-play').classList.remove('playing');
+
+      generateNNSteps();
+      renderNN();
+    });
+
+    document.getElementById('nn-play').addEventListener('click', () => {
+      if (!nnQuery) {
+        nnDescription.textContent = 'Click on the canvas first to set a query point!';
+        return;
+      }
+
+      if (nnPlaying) {
+        nnPlaying = false;
+        clearInterval(nnInterval);
+        document.getElementById('nn-play').textContent = 'Play';
+        document.getElementById('nn-play').classList.remove('playing');
+      } else {
+        if (nnStep >= nnSteps.length - 1) nnStep = 0;
+        nnPlaying = true;
+        document.getElementById('nn-play').textContent = 'Pause';
+        document.getElementById('nn-play').classList.add('playing');
+        nnInterval = setInterval(() => {
+          if (nnStep < nnSteps.length - 1) {
+            nnStep++;
+            renderNN();
+          } else {
+            nnPlaying = false;
+            clearInterval(nnInterval);
+            document.getElementById('nn-play').textContent = 'Play';
+            document.getElementById('nn-play').classList.remove('playing');
+          }
+        }, 1200 / nnSpeed);
+      }
+    });
+
+    document.getElementById('nn-reset').addEventListener('click', () => {
+      nnPlaying = false;
+      clearInterval(nnInterval);
+      document.getElementById('nn-play').textContent = 'Play';
+      document.getElementById('nn-play').classList.remove('playing');
+      nnStep = 0;
+      renderNN();
+    });
+
+    document.getElementById('nn-back').addEventListener('click', () => {
+      if (nnStep > 0) {
+        nnStep--;
+        renderNN();
+      }
+    });
+
+    document.getElementById('nn-forward').addEventListener('click', () => {
+      if (nnStep < nnSteps.length - 1) {
+        nnStep++;
+        renderNN();
+      }
+    });
+
+    document.getElementById('nn-speed').addEventListener('change', (e) => {
+      nnSpeed = parseFloat(e.target.value);
+      if (nnPlaying) {
+        clearInterval(nnInterval);
+        nnInterval = setInterval(() => {
+          if (nnStep < nnSteps.length - 1) {
+            nnStep++;
+            renderNN();
+          } else {
+            nnPlaying = false;
+            clearInterval(nnInterval);
+            document.getElementById('nn-play').textContent = 'Play';
+            document.getElementById('nn-play').classList.remove('playing');
+          }
+        }, 1200 / nnSpeed);
+      }
+    });
+
+    renderNN();
+
+    // ==================== Quiz Functionality ====================
+    function showHint(btn, hintIndex) {
+      const question = btn.closest('.quiz-question');
+      const hints = JSON.parse(question.dataset.hints || '[]');
+      const hintText = question.querySelector('.hint-text');
+
+      if (hints[hintIndex]) {
+        hintText.textContent = `Hint ${hintIndex + 1}: ${hints[hintIndex]}`;
+        hintText.classList.add('show');
+      }
+    }
+
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    // ==================== KaTeX Auto-render ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

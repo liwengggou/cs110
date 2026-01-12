@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS110 - Problem Solving with Data Structures and Algorithms</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --success: #0F7B6C;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .course-code {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 3rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--background-secondary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .section-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* Session Cards Grid */
+    .sessions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .session-card {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .session-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow);
+      border-color: var(--accent);
+    }
+
+    .session-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--purple));
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .session-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .session-number {
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .session-duration {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .session-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .session-description {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      flex-grow: 1;
+    }
+
+    .session-topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .topic-tag {
+      background: var(--background);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Section */
+    .progress-section {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .progress-title {
+      font-weight: 600;
+    }
+
+    .progress-count {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .sessions-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <div class="course-code">CS110</div>
+      <h1>Problem Solving with Data Structures and Algorithms</h1>
+      <p class="subtitle">Master fundamental algorithms and data structures through interactive visualizations and hands-on practice</p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value">20</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">~10</div>
+          <div class="stat-label">Hours</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">100+</div>
+          <div class="stat-label">Interactive Examples</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Progress Tracker -->
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-title">Your Progress</span>
+        <span class="progress-count"><span id="completed-count">0</span> / 20 sessions completed</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Foundations -->
+    <div class="section-header">
+      <div class="section-icon">🐍</div>
+      <div>
+        <div class="section-title">Foundations</div>
+        <div class="section-subtitle">Python basics and algorithm fundamentals</div>
+      </div>
+    </div>
+
+    <div class="sessions-grid">
+      <a href="session-01-python-basics.html" class="session-card" data-session="1">
+        <div class="card-header">
+          <span class="session-number">Session 1</span>
+          <span class="session-duration">⏱ ~25 min</span>
+        </div>
+        <div class="session-title">Writing Algorithms in Python—Part I</div>
+        <div class="session-description">Control flow, iteration, strings, lists, and indexing fundamentals</div>
+        <div class="session-topics">
+          <span class="topic-tag">if/else</span>
+          <span class="topic-tag">loops</span>
+          <span class="topic-tag">slicing</span>
+          <span class="topic-tag">indexing</span>
+        </div>
+      </a>
+
+      <a href="session-02-algorithm-fundamentals.html" class="session-card" data-session="2">
+        <div class="card-header">
+          <span class="session-number">Session 2</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Fundamentals of Algorithms</div>
+        <div class="session-description">Pseudocode, correctness proofs, and loop invariants</div>
+        <div class="session-topics">
+          <span class="topic-tag">pseudocode</span>
+          <span class="topic-tag">invariants</span>
+          <span class="topic-tag">correctness</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Complexity Analysis -->
+    <div class="section-header">
+      <div class="section-icon">📊</div>
+      <div>
+        <div class="section-title">Complexity Analysis</div>
+        <div class="section-subtitle">Understanding algorithm efficiency</div>
+      </div>
+    </div>
+
+    <div class="sessions-grid">
+      <a href="session-03-asymptotic-notation.html" class="session-card" data-session="3">
+        <div class="card-header">
+          <span class="session-number">Session 3</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Introduction to Asymptotic Notation</div>
+        <div class="session-description">Big-O notation and comparing algorithm efficiencies</div>
+        <div class="session-topics">
+          <span class="topic-tag">Big-O</span>
+          <span class="topic-tag">growth rates</span>
+          <span class="topic-tag">upper bounds</span>
+        </div>
+      </a>
+
+      <a href="session-04-runtime-analysis.html" class="session-card" data-session="4">
+        <div class="card-header">
+          <span class="session-number">Session 4</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Runtime Analysis</div>
+        <div class="session-description">Best/worst/average case, Big-Ω, Big-Θ, and nested loops</div>
+        <div class="session-topics">
+          <span class="topic-tag">Big-Ω</span>
+          <span class="topic-tag">Big-Θ</span>
+          <span class="topic-tag">nested loops</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Basic Sorting -->
+    <div class="section-header">
+      <div class="section-icon">🔢</div>
+      <div>
+        <div class="section-title">Sorting Algorithms</div>
+        <div class="section-subtitle">From quadratic to optimal sorting</div>
+      </div>
+    </div>
+
+    <div class="sessions-grid">
+      <a href="session-05-quadratic-sorting.html" class="session-card" data-session="5">
+        <div class="card-header">
+          <span class="session-number">Session 5</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Quadratic Sorting Algorithms</div>
+        <div class="session-description">Selection sort and insertion sort with stability analysis</div>
+        <div class="session-topics">
+          <span class="topic-tag">selection sort</span>
+          <span class="topic-tag">insertion sort</span>
+          <span class="topic-tag">O(n²)</span>
+        </div>
+      </a>
+
+      <a href="session-08-merge-sort.html" class="session-card" data-session="8">
+        <div class="card-header">
+          <span class="session-number">Session 8</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Merge Sort</div>
+        <div class="session-description">Divide-and-conquer with guaranteed O(n log n) performance</div>
+        <div class="session-topics">
+          <span class="topic-tag">merge</span>
+          <span class="topic-tag">divide-conquer</span>
+          <span class="topic-tag">stable</span>
+        </div>
+      </a>
+
+      <a href="session-09-quicksort.html" class="session-card" data-session="9">
+        <div class="card-header">
+          <span class="session-number">Session 9</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Deterministic Quicksort</div>
+        <div class="session-description">Partitioning schemes and pivot selection strategies</div>
+        <div class="session-topics">
+          <span class="topic-tag">partition</span>
+          <span class="topic-tag">pivot</span>
+          <span class="topic-tag">in-place</span>
+        </div>
+      </a>
+
+      <a href="session-10-randomized-quicksort.html" class="session-card" data-session="10">
+        <div class="card-header">
+          <span class="session-number">Session 10</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Randomized Quicksort</div>
+        <div class="session-description">Random pivot selection and expected time analysis</div>
+        <div class="session-topics">
+          <span class="topic-tag">randomization</span>
+          <span class="topic-tag">expected time</span>
+          <span class="topic-tag">Las Vegas</span>
+        </div>
+      </a>
+
+      <a href="session-12-heaps-heapsort.html" class="session-card" data-session="12">
+        <div class="card-header">
+          <span class="session-number">Session 12</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Heaps and Heapsort</div>
+        <div class="session-description">Heap data structure and O(n log n) in-place sorting</div>
+        <div class="session-topics">
+          <span class="topic-tag">max-heap</span>
+          <span class="topic-tag">heapify</span>
+          <span class="topic-tag">build-heap</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Recursion & Divide-and-Conquer -->
+    <div class="section-header">
+      <div class="section-icon">🔄</div>
+      <div>
+        <div class="section-title">Recursion & Divide-and-Conquer</div>
+        <div class="section-subtitle">Breaking problems into subproblems</div>
+      </div>
+    </div>
+
+    <div class="sessions-grid">
+      <a href="session-06-recursion.html" class="session-card" data-session="6">
+        <div class="card-header">
+          <span class="session-number">Session 6</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Recursion</div>
+        <div class="session-description">Base cases, recursive cases, call stack, and memoization</div>
+        <div class="session-topics">
+          <span class="topic-tag">base case</span>
+          <span class="topic-tag">call stack</span>
+          <span class="topic-tag">Fibonacci</span>
+        </div>
+      </a>
+
+      <a href="session-07-divide-and-conquer.html" class="session-card" data-session="7">
+        <div class="card-header">
+          <span class="session-number">Session 7</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Divide and Conquer—Maximum Subarray</div>
+        <div class="session-description">Recursive problem splitting and the Master theorem</div>
+        <div class="session-topics">
+          <span class="topic-tag">max subarray</span>
+          <span class="topic-tag">Master theorem</span>
+          <span class="topic-tag">O(n log n)</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Object-Oriented Programming -->
+    <div class="section-header">
+      <div class="section-icon">🏗️</div>
+      <div>
+        <div class="section-title">Object-Oriented Programming</div>
+        <div class="section-subtitle">Structuring code with classes and objects</div>
+      </div>
+    </div>
+
+    <div class="sessions-grid">
+      <a href="session-11-oop-python.html" class="session-card" data-session="11">
+        <div class="card-header">
+          <span class="session-number">Session 11</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Writing Algorithms in Python—Part II (OOP)</div>
+        <div class="session-description">Classes, objects, attributes, methods, and encapsulation</div>
+        <div class="session-topics">
+          <span class="topic-tag">classes</span>
+          <span class="topic-tag">__init__</span>
+          <span class="topic-tag">self</span>
+          <span class="topic-tag">encapsulation</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Data Structures -->
+    <div class="section-header">
+      <div class="section-icon">🌳</div>
+      <div>
+        <div class="section-title">Tree Data Structures</div>
+        <div class="section-subtitle">Hierarchical data organization</div>
+      </div>
+    </div>
+
+    <div class="sessions-grid">
+      <a href="session-13-priority-queues.html" class="session-card" data-session="13">
+        <div class="card-header">
+          <span class="session-number">Session 13</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Heaps and Priority Queues</div>
+        <div class="session-description">Priority queue ADT with heap-based implementation</div>
+        <div class="session-topics">
+          <span class="topic-tag">priority queue</span>
+          <span class="topic-tag">insert</span>
+          <span class="topic-tag">extract-max</span>
+        </div>
+      </a>
+
+      <a href="session-14-median-algorithms.html" class="session-card" data-session="14">
+        <div class="card-header">
+          <span class="session-number">Session 14</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Algorithms for Computing the Median</div>
+        <div class="session-description">Quickselect and median-of-medians for linear time selection</div>
+        <div class="session-topics">
+          <span class="topic-tag">quickselect</span>
+          <span class="topic-tag">median-of-medians</span>
+          <span class="topic-tag">O(n)</span>
+        </div>
+      </a>
+
+      <a href="session-15-binary-search-trees.html" class="session-card" data-session="15">
+        <div class="card-header">
+          <span class="session-number">Session 15</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Binary Search Trees (BSTs)</div>
+        <div class="session-description">Search, insert, delete, and in-order traversal</div>
+        <div class="session-topics">
+          <span class="topic-tag">BST property</span>
+          <span class="topic-tag">search</span>
+          <span class="topic-tag">deletion</span>
+        </div>
+      </a>
+
+      <a href="session-16-random-bsts.html" class="session-card" data-session="16">
+        <div class="card-header">
+          <span class="session-number">Session 16</span>
+          <span class="session-duration">⏱ ~30 min</span>
+        </div>
+        <div class="session-title">Randomly Built BSTs</div>
+        <div class="session-description">Expected height analysis and insertion order effects</div>
+        <div class="session-topics">
+          <span class="topic-tag">expected height</span>
+          <span class="topic-tag">O(log n)</span>
+          <span class="topic-tag">balance</span>
+        </div>
+      </a>
+
+      <a href="session-17-red-black-trees.html" class="session-card" data-session="17">
+        <div class="card-header">
+          <span class="session-number">Session 17</span>
+          <span class="session-duration">⏱ ~40 min</span>
+        </div>
+        <div class="session-title">Red-Black Trees</div>
+        <div class="session-description">Self-balancing BSTs with guaranteed O(log n) height</div>
+        <div class="session-topics">
+          <span class="topic-tag">rotations</span>
+          <span class="topic-tag">recoloring</span>
+          <span class="topic-tag">black-height</span>
+        </div>
+      </a>
+
+      <a href="session-18-kd-trees.html" class="session-card" data-session="18">
+        <div class="card-header">
+          <span class="session-number">Session 18</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">k-d Trees</div>
+        <div class="session-description">Multidimensional search trees and nearest neighbor</div>
+        <div class="session-topics">
+          <span class="topic-tag">k-dimensional</span>
+          <span class="topic-tag">nearest neighbor</span>
+          <span class="topic-tag">space partitioning</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Graphs -->
+    <div class="section-header">
+      <div class="section-icon">🕸️</div>
+      <div>
+        <div class="section-title">Graph Algorithms</div>
+        <div class="section-subtitle">Networks and relationships</div>
+      </div>
+    </div>
+
+    <div class="sessions-grid">
+      <a href="session-19-graphs.html" class="session-card" data-session="19">
+        <div class="card-header">
+          <span class="session-number">Session 19</span>
+          <span class="session-duration">⏱ ~40 min</span>
+        </div>
+        <div class="session-title">Aspects of Graphs</div>
+        <div class="session-description">Representations, DFS, BFS, and topological sorting</div>
+        <div class="session-topics">
+          <span class="topic-tag">adjacency list</span>
+          <span class="topic-tag">DFS</span>
+          <span class="topic-tag">BFS</span>
+          <span class="topic-tag">topological sort</span>
+        </div>
+      </a>
+
+      <a href="session-20-avl-trees.html" class="session-card" data-session="20">
+        <div class="card-header">
+          <span class="session-number">Session 20</span>
+          <span class="session-duration">⏱ ~35 min</span>
+        </div>
+        <div class="session-title">Computational Applications of Trees and Graphs</div>
+        <div class="session-description">AVL trees, balance factors, and comparing tree structures</div>
+        <div class="session-topics">
+          <span class="topic-tag">AVL trees</span>
+          <span class="topic-tag">balance factor</span>
+          <span class="topic-tag">rotations</span>
+        </div>
+      </a>
+    </div>
+
+    <footer>
+      <p>CS110 Interactive Learning Materials</p>
+      <p style="margin-top: 0.5rem;">
+        Built with interactive visualizations for self-paced learning.
+        <br>
+        <a href="https://github.com" target="_blank">View source</a> ·
+        <a href="syllabus.md" target="_blank">Course Syllabus</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      const isDark = html.getAttribute('data-theme') === 'dark';
+
+      if (isDark) {
+        html.removeAttribute('data-theme');
+        icon.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Load saved theme
+    function loadTheme() {
+      const saved = localStorage.getItem('theme');
+      const icon = document.getElementById('theme-icon');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        icon.textContent = '☀️';
+      }
+    }
+
+    // Progress tracking
+    function loadProgress() {
+      const completed = JSON.parse(localStorage.getItem('cs110-progress') || '[]');
+      const count = completed.length;
+      const percentage = (count / 20) * 100;
+
+      document.getElementById('completed-count').textContent = count;
+      document.getElementById('progress-fill').style.width = percentage + '%';
+
+      // Mark completed sessions
+      completed.forEach(session => {
+        const card = document.querySelector(`[data-session="${session}"]`);
+        if (card) {
+          card.style.borderColor = 'var(--success)';
+          const badge = card.querySelector('.session-number');
+          if (badge) {
+            badge.style.background = 'var(--success)';
+            badge.textContent = '✓ Session ' + session;
+          }
+        }
+      });
+    }
+
+    // Mark session as complete (can be called from session pages)
+    function markComplete(sessionNumber) {
+      const completed = JSON.parse(localStorage.getItem('cs110-progress') || '[]');
+      if (!completed.includes(sessionNumber)) {
+        completed.push(sessionNumber);
+        localStorage.setItem('cs110-progress', JSON.stringify(completed));
+      }
+    }
+
+    // Initialize
+    loadTheme();
+    loadProgress();
+  </script>
+</body>
+</html>

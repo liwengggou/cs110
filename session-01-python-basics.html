@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 1: Writing Algorithms in Python—Part I | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      height: 200px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* String/List Visualization */
+    .string-viz {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 2rem;
+    }
+
+    .char-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .char-value {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .char-box.highlight .char-value {
+      background: var(--current-focus);
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+    }
+
+    .char-box.negative .char-value {
+      background: var(--purple);
+    }
+
+    .index-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    .neg-index-label {
+      font-size: 0.75rem;
+      color: var(--purple);
+      margin-bottom: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes highlight-flash {
+      0% { background: rgba(241, 196, 15, 0.5); }
+      100% { background: rgba(241, 196, 15, 0.2); }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .char-value { width: 40px; height: 40px; font-size: 1rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 1</span>
+      <h1>Writing Algorithms in Python—Part I</h1>
+      <p class="subtitle">Master the fundamentals of Python control flow, iteration, and data indexing</p>
+      <div class="meta">
+        <span>⏱️ ~25 minutes</span>
+        <span>📚 Prerequisites: None</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Trace</strong> the execution of loops step by step</li>
+        <li><strong>Apply</strong> control flow structures (if/else, for, while)</li>
+        <li><strong>Access</strong> elements using positive and negative indices</li>
+        <li><strong>Iterate</strong> over strings and lists using multiple patterns</li>
+        <li><strong>Construct</strong> basic algorithmic solutions</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: String Indexing -->
+    <h2>1. Understanding String Indexing</h2>
+    <p>In Python, strings are sequences of characters that can be accessed by their position (index). Python supports both positive indexing (starting from 0) and negative indexing (starting from -1 at the end).</p>
+
+    <div class="viz-container">
+      <h3>Interactive String Index Explorer</h3>
+      <div class="step-description" id="index-description">
+        Click on any character to see its positive and negative index
+      </div>
+
+      <div class="viz-canvas">
+        <div class="string-viz" id="string-viz">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Click on different characters to see how positive and negative indexing works. Notice that <code>s[-1]</code> always gives you the last character!
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Negative indexing is Python's elegant way to access elements from the end without knowing the length. <code>s[-1]</code> is always the last element, <code>s[-2]</code> the second-to-last, and so on.
+    </div>
+
+    <!-- Section 2: For Loop Animation -->
+    <h2>2. For Loop Execution</h2>
+    <p>Let's trace through a for loop step by step. Watch how the loop variable changes and how the code executes line by line.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Loop Iteration Visualizer</h3>
+          <div class="step-description" id="loop-description">
+            Press Play to watch the loop execute step by step
+          </div>
+
+          <div class="viz-canvas" id="loop-viz">
+            <div class="string-viz" id="loop-array">
+              <!-- Generated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="step-controls">
+            <button id="loop-reset" title="Reset">⏮️</button>
+            <button id="loop-back" title="Step Back">⏪</button>
+            <button id="loop-play" title="Play/Pause">▶️</button>
+            <button id="loop-forward" title="Step Forward">⏩</button>
+            <span class="step-indicator" id="loop-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="loop-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container" id="loop-progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="loop-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="keyboard-hints">
+            <span class="keyboard-hint"><span class="key">Space</span> Play/Pause</span>
+            <span class="keyboard-hint"><span class="key">←</span> Step Back</span>
+            <span class="keyboard-hint"><span class="key">→</span> Step Forward</span>
+            <span class="keyboard-hint"><span class="key">R</span> Reset</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="loop-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="variable">text</span> <span class="operator">=</span> <span class="string">"HELLO"</span></span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content"><span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span></span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content"><span class="keyword">for</span> <span class="variable">char</span> <span class="keyword">in</span> <span class="variable">text</span>:</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">    <span class="function">print</span>(<span class="variable">char</span>)</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">    <span class="variable">count</span> <span class="operator">=</span> <span class="variable">count</span> <span class="operator">+</span> <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content"><span class="function">print</span>(<span class="string">"Total:"</span>, <span class="variable">count</span>)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Variables</h4>
+          <div class="variable-list" id="loop-variables">
+            <div class="variable-item">
+              <span class="variable-name">text</span>
+              <span class="variable-value">"HELLO"</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">count</span>
+              <span class="variable-value" id="var-count">0</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">char</span>
+              <span class="variable-value" id="var-char">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Confusing the index with the value. In <code>for char in text</code>, the variable <code>char</code> holds the actual character, not its position. If you need the index, use <code>for i, char in enumerate(text)</code>.
+    </div>
+
+    <!-- Section 3: While Loop -->
+    <h2>3. While Loop Patterns</h2>
+    <p>While loops continue executing as long as a condition is true. They're useful when you don't know in advance how many iterations you'll need.</p>
+
+    <div class="viz-container">
+      <h3>While Loop: Finding a Character</h3>
+      <div class="step-description" id="while-description">
+        Watch how we search for 'L' in "HELLO"
+      </div>
+
+      <div class="viz-canvas">
+        <div class="string-viz" id="while-viz">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="while-reset" title="Reset">⏮️</button>
+        <button id="while-back" title="Step Back">⏪</button>
+        <button id="while-play" title="Play/Pause">▶️</button>
+        <button id="while-forward" title="Step Forward">⏩</button>
+        <span class="step-indicator" id="while-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="while-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="while-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Always ensure your while loop has a way to terminate! Update the condition variable inside the loop to avoid infinite loops.
+    </div>
+
+    <!-- Section 4: String Slicing -->
+    <h2>4. String Slicing</h2>
+    <p>Slicing lets you extract portions of a string using the syntax <code>string[start:end:step]</code>. The <code>start</code> is inclusive, but <code>end</code> is exclusive.</p>
+
+    <div class="viz-container">
+      <h3>Interactive Slice Visualizer</h3>
+      <div class="step-description" id="slice-description">
+        Adjust the sliders to see different slices
+      </div>
+
+      <div class="viz-canvas">
+        <div class="string-viz" id="slice-viz">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <div style="padding: 1rem; display: flex; gap: 2rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+            Start: <span id="slice-start-val">0</span>
+          </label>
+          <input type="range" id="slice-start" min="-7" max="7" value="0" style="width: 100%;">
+        </div>
+        <div style="flex: 1; min-width: 200px;">
+          <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+            End: <span id="slice-end-val">7</span>
+          </label>
+          <input type="range" id="slice-end" min="-7" max="7" value="7" style="width: 100%;">
+        </div>
+      </div>
+
+      <div style="padding: 0 1rem 1rem; font-family: var(--font-mono); font-size: 1.125rem;">
+        <span style="color: var(--text-secondary);">Result:</span>
+        <span id="slice-result" style="color: var(--accent); font-weight: 600;">"PYTHON"</span>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Forgetting that the end index is exclusive. <code>"HELLO"[0:2]</code> returns <code>"HE"</code>, not <code>"HEL"</code>. Think of it as "up to but not including" the end index.
+    </div>
+
+    <!-- Common Mistakes Summary -->
+    <h2>5. Common Mistakes Summary</h2>
+
+    <div class="common-mistake">
+      <strong>Off-by-one errors:</strong> Remember indices start at 0, not 1. The first element is at index 0.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Modifying while iterating:</strong> Don't change the length of a list while looping over it with a for loop. Use a while loop or create a new list instead.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Infinite while loops:</strong> Always ensure your loop condition will eventually become False. Update your counter or condition variable inside the loop.
+    </div>
+
+    <!-- Why Do We Care -->
+    <h2>6. Why Do We Care?</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Text Processing:</strong> Parsing user input, searching documents, formatting output</li>
+      <li><strong>Data Analysis:</strong> Iterating through datasets, filtering records, computing statistics</li>
+      <li><strong>Web Development:</strong> Processing form data, validating input, generating HTML</li>
+      <li><strong>Game Development:</strong> Game loops, processing player input, updating game state</li>
+    </ul>
+
+    <!-- Quiz -->
+    <h2>7. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question">
+        <h4>Question 1: What does <code>"PYTHON"[-2]</code> return?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">"N"</div>
+          <div class="quiz-option" data-index="1">"O"</div>
+          <div class="quiz-option" data-index="2">"H"</div>
+          <div class="quiz-option" data-index="3">Error</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Count backwards from the end: -1 is "N", -2 is "O"</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Negative indices count from the end. -1 is the last character ("N"), so -2 is the second-to-last ("O").
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 2: How many times will this loop print?</h4>
+        <pre style="background: var(--code-bg); padding: 1rem; border-radius: 4px; font-family: var(--font-mono); margin-bottom: 1rem;">for i in range(3):
+    print(i)</pre>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">2 times</div>
+          <div class="quiz-option" data-index="1">4 times</div>
+          <div class="quiz-option" data-index="2">3 times</div>
+          <div class="quiz-option" data-index="3">1 time</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">range(3) generates the sequence 0, 1, 2</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> <code>range(3)</code> generates 0, 1, 2 — that's 3 values, so the loop runs 3 times.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 3: What does <code>"HELLO"[1:4]</code> return?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">"ELL"</div>
+          <div class="quiz-option" data-index="1">"ELLO"</div>
+          <div class="quiz-option" data-index="2">"HEL"</div>
+          <div class="quiz-option" data-index="3">"HELL"</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Remember: start is inclusive (1 = "E"), end is exclusive (4 means up to index 3)</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Index 1 is "E", and we go up to (but not including) index 4, so we get indices 1, 2, 3: "ELL".
+        </div>
+      </div>
+    </div>
+
+    <!-- Dive Deeper -->
+    <h2>8. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://docs.python.org/3/tutorial/introduction.html#strings" target="_blank">Python Official Tutorial: Strings</a></li>
+      <li><a href="https://docs.python.org/3/tutorial/controlflow.html" target="_blank">Python Official Tutorial: Control Flow</a></li>
+      <li><a href="https://visualgo.net" target="_blank">VisuAlgo - Algorithm Visualizations</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <span style="color: var(--text-secondary);">← First Session</span>
+      <a href="session-02-algorithm-fundamentals.html">Session 2: Fundamentals of Algorithms →</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? '☀️' : '🌙';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+    // String Indexing Visualization
+    const stringViz = document.getElementById('string-viz');
+    const indexDescription = document.getElementById('index-description');
+    const demoString = 'PYTHON';
+
+    function createStringViz(container, str, clickable = true) {
+      container.innerHTML = '';
+      str.split('').forEach((char, i) => {
+        const box = document.createElement('div');
+        box.className = 'char-box';
+        box.innerHTML = `
+          <div class="neg-index-label">${i - str.length}</div>
+          <div class="char-value">${char}</div>
+          <div class="index-label">${i}</div>
+        `;
+        if (clickable) {
+          box.style.cursor = 'pointer';
+          box.addEventListener('click', () => {
+            document.querySelectorAll('.char-box').forEach(b => b.classList.remove('highlight'));
+            box.classList.add('highlight');
+            indexDescription.textContent = `s[${i}] = s[${i - str.length}] = "${char}"`;
+          });
+        }
+        container.appendChild(box);
+      });
+    }
+
+    createStringViz(stringViz, demoString);
+
+    // For Loop Animation
+    class LoopAnimator {
+      constructor(containerId, codeId, variablesId, progressId, stepIndicatorId, descriptionId) {
+        this.container = document.getElementById(containerId);
+        this.codePanel = document.getElementById(codeId);
+        this.variablesPanel = document.getElementById(variablesId);
+        this.progressBar = document.getElementById(progressId);
+        this.stepIndicator = document.getElementById(stepIndicatorId);
+        this.description = document.getElementById(descriptionId);
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        const text = "HELLO";
+        this.steps = [
+          { line: 1, desc: 'Initialize text = "HELLO"', vars: { text: '"HELLO"', count: '—', char: '—' }, highlight: -1 },
+          { line: 2, desc: 'Initialize count = 0', vars: { text: '"HELLO"', count: '0', char: '—' }, highlight: -1 },
+        ];
+
+        for (let i = 0; i < text.length; i++) {
+          this.steps.push({
+            line: 4,
+            desc: `Loop iteration ${i + 1}: char = "${text[i]}"`,
+            vars: { text: '"HELLO"', count: String(i), char: `"${text[i]}"` },
+            highlight: i
+          });
+          this.steps.push({
+            line: 5,
+            desc: `Print "${text[i]}" to console`,
+            vars: { text: '"HELLO"', count: String(i), char: `"${text[i]}"` },
+            highlight: i
+          });
+          this.steps.push({
+            line: 6,
+            desc: `Increment count: ${i} + 1 = ${i + 1}`,
+            vars: { text: '"HELLO"', count: String(i + 1), char: `"${text[i]}"` },
+            highlight: i
+          });
+        }
+
+        this.steps.push({
+          line: 8,
+          desc: 'Loop complete! Print "Total: 5"',
+          vars: { text: '"HELLO"', count: '5', char: '—' },
+          highlight: -1
+        });
+      }
+
+      render() {
+        // Create array visualization
+        this.container.innerHTML = '';
+        const text = "HELLO";
+        text.split('').forEach((char, i) => {
+          const box = document.createElement('div');
+          box.className = 'char-box';
+          if (this.steps[this.currentStep] && this.steps[this.currentStep].highlight === i) {
+            box.classList.add('highlight');
+          }
+          box.innerHTML = `
+            <div class="char-value">${char}</div>
+            <div class="index-label">${i}</div>
+          `;
+          this.container.appendChild(box);
+        });
+
+        // Update code highlighting
+        this.codePanel.querySelectorAll('.code-line').forEach(line => {
+          line.classList.remove('highlighted', 'executed');
+          const lineNum = parseInt(line.dataset.line);
+          if (this.steps[this.currentStep] && lineNum === this.steps[this.currentStep].line) {
+            line.classList.add('highlighted');
+          } else if (lineNum < (this.steps[this.currentStep]?.line || 0)) {
+            line.classList.add('executed');
+          }
+        });
+
+        // Update variables
+        const vars = this.steps[this.currentStep]?.vars || {};
+        document.getElementById('var-count').textContent = vars.count || '—';
+        document.getElementById('var-char').textContent = vars.char || '—';
+
+        // Update description
+        this.description.textContent = this.steps[this.currentStep]?.desc || 'Ready to start';
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        this.progressBar.style.width = `${progress}%`;
+        this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('loop-play').textContent = '⏸️';
+        document.getElementById('loop-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1000 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('loop-play').textContent = '▶️';
+        document.getElementById('loop-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    const loopAnimator = new LoopAnimator(
+      'loop-array',
+      'loop-code',
+      'loop-variables',
+      'loop-progress',
+      'loop-step-indicator',
+      'loop-description'
+    );
+
+    // Loop controls
+    document.getElementById('loop-play').addEventListener('click', () => {
+      loopAnimator.isPlaying ? loopAnimator.pause() : loopAnimator.play();
+    });
+    document.getElementById('loop-reset').addEventListener('click', () => loopAnimator.reset());
+    document.getElementById('loop-back').addEventListener('click', () => loopAnimator.stepBackward());
+    document.getElementById('loop-forward').addEventListener('click', () => loopAnimator.stepForward());
+    document.getElementById('loop-speed').addEventListener('change', (e) => {
+      loopAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          loopAnimator.isPlaying ? loopAnimator.pause() : loopAnimator.play();
+          break;
+        case 'ArrowRight':
+          loopAnimator.stepForward();
+          break;
+        case 'ArrowLeft':
+          loopAnimator.stepBackward();
+          break;
+        case 'r':
+        case 'R':
+          loopAnimator.reset();
+          break;
+      }
+    });
+
+    // While Loop Visualization
+    const whileViz = document.getElementById('while-viz');
+    const whileDescription = document.getElementById('while-description');
+    const whileText = "HELLO";
+    let whileStep = 0;
+    let whileSteps = [];
+    let whilePlaying = false;
+    let whileInterval = null;
+
+    function generateWhileSteps() {
+      whileSteps = [
+        { highlight: -1, desc: 'Initialize: i = 0, looking for "L"' },
+        { highlight: 0, desc: 'Check index 0: "H" ≠ "L", continue' },
+        { highlight: 1, desc: 'Check index 1: "E" ≠ "L", continue' },
+        { highlight: 2, desc: 'Check index 2: "L" = "L", Found it!' },
+      ];
+    }
+
+    function renderWhile() {
+      whileViz.innerHTML = '';
+      whileText.split('').forEach((char, i) => {
+        const box = document.createElement('div');
+        box.className = 'char-box';
+        if (whileSteps[whileStep]?.highlight === i) {
+          box.classList.add('highlight');
+        }
+        box.innerHTML = `
+          <div class="char-value">${char}</div>
+          <div class="index-label">${i}</div>
+        `;
+        whileViz.appendChild(box);
+      });
+
+      whileDescription.textContent = whileSteps[whileStep]?.desc || 'Ready';
+
+      const progress = whileSteps.length > 1 ? (whileStep / (whileSteps.length - 1)) * 100 : 0;
+      document.getElementById('while-progress').style.width = `${progress}%`;
+      document.getElementById('while-step-indicator').textContent = `Step ${whileStep + 1} of ${whileSteps.length}`;
+    }
+
+    generateWhileSteps();
+    renderWhile();
+
+    document.getElementById('while-play').addEventListener('click', () => {
+      if (whilePlaying) {
+        whilePlaying = false;
+        clearInterval(whileInterval);
+        document.getElementById('while-play').textContent = '▶️';
+      } else {
+        if (whileStep >= whileSteps.length - 1) whileStep = 0;
+        whilePlaying = true;
+        document.getElementById('while-play').textContent = '⏸️';
+        whileInterval = setInterval(() => {
+          if (whileStep < whileSteps.length - 1) {
+            whileStep++;
+            renderWhile();
+          } else {
+            whilePlaying = false;
+            clearInterval(whileInterval);
+            document.getElementById('while-play').textContent = '▶️';
+          }
+        }, 1000);
+      }
+    });
+
+    document.getElementById('while-reset').addEventListener('click', () => {
+      whilePlaying = false;
+      clearInterval(whileInterval);
+      document.getElementById('while-play').textContent = '▶️';
+      whileStep = 0;
+      renderWhile();
+    });
+
+    document.getElementById('while-back').addEventListener('click', () => {
+      if (whileStep > 0) {
+        whileStep--;
+        renderWhile();
+      }
+    });
+
+    document.getElementById('while-forward').addEventListener('click', () => {
+      if (whileStep < whileSteps.length - 1) {
+        whileStep++;
+        renderWhile();
+      }
+    });
+
+    // Slice Visualization
+    const sliceViz = document.getElementById('slice-viz');
+    const sliceStr = 'PYTHON';
+    const sliceStart = document.getElementById('slice-start');
+    const sliceEnd = document.getElementById('slice-end');
+    const sliceStartVal = document.getElementById('slice-start-val');
+    const sliceEndVal = document.getElementById('slice-end-val');
+    const sliceResult = document.getElementById('slice-result');
+    const sliceDescription = document.getElementById('slice-description');
+
+    function normalizeIndex(idx, len) {
+      if (idx < 0) return Math.max(0, len + idx);
+      return Math.min(idx, len);
+    }
+
+    function renderSlice() {
+      const start = parseInt(sliceStart.value);
+      const end = parseInt(sliceEnd.value);
+
+      sliceStartVal.textContent = start;
+      sliceEndVal.textContent = end;
+
+      const normStart = normalizeIndex(start, sliceStr.length);
+      const normEnd = normalizeIndex(end, sliceStr.length);
+
+      sliceViz.innerHTML = '';
+      sliceStr.split('').forEach((char, i) => {
+        const box = document.createElement('div');
+        box.className = 'char-box';
+        const inSlice = i >= normStart && i < normEnd;
+        box.innerHTML = `
+          <div class="neg-index-label">${i - sliceStr.length}</div>
+          <div class="char-value" style="opacity: ${inSlice ? 1 : 0.3}">${char}</div>
+          <div class="index-label">${i}</div>
+        `;
+        if (inSlice) {
+          box.classList.add('highlight');
+        }
+        sliceViz.appendChild(box);
+      });
+
+      const result = sliceStr.slice(normStart, normEnd);
+      sliceResult.textContent = `"${result}"`;
+      sliceDescription.textContent = `s[${start}:${end}] selects indices ${normStart} to ${normEnd - 1}`;
+    }
+
+    sliceStart.addEventListener('input', renderSlice);
+    sliceEnd.addEventListener('input', renderSlice);
+    renderSlice();
+
+    // Quiz functionality
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn) {
+      const hint = btn.nextElementSibling;
+      hint.classList.toggle('show');
+      btn.textContent = hint.classList.contains('show') ? 'Hide Hint' : 'Show Hint';
+    }
+
+    // KaTeX auto-render
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

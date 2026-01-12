@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 13: Heaps and Priority Queues | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --heap-node: #2EAADC;
+      --heap-highlight: #F1C40F;
+      --heap-extracted: #EB5757;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Heap Tree Visualization */
+    .heap-tree-container {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      display: flex;
+      justify-content: center;
+      padding-top: 20px;
+    }
+
+    .heap-node {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--heap-node);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.4s ease;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .heap-node.highlight {
+      background: var(--heap-highlight);
+      transform: scale(1.15);
+      box-shadow: 0 0 20px rgba(241, 196, 15, 0.6);
+    }
+
+    .heap-node.comparing {
+      background: var(--comparing);
+      box-shadow: 0 0 15px rgba(46, 170, 220, 0.6);
+    }
+
+    .heap-node.swapping {
+      background: var(--swapping);
+      animation: pulse 0.3s ease-in-out;
+    }
+
+    .heap-node.extracted {
+      background: var(--heap-extracted);
+      opacity: 0.5;
+    }
+
+    .heap-node.new-node {
+      background: var(--success);
+    }
+
+    .heap-edge {
+      position: absolute;
+      background: rgba(255,255,255,0.3);
+      height: 2px;
+      transform-origin: left center;
+      z-index: 1;
+    }
+
+    .heap-index {
+      position: absolute;
+      font-size: 0.625rem;
+      color: rgba(255,255,255,0.6);
+      font-family: var(--font-mono);
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Array View */
+    .array-view {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      padding: 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .array-cell {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .array-cell.highlight {
+      background: var(--heap-highlight);
+      transform: scale(1.1);
+    }
+
+    .array-cell.comparing {
+      background: var(--comparing);
+    }
+
+    .array-cell.swapping {
+      background: var(--swapping);
+    }
+
+    .array-cell .value {
+      font-size: 1rem;
+    }
+
+    .array-cell .index {
+      font-size: 0.625rem;
+      opacity: 0.7;
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-controls button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Input Controls */
+    .input-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .input-controls input {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      width: 100px;
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .input-controls input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .complexity-table th,
+    .complexity-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .complexity-table th {
+      background: var(--background-secondary);
+      font-weight: 600;
+    }
+
+    .complexity-table code {
+      color: var(--accent);
+    }
+
+    /* Task Scheduler */
+    .task-scheduler {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .task-item.executing {
+      background: rgba(241, 196, 15, 0.2);
+      border-color: var(--current-focus);
+    }
+
+    .task-item.completed {
+      opacity: 0.5;
+      text-decoration: line-through;
+    }
+
+    .task-priority {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .task-priority.high {
+      background: var(--error);
+    }
+
+    .task-priority.medium {
+      background: var(--warning);
+    }
+
+    .task-priority.low {
+      background: var(--success);
+    }
+
+    .execution-log {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    @keyframes highlight-flash {
+      0% { background: rgba(241, 196, 15, 0.5); }
+      100% { background: rgba(241, 196, 15, 0.2); }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .heap-node { width: 40px; height: 40px; font-size: 0.875rem; }
+      .array-cell { width: 40px; height: 40px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">&#127769;</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 13</span>
+      <h1>Heaps and Priority Queues</h1>
+      <p class="subtitle">Master priority-based data organization with heap data structures</p>
+      <div class="meta">
+        <span>&#9201; ~35 minutes</span>
+        <span>&#128218; Prerequisites: Trees, Arrays</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Understand</strong> the Priority Queue ADT and its operations</li>
+        <li><strong>Implement</strong> a heap-based priority queue using an array</li>
+        <li><strong>Trace</strong> heapify-up (insert) and heapify-down (extract-max) operations</li>
+        <li><strong>Apply</strong> the increase-key operation to modify priorities</li>
+        <li><strong>Recognize</strong> real-world applications of priority queues</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Priority Queue ADT -->
+    <h2>1. The Priority Queue ADT</h2>
+    <p>A <strong>Priority Queue</strong> is an abstract data type where each element has a "priority" associated with it. Unlike a regular queue (FIFO), elements are served based on their priority - the highest priority element is always served first.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Think of an emergency room: patients are seen based on the severity of their condition (priority), not the order they arrived!
+    </div>
+
+    <h3>Core Operations</h3>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><code>insert(key, priority)</code> - Add an element with a given priority</li>
+      <li><code>extract_max()</code> - Remove and return the highest priority element</li>
+      <li><code>peek()</code> - View the highest priority element without removing it</li>
+      <li><code>increase_key(index, new_priority)</code> - Increase an element's priority</li>
+      <li><code>is_empty()</code> - Check if the queue is empty</li>
+    </ul>
+
+    <div class="complexity-box">
+      <h3>Time Complexity Comparison</h3>
+      <table class="complexity-table">
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Unsorted Array</th>
+            <th>Sorted Array</th>
+            <th>Binary Heap</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Insert</td>
+            <td><code>O(1)</code></td>
+            <td><code>O(n)</code></td>
+            <td><code>O(log n)</code></td>
+          </tr>
+          <tr>
+            <td>Extract Max</td>
+            <td><code>O(n)</code></td>
+            <td><code>O(1)</code></td>
+            <td><code>O(log n)</code></td>
+          </tr>
+          <tr>
+            <td>Peek</td>
+            <td><code>O(n)</code></td>
+            <td><code>O(1)</code></td>
+            <td><code>O(1)</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.875rem;">Binary Heap provides the best balanced performance for priority queue operations.</p>
+    </div>
+
+    <!-- Section 2: Binary Heap Structure -->
+    <h2>2. Binary Heap Structure</h2>
+    <p>A <strong>Binary Heap</strong> is a complete binary tree that satisfies the heap property. In a <strong>Max-Heap</strong>, for every node <em>i</em>, the value of <em>i</em> is greater than or equal to the values of its children.</p>
+
+    <div class="viz-container">
+      <h3>Interactive Priority Queue Simulator</h3>
+      <div class="step-description" id="pq-description">
+        Insert values and watch the heap maintain its structure. Try Extract-Max to remove the maximum!
+      </div>
+
+      <div class="input-controls">
+        <input type="number" id="insert-value" placeholder="Value" min="1" max="99">
+        <button class="step-controls primary" onclick="insertValue()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Insert</button>
+        <button class="step-controls" onclick="extractMax()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Extract Max</button>
+        <button class="step-controls" onclick="resetHeap()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Reset</button>
+        <button class="step-controls" onclick="randomHeap()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Random</button>
+      </div>
+
+      <div class="viz-canvas" id="heap-viz-canvas">
+        <div class="heap-tree-container" id="heap-tree"></div>
+      </div>
+
+      <div class="array-view" id="heap-array"></div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Insert values in order: 10, 20, 15, 30, 25. Watch how 30 bubbles up to become the root!
+      </div>
+    </div>
+
+    <h3>Array Representation</h3>
+    <p>A binary heap can be efficiently stored in an array. For a node at index <em>i</em>:</p>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li>Parent: <code>floor((i - 1) / 2)</code></li>
+      <li>Left Child: <code>2 * i + 1</code></li>
+      <li>Right Child: <code>2 * i + 2</code></li>
+    </ul>
+
+    <!-- Section 3: Heapify-Up (Insert) -->
+    <h2>3. Insert Operation (Heapify-Up)</h2>
+    <p>When inserting a new element, we add it at the end (maintaining the complete tree property) and then "bubble up" to restore the heap property.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Step-by-Step Heapify-Up Animator</h3>
+          <div class="step-description" id="insert-description">
+            Click "Start Insert" to visualize inserting value 25 into the heap
+          </div>
+
+          <div class="viz-canvas" id="insert-viz-canvas">
+            <div class="heap-tree-container" id="insert-tree"></div>
+          </div>
+
+          <div class="array-view" id="insert-array"></div>
+
+          <div class="step-controls">
+            <button id="insert-reset" title="Reset">&#9198;</button>
+            <button id="insert-back" title="Step Back">&#9194;</button>
+            <button id="insert-play" title="Play/Pause">&#9654;</button>
+            <button id="insert-forward" title="Step Forward">&#9193;</button>
+            <span class="step-indicator" id="insert-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="insert-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="insert-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="insert-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">insert</span>(<span class="variable">self</span>, <span class="variable">key</span>):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="variable">self</span>.heap.append(<span class="variable">key</span>)</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">    <span class="variable">i</span> <span class="operator">=</span> <span class="function">len</span>(<span class="variable">self</span>.heap) <span class="operator">-</span> <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="comment"># Bubble up</span></span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">    <span class="keyword">while</span> <span class="variable">i</span> <span class="operator">></span> <span class="number">0</span>:</span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">        <span class="variable">parent</span> <span class="operator">=</span> (<span class="variable">i</span> <span class="operator">-</span> <span class="number">1</span>) <span class="operator">//</span> <span class="number">2</span></span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">        <span class="keyword">if</span> <span class="variable">self</span>.heap[<span class="variable">i</span>] <span class="operator">></span> <span class="variable">self</span>.heap[<span class="variable">parent</span>]:</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">            <span class="comment"># Swap with parent</span></span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">            <span class="variable">self</span>.heap[<span class="variable">i</span>], <span class="variable">self</span>.heap[<span class="variable">parent</span>] <span class="operator">=</span> \</span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">                <span class="variable">self</span>.heap[<span class="variable">parent</span>], <span class="variable">self</span>.heap[<span class="variable">i</span>]</span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content">            <span class="variable">i</span> <span class="operator">=</span> <span class="variable">parent</span></span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">        <span class="keyword">else</span>:</span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">            <span class="keyword">break</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Variables</h4>
+          <div class="variable-list" id="insert-variables">
+            <div class="variable-item">
+              <span class="variable-name">key</span>
+              <span class="variable-value" id="insert-var-key">25</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">i</span>
+              <span class="variable-value" id="insert-var-i">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">parent</span>
+              <span class="variable-value" id="insert-var-parent">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Forgetting to update the index <code>i</code> after each swap! After swapping with the parent, <code>i</code> must become the parent's old index to continue bubbling up.
+    </div>
+
+    <!-- Section 4: Heapify-Down (Extract-Max) -->
+    <h2>4. Extract-Max Operation (Heapify-Down)</h2>
+    <p>To extract the maximum, we remove the root, replace it with the last element, and then "sink down" to restore the heap property.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Step-by-Step Heapify-Down Animator</h3>
+          <div class="step-description" id="extract-description">
+            Click "Start Extract" to visualize extracting the maximum from the heap
+          </div>
+
+          <div class="viz-canvas" id="extract-viz-canvas">
+            <div class="heap-tree-container" id="extract-tree"></div>
+          </div>
+
+          <div class="array-view" id="extract-array"></div>
+
+          <div class="step-controls">
+            <button id="extract-reset" title="Reset">&#9198;</button>
+            <button id="extract-back" title="Step Back">&#9194;</button>
+            <button id="extract-play" title="Play/Pause">&#9654;</button>
+            <button id="extract-forward" title="Step Forward">&#9193;</button>
+            <span class="step-indicator" id="extract-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="extract-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="extract-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="extract-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">extract_max</span>(<span class="variable">self</span>):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="variable">max_val</span> <span class="operator">=</span> <span class="variable">self</span>.heap[<span class="number">0</span>]</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">    <span class="variable">self</span>.heap[<span class="number">0</span>] <span class="operator">=</span> <span class="variable">self</span>.heap.pop()</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span></span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">    <span class="comment"># Sink down</span></span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">    <span class="keyword">while</span> <span class="keyword">True</span>:</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">        <span class="variable">left</span> <span class="operator">=</span> <span class="number">2</span> <span class="operator">*</span> <span class="variable">i</span> <span class="operator">+</span> <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">        <span class="variable">right</span> <span class="operator">=</span> <span class="number">2</span> <span class="operator">*</span> <span class="variable">i</span> <span class="operator">+</span> <span class="number">2</span></span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">        <span class="variable">largest</span> <span class="operator">=</span> <span class="variable">i</span></span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">        <span class="keyword">if</span> <span class="variable">left</span> <span class="operator"><</span> <span class="function">len</span>(<span class="variable">self</span>.heap) <span class="keyword">and</span></span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content">           <span class="variable">self</span>.heap[<span class="variable">left</span>] <span class="operator">></span> <span class="variable">self</span>.heap[<span class="variable">largest</span>]:</span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">            <span class="variable">largest</span> <span class="operator">=</span> <span class="variable">left</span></span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">        <span class="keyword">if</span> <span class="variable">right</span> <span class="operator"><</span> <span class="function">len</span>(<span class="variable">self</span>.heap) <span class="keyword">and</span></span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">           <span class="variable">self</span>.heap[<span class="variable">right</span>] <span class="operator">></span> <span class="variable">self</span>.heap[<span class="variable">largest</span>]:</span>
+            </div>
+            <div class="code-line" data-line="15">
+              <span class="line-number">15</span>
+              <span class="line-content">            <span class="variable">largest</span> <span class="operator">=</span> <span class="variable">right</span></span>
+            </div>
+            <div class="code-line" data-line="16">
+              <span class="line-number">16</span>
+              <span class="line-content">        <span class="keyword">if</span> <span class="variable">largest</span> <span class="operator">!=</span> <span class="variable">i</span>:</span>
+            </div>
+            <div class="code-line" data-line="17">
+              <span class="line-number">17</span>
+              <span class="line-content">            <span class="variable">self</span>.heap[<span class="variable">i</span>], <span class="variable">self</span>.heap[<span class="variable">largest</span>] <span class="operator">=</span> \</span>
+            </div>
+            <div class="code-line" data-line="18">
+              <span class="line-number">18</span>
+              <span class="line-content">                <span class="variable">self</span>.heap[<span class="variable">largest</span>], <span class="variable">self</span>.heap[<span class="variable">i</span>]</span>
+            </div>
+            <div class="code-line" data-line="19">
+              <span class="line-number">19</span>
+              <span class="line-content">            <span class="variable">i</span> <span class="operator">=</span> <span class="variable">largest</span></span>
+            </div>
+            <div class="code-line" data-line="20">
+              <span class="line-number">20</span>
+              <span class="line-content">        <span class="keyword">else</span>:</span>
+            </div>
+            <div class="code-line" data-line="21">
+              <span class="line-number">21</span>
+              <span class="line-content">            <span class="keyword">break</span></span>
+            </div>
+            <div class="code-line" data-line="22">
+              <span class="line-number">22</span>
+              <span class="line-content">    <span class="keyword">return</span> <span class="variable">max_val</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Variables</h4>
+          <div class="variable-list" id="extract-variables">
+            <div class="variable-item">
+              <span class="variable-name">max_val</span>
+              <span class="variable-value" id="extract-var-max">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">i</span>
+              <span class="variable-value" id="extract-var-i">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">largest</span>
+              <span class="variable-value" id="extract-var-largest">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: Increase Key -->
+    <h2>5. Increase-Key Operation</h2>
+    <p>The <code>increase_key</code> operation increases the priority of an element at a given index and bubbles it up to maintain the heap property.</p>
+
+    <div class="viz-container">
+      <h3>Increase-Key Animator</h3>
+      <div class="step-description" id="increase-description">
+        Select an index and new value, then click "Increase Key" to watch the operation
+      </div>
+
+      <div class="input-controls">
+        <label style="color: var(--text-secondary); font-size: 0.875rem;">Index:</label>
+        <input type="number" id="increase-index" placeholder="Index" min="0" max="6" value="5">
+        <label style="color: var(--text-secondary); font-size: 0.875rem;">New Value:</label>
+        <input type="number" id="increase-value" placeholder="New Value" min="1" max="99" value="50">
+        <button class="step-controls primary" onclick="startIncreaseKey()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Increase Key</button>
+        <button class="step-controls" onclick="resetIncreaseKey()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Reset</button>
+      </div>
+
+      <div class="viz-canvas" id="increase-viz-canvas">
+        <div class="heap-tree-container" id="increase-tree"></div>
+      </div>
+
+      <div class="array-view" id="increase-array"></div>
+
+      <div class="step-controls">
+        <button id="increase-back" title="Step Back">&#9194;</button>
+        <button id="increase-play" title="Play/Pause">&#9654;</button>
+        <button id="increase-forward" title="Step Forward">&#9193;</button>
+        <span class="step-indicator" id="increase-step-indicator">Ready</span>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Increase-key only requires bubbling UP because we're increasing the priority. If we were decreasing it, we'd need to sink DOWN instead (this would be a decrease-key operation).
+    </div>
+
+    <!-- Section 6: Task Scheduler Demo -->
+    <h2>6. Application: Task Scheduler</h2>
+    <p>Priority queues are widely used in task scheduling systems. Higher priority tasks are executed first, regardless of when they were added to the queue.</p>
+
+    <div class="task-scheduler">
+      <h3>Task Scheduling Simulation</h3>
+      <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+        Add tasks with different priorities and watch them execute in priority order!
+      </p>
+
+      <div class="input-controls">
+        <input type="text" id="task-name" placeholder="Task name" style="width: 150px;">
+        <select id="task-priority" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--border-radius); background: var(--background); color: var(--text-primary);">
+          <option value="9">Critical (9)</option>
+          <option value="7">High (7)</option>
+          <option value="5" selected>Medium (5)</option>
+          <option value="3">Low (3)</option>
+          <option value="1">Background (1)</option>
+        </select>
+        <button class="step-controls primary" onclick="addTask()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Add Task</button>
+        <button class="step-controls" onclick="executeNext()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Execute Next</button>
+        <button class="step-controls" onclick="executeAll()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Execute All</button>
+        <button class="step-controls" onclick="clearTasks()" style="padding: 0.5rem 1rem; border-radius: var(--border-radius);">Clear</button>
+      </div>
+
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+          <h4 style="margin-bottom: 0.5rem;">Task Queue (Priority Heap)</h4>
+          <div class="task-list" id="task-list">
+            <div style="color: var(--text-secondary); padding: 1rem; text-align: center;">No tasks in queue</div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 300px;">
+          <h4 style="margin-bottom: 0.5rem;">Execution Log</h4>
+          <div class="execution-log" id="execution-log">
+            <div style="color: var(--text-secondary);">Waiting for tasks...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Other Applications</h3>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Dijkstra's Algorithm:</strong> Finding shortest paths in weighted graphs</li>
+      <li><strong>Event-Driven Simulation:</strong> Processing events in chronological order</li>
+      <li><strong>Huffman Coding:</strong> Building optimal prefix codes for data compression</li>
+      <li><strong>A* Search:</strong> Pathfinding in games and robotics</li>
+      <li><strong>Operating Systems:</strong> Process scheduling based on priority levels</li>
+    </ul>
+
+    <!-- Quiz Section -->
+    <h2>7. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question" id="q1">
+        <h4>Question 1: In a max-heap with 7 elements stored in an array [50, 30, 40, 10, 20, 35, 38], what is the parent of element at index 5?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">50 (index 0)</div>
+          <div class="quiz-option" data-index="1">30 (index 1)</div>
+          <div class="quiz-option" data-index="2">40 (index 2)</div>
+          <div class="quiz-option" data-index="3">10 (index 3)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text">Parent index = floor((i - 1) / 2). For i=5: floor((5-1)/2) = floor(2) = 2</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text">Index 2 contains value 40. Draw the tree to verify: 50 at root, 30 and 40 as children, etc.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Using the formula parent = floor((i-1)/2), for index 5: floor((5-1)/2) = 2. The element at index 2 is 40.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q2">
+        <h4>Question 2: What is the time complexity of inserting n elements into an initially empty binary heap?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(n log n)</div>
+          <div class="quiz-option" data-index="2">O(n^2)</div>
+          <div class="quiz-option" data-index="3">O(log n)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text">Each insert operation takes O(log n) time in the worst case.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text">With n insertions, each taking O(log n), the total is O(n log n). Note: Building a heap from an array using heapify is actually O(n)!</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Each of the n insert operations takes O(log n) time, so the total is O(n log n). Interestingly, building a heap using heapify from bottom-up is O(n)!
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q3">
+        <h4>Question 3: After extracting the maximum from a max-heap [90, 70, 80, 50, 60, 75], what becomes the new root?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">80</div>
+          <div class="quiz-option" data-index="1">70</div>
+          <div class="quiz-option" data-index="2">75</div>
+          <div class="quiz-option" data-index="3">60</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text">75 (last element) moves to root, then sinks down by swapping with its larger child.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text">At root, 75 compares with children 70 and 80. Since 80 > 75, they swap. 80 becomes new root.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> After 90 is removed, 75 moves to root. Comparing with children (70, 80), 80 is larger than 75, so they swap. 80 becomes the new root.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q4">
+        <h4>Question 4: Which property must a binary heap satisfy?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">It must be a balanced binary search tree</div>
+          <div class="quiz-option" data-index="1">Left child must be smaller than right child</div>
+          <div class="quiz-option" data-index="2">It must be a complete binary tree with heap property</div>
+          <div class="quiz-option" data-index="3">All leaves must be at the same level</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text">A heap is NOT a binary search tree - there's no ordering between siblings.</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text">Complete binary tree: all levels filled except possibly the last, which is filled left-to-right. Heap property: parent >= children (max-heap).</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> A binary heap must be (1) a complete binary tree and (2) satisfy the heap property. Unlike BST, there's no ordering between siblings.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q5">
+        <h4>Question 5: In the array representation of a complete binary tree, if a node is at index i, where is its left child?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">i + 1</div>
+          <div class="quiz-option" data-index="1">2i + 1</div>
+          <div class="quiz-option" data-index="2">2i</div>
+          <div class="quiz-option" data-index="3">i / 2</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+        <div class="hint-text">For 0-indexed arrays: left child = 2i + 1, right child = 2i + 2, parent = (i-1)/2</div>
+        <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+        <div class="hint-text">Example: Node at index 1 has left child at 2*1+1 = 3 and right child at 2*1+2 = 4.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> In 0-indexed arrays, left child is at 2i + 1. This formula allows efficient navigation without explicit pointers!
+        </div>
+      </div>
+    </div>
+
+    <!-- Dive Deeper -->
+    <h2>8. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://visualgo.net/en/heap" target="_blank">VisuAlgo - Heap Visualization</a></li>
+      <li><a href="https://docs.python.org/3/library/heapq.html" target="_blank">Python heapq Module Documentation</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Binary_heap" target="_blank">Wikipedia - Binary Heap</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-12-trees.html">&larr; Session 12: Binary Trees</a>
+      <a href="session-14-graphs.html">Session 14: Graphs &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerHTML = next === 'dark' ? '&#9788;' : '&#127769;';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').innerHTML = savedTheme === 'dark' ? '&#9788;' : '&#127769;';
+
+    // ==================== HEAP UTILITIES ====================
+    class HeapVisualizer {
+      constructor(treeContainerId, arrayContainerId, descriptionId) {
+        this.treeContainer = document.getElementById(treeContainerId);
+        this.arrayContainer = document.getElementById(arrayContainerId);
+        this.descriptionEl = document.getElementById(descriptionId);
+        this.heap = [];
+        this.highlights = {};
+      }
+
+      parent(i) { return Math.floor((i - 1) / 2); }
+      leftChild(i) { return 2 * i + 1; }
+      rightChild(i) { return 2 * i + 2; }
+
+      getNodePosition(index, totalNodes) {
+        if (totalNodes === 0) return { x: 0, y: 0 };
+        const level = Math.floor(Math.log2(index + 1));
+        const levelStart = Math.pow(2, level) - 1;
+        const posInLevel = index - levelStart;
+        const nodesInLevel = Math.pow(2, level);
+
+        const containerWidth = this.treeContainer.offsetWidth || 600;
+        const levelWidth = containerWidth * 0.9;
+        const spacing = levelWidth / (nodesInLevel + 1);
+
+        const x = (posInLevel + 1) * spacing + (containerWidth - levelWidth) / 2;
+        const y = level * 70 + 40;
+
+        return { x, y };
+      }
+
+      render() {
+        this.treeContainer.innerHTML = '';
+        this.arrayContainer.innerHTML = '';
+
+        if (this.heap.length === 0) {
+          this.arrayContainer.innerHTML = '<div style="color: var(--text-secondary); padding: 1rem;">Heap is empty</div>';
+          return;
+        }
+
+        // Draw edges first
+        for (let i = 0; i < this.heap.length; i++) {
+          const pos = this.getNodePosition(i, this.heap.length);
+          const left = this.leftChild(i);
+          const right = this.rightChild(i);
+
+          if (left < this.heap.length) {
+            const childPos = this.getNodePosition(left, this.heap.length);
+            this.drawEdge(pos, childPos);
+          }
+          if (right < this.heap.length) {
+            const childPos = this.getNodePosition(right, this.heap.length);
+            this.drawEdge(pos, childPos);
+          }
+        }
+
+        // Draw nodes
+        for (let i = 0; i < this.heap.length; i++) {
+          const pos = this.getNodePosition(i, this.heap.length);
+          const node = document.createElement('div');
+          node.className = 'heap-node';
+
+          if (this.highlights[i]) {
+            node.classList.add(this.highlights[i]);
+          }
+
+          node.style.left = `${pos.x - 25}px`;
+          node.style.top = `${pos.y - 25}px`;
+          node.innerHTML = `${this.heap[i]}<span class="heap-index">${i}</span>`;
+          this.treeContainer.appendChild(node);
+        }
+
+        // Draw array view
+        for (let i = 0; i < this.heap.length; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'array-cell';
+          if (this.highlights[i]) {
+            cell.classList.add(this.highlights[i]);
+          }
+          cell.innerHTML = `<span class="value">${this.heap[i]}</span><span class="index">[${i}]</span>`;
+          this.arrayContainer.appendChild(cell);
+        }
+      }
+
+      drawEdge(from, to) {
+        const edge = document.createElement('div');
+        edge.className = 'heap-edge';
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        edge.style.width = `${length}px`;
+        edge.style.left = `${from.x}px`;
+        edge.style.top = `${from.y}px`;
+        edge.style.transform = `rotate(${angle}deg)`;
+        this.treeContainer.appendChild(edge);
+      }
+
+      setDescription(text) {
+        if (this.descriptionEl) {
+          this.descriptionEl.textContent = text;
+        }
+      }
+
+      clearHighlights() {
+        this.highlights = {};
+      }
+
+      highlight(index, type) {
+        this.highlights[index] = type;
+      }
+    }
+
+    // ==================== INTERACTIVE PRIORITY QUEUE ====================
+    const pqViz = new HeapVisualizer('heap-tree', 'heap-array', 'pq-description');
+    pqViz.heap = [50, 30, 40, 10, 20, 35];
+    pqViz.render();
+
+    function insertValue() {
+      const input = document.getElementById('insert-value');
+      const value = parseInt(input.value);
+      if (isNaN(value) || value < 1 || value > 99) {
+        pqViz.setDescription('Please enter a value between 1 and 99');
+        return;
+      }
+
+      pqViz.heap.push(value);
+      let i = pqViz.heap.length - 1;
+
+      // Animate heapify-up
+      const animate = () => {
+        pqViz.clearHighlights();
+        pqViz.highlight(i, 'highlight');
+
+        if (i > 0) {
+          const p = pqViz.parent(i);
+          pqViz.highlight(p, 'comparing');
+
+          if (pqViz.heap[i] > pqViz.heap[p]) {
+            pqViz.setDescription(`${pqViz.heap[i]} > ${pqViz.heap[p]}: Swapping!`);
+            setTimeout(() => {
+              [pqViz.heap[i], pqViz.heap[p]] = [pqViz.heap[p], pqViz.heap[i]];
+              pqViz.clearHighlights();
+              pqViz.highlight(p, 'swapping');
+              pqViz.render();
+              i = p;
+              setTimeout(animate, 500);
+            }, 500);
+          } else {
+            pqViz.setDescription(`${pqViz.heap[i]} <= ${pqViz.heap[p]}: Heap property satisfied!`);
+            pqViz.render();
+          }
+        } else {
+          pqViz.setDescription(`${value} is now at the root!`);
+          pqViz.render();
+        }
+      };
+
+      pqViz.render();
+      setTimeout(animate, 100);
+      input.value = '';
+    }
+
+    function extractMax() {
+      if (pqViz.heap.length === 0) {
+        pqViz.setDescription('Heap is empty!');
+        return;
+      }
+
+      const maxVal = pqViz.heap[0];
+      pqViz.setDescription(`Extracting maximum: ${maxVal}`);
+
+      if (pqViz.heap.length === 1) {
+        pqViz.heap = [];
+        pqViz.render();
+        return;
+      }
+
+      pqViz.heap[0] = pqViz.heap.pop();
+      let i = 0;
+
+      const animate = () => {
+        pqViz.clearHighlights();
+        pqViz.highlight(i, 'highlight');
+
+        const left = pqViz.leftChild(i);
+        const right = pqViz.rightChild(i);
+        let largest = i;
+
+        if (left < pqViz.heap.length) {
+          pqViz.highlight(left, 'comparing');
+          if (pqViz.heap[left] > pqViz.heap[largest]) largest = left;
+        }
+        if (right < pqViz.heap.length) {
+          pqViz.highlight(right, 'comparing');
+          if (pqViz.heap[right] > pqViz.heap[largest]) largest = right;
+        }
+
+        pqViz.render();
+
+        if (largest !== i) {
+          pqViz.setDescription(`${pqViz.heap[i]} < ${pqViz.heap[largest]}: Swapping!`);
+          setTimeout(() => {
+            [pqViz.heap[i], pqViz.heap[largest]] = [pqViz.heap[largest], pqViz.heap[i]];
+            pqViz.clearHighlights();
+            pqViz.highlight(largest, 'swapping');
+            pqViz.render();
+            i = largest;
+            setTimeout(animate, 500);
+          }, 500);
+        } else {
+          pqViz.setDescription(`Heap property restored! Extracted: ${maxVal}`);
+        }
+      };
+
+      setTimeout(animate, 500);
+    }
+
+    function resetHeap() {
+      pqViz.heap = [50, 30, 40, 10, 20, 35];
+      pqViz.clearHighlights();
+      pqViz.setDescription('Heap reset to initial state');
+      pqViz.render();
+    }
+
+    function randomHeap() {
+      pqViz.heap = [];
+      const values = Array.from({length: 7}, () => Math.floor(Math.random() * 90) + 10);
+      values.forEach(v => {
+        pqViz.heap.push(v);
+        let i = pqViz.heap.length - 1;
+        while (i > 0) {
+          const p = pqViz.parent(i);
+          if (pqViz.heap[i] > pqViz.heap[p]) {
+            [pqViz.heap[i], pqViz.heap[p]] = [pqViz.heap[p], pqViz.heap[i]];
+            i = p;
+          } else break;
+        }
+      });
+      pqViz.clearHighlights();
+      pqViz.setDescription('Generated random heap');
+      pqViz.render();
+    }
+
+    // ==================== INSERT ANIMATION ====================
+    class StepAnimator {
+      constructor(config) {
+        this.viz = new HeapVisualizer(config.treeId, config.arrayId, config.descriptionId);
+        this.codePanel = document.getElementById(config.codeId);
+        this.progressBar = document.getElementById(config.progressId);
+        this.stepIndicator = document.getElementById(config.stepIndicatorId);
+        this.speedSelect = document.getElementById(config.speedId);
+        this.variableUpdater = config.variableUpdater;
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.intervalId = null;
+        this.speed = 1;
+      }
+
+      setSteps(steps) {
+        this.steps = steps;
+        this.currentStep = 0;
+        this.render();
+      }
+
+      render() {
+        if (this.steps.length === 0) return;
+
+        const step = this.steps[this.currentStep];
+        this.viz.heap = [...step.heap];
+        this.viz.clearHighlights();
+
+        if (step.highlights) {
+          Object.entries(step.highlights).forEach(([idx, type]) => {
+            this.viz.highlight(parseInt(idx), type);
+          });
+        }
+
+        this.viz.render();
+        this.viz.setDescription(step.desc);
+
+        // Update code highlighting
+        if (this.codePanel) {
+          this.codePanel.querySelectorAll('.code-line').forEach(line => {
+            line.classList.remove('highlighted', 'executed');
+            const lineNum = parseInt(line.dataset.line);
+            if (step.line && lineNum === step.line) {
+              line.classList.add('highlighted');
+            }
+          });
+        }
+
+        // Update variables
+        if (this.variableUpdater && step.vars) {
+          this.variableUpdater(step.vars);
+        }
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        if (this.progressBar) {
+          this.progressBar.style.width = `${progress}%`;
+        }
+        if (this.stepIndicator) {
+          this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+        }
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1200 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    // Insert Animator
+    const insertAnimator = new StepAnimator({
+      treeId: 'insert-tree',
+      arrayId: 'insert-array',
+      descriptionId: 'insert-description',
+      codeId: 'insert-code',
+      progressId: 'insert-progress',
+      stepIndicatorId: 'insert-step-indicator',
+      speedId: 'insert-speed',
+      variableUpdater: (vars) => {
+        document.getElementById('insert-var-key').textContent = vars.key || '-';
+        document.getElementById('insert-var-i').textContent = vars.i !== undefined ? vars.i : '-';
+        document.getElementById('insert-var-parent').textContent = vars.parent !== undefined ? vars.parent : '-';
+      }
+    });
+
+    // Generate insert steps
+    function generateInsertSteps() {
+      const initialHeap = [50, 30, 40, 10, 20];
+      const newValue = 25;
+      const steps = [];
+
+      steps.push({
+        heap: [...initialHeap],
+        desc: `Starting heap. We will insert ${newValue}.`,
+        line: 1,
+        vars: { key: newValue }
+      });
+
+      const heap = [...initialHeap, newValue];
+      let i = heap.length - 1;
+
+      steps.push({
+        heap: [...heap],
+        desc: `Append ${newValue} at index ${i}`,
+        line: 2,
+        highlights: { [i]: 'new-node' },
+        vars: { key: newValue, i }
+      });
+
+      steps.push({
+        heap: [...heap],
+        desc: `Set i = ${i} (last index)`,
+        line: 3,
+        highlights: { [i]: 'highlight' },
+        vars: { key: newValue, i }
+      });
+
+      while (i > 0) {
+        const parent = Math.floor((i - 1) / 2);
+
+        steps.push({
+          heap: [...heap],
+          desc: `Calculate parent: (${i} - 1) / 2 = ${parent}`,
+          line: 6,
+          highlights: { [i]: 'highlight', [parent]: 'comparing' },
+          vars: { key: newValue, i, parent }
+        });
+
+        if (heap[i] > heap[parent]) {
+          steps.push({
+            heap: [...heap],
+            desc: `${heap[i]} > ${heap[parent]}? YES - swap needed`,
+            line: 7,
+            highlights: { [i]: 'highlight', [parent]: 'comparing' },
+            vars: { key: newValue, i, parent }
+          });
+
+          [heap[i], heap[parent]] = [heap[parent], heap[i]];
+
+          steps.push({
+            heap: [...heap],
+            desc: `Swapped! ${heap[parent]} is now at index ${parent}`,
+            line: 10,
+            highlights: { [parent]: 'swapping', [i]: 'comparing' },
+            vars: { key: newValue, i: parent, parent }
+          });
+
+          i = parent;
+
+          steps.push({
+            heap: [...heap],
+            desc: `Update i = ${i}, continue bubbling up`,
+            line: 11,
+            highlights: { [i]: 'highlight' },
+            vars: { key: newValue, i }
+          });
+        } else {
+          steps.push({
+            heap: [...heap],
+            desc: `${heap[i]} > ${heap[parent]}? NO - heap property satisfied!`,
+            line: 13,
+            highlights: { [i]: 'sorted', [parent]: 'sorted' },
+            vars: { key: newValue, i, parent }
+          });
+          break;
+        }
+      }
+
+      steps.push({
+        heap: [...heap],
+        desc: `Insert complete! ${newValue} is in its correct position.`,
+        highlights: {},
+        vars: { key: newValue }
+      });
+
+      return steps;
+    }
+
+    insertAnimator.setSteps(generateInsertSteps());
+
+    document.getElementById('insert-play').addEventListener('click', () => {
+      if (insertAnimator.isPlaying) {
+        insertAnimator.pause();
+        document.getElementById('insert-play').innerHTML = '&#9654;';
+      } else {
+        insertAnimator.play();
+        document.getElementById('insert-play').innerHTML = '&#9208;';
+      }
+    });
+    document.getElementById('insert-reset').addEventListener('click', () => {
+      insertAnimator.reset();
+      document.getElementById('insert-play').innerHTML = '&#9654;';
+    });
+    document.getElementById('insert-back').addEventListener('click', () => insertAnimator.stepBackward());
+    document.getElementById('insert-forward').addEventListener('click', () => insertAnimator.stepForward());
+    document.getElementById('insert-speed').addEventListener('change', (e) => {
+      insertAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // ==================== EXTRACT ANIMATION ====================
+    const extractAnimator = new StepAnimator({
+      treeId: 'extract-tree',
+      arrayId: 'extract-array',
+      descriptionId: 'extract-description',
+      codeId: 'extract-code',
+      progressId: 'extract-progress',
+      stepIndicatorId: 'extract-step-indicator',
+      speedId: 'extract-speed',
+      variableUpdater: (vars) => {
+        document.getElementById('extract-var-max').textContent = vars.max !== undefined ? vars.max : '-';
+        document.getElementById('extract-var-i').textContent = vars.i !== undefined ? vars.i : '-';
+        document.getElementById('extract-var-largest').textContent = vars.largest !== undefined ? vars.largest : '-';
+      }
+    });
+
+    function generateExtractSteps() {
+      const initialHeap = [90, 70, 80, 50, 60, 75, 78];
+      const steps = [];
+
+      steps.push({
+        heap: [...initialHeap],
+        desc: `Starting heap with max = ${initialHeap[0]}`,
+        line: 1,
+        highlights: { 0: 'highlight' },
+        vars: {}
+      });
+
+      const maxVal = initialHeap[0];
+      steps.push({
+        heap: [...initialHeap],
+        desc: `Save max_val = ${maxVal}`,
+        line: 2,
+        highlights: { 0: 'extracted' },
+        vars: { max: maxVal }
+      });
+
+      const heap = [...initialHeap];
+      heap[0] = heap.pop();
+
+      steps.push({
+        heap: [...heap],
+        desc: `Move last element (${heap[0]}) to root, remove last`,
+        line: 3,
+        highlights: { 0: 'highlight' },
+        vars: { max: maxVal, i: 0 }
+      });
+
+      let i = 0;
+
+      while (true) {
+        const left = 2 * i + 1;
+        const right = 2 * i + 2;
+        let largest = i;
+
+        steps.push({
+          heap: [...heap],
+          desc: `At index ${i}, left=${left}, right=${right}`,
+          line: 7,
+          highlights: { [i]: 'highlight' },
+          vars: { max: maxVal, i, largest }
+        });
+
+        const highlightsForComparison = { [i]: 'highlight' };
+        if (left < heap.length) highlightsForComparison[left] = 'comparing';
+        if (right < heap.length) highlightsForComparison[right] = 'comparing';
+
+        if (left < heap.length && heap[left] > heap[largest]) {
+          largest = left;
+          steps.push({
+            heap: [...heap],
+            desc: `Left child ${heap[left]} > ${heap[i]}, largest = ${left}`,
+            line: 12,
+            highlights: highlightsForComparison,
+            vars: { max: maxVal, i, largest }
+          });
+        }
+
+        if (right < heap.length && heap[right] > heap[largest]) {
+          largest = right;
+          steps.push({
+            heap: [...heap],
+            desc: `Right child ${heap[right]} > ${heap[largest === left ? left : i]}, largest = ${right}`,
+            line: 15,
+            highlights: highlightsForComparison,
+            vars: { max: maxVal, i, largest }
+          });
+        }
+
+        if (largest !== i) {
+          steps.push({
+            heap: [...heap],
+            desc: `largest (${largest}) != i (${i}), swap needed`,
+            line: 16,
+            highlights: { [i]: 'highlight', [largest]: 'swapping' },
+            vars: { max: maxVal, i, largest }
+          });
+
+          [heap[i], heap[largest]] = [heap[largest], heap[i]];
+
+          steps.push({
+            heap: [...heap],
+            desc: `Swapped! Continue sinking from index ${largest}`,
+            line: 19,
+            highlights: { [largest]: 'highlight', [i]: 'comparing' },
+            vars: { max: maxVal, i: largest, largest }
+          });
+
+          i = largest;
+        } else {
+          steps.push({
+            heap: [...heap],
+            desc: `largest == i, heap property restored!`,
+            line: 21,
+            highlights: { [i]: 'sorted' },
+            vars: { max: maxVal, i, largest }
+          });
+          break;
+        }
+
+        if (left >= heap.length) break;
+      }
+
+      steps.push({
+        heap: [...heap],
+        desc: `Extract complete! Returned ${maxVal}`,
+        line: 22,
+        highlights: {},
+        vars: { max: maxVal }
+      });
+
+      return steps;
+    }
+
+    extractAnimator.setSteps(generateExtractSteps());
+
+    document.getElementById('extract-play').addEventListener('click', () => {
+      if (extractAnimator.isPlaying) {
+        extractAnimator.pause();
+        document.getElementById('extract-play').innerHTML = '&#9654;';
+      } else {
+        extractAnimator.play();
+        document.getElementById('extract-play').innerHTML = '&#9208;';
+      }
+    });
+    document.getElementById('extract-reset').addEventListener('click', () => {
+      extractAnimator.reset();
+      document.getElementById('extract-play').innerHTML = '&#9654;';
+    });
+    document.getElementById('extract-back').addEventListener('click', () => extractAnimator.stepBackward());
+    document.getElementById('extract-forward').addEventListener('click', () => extractAnimator.stepForward());
+    document.getElementById('extract-speed').addEventListener('change', (e) => {
+      extractAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // ==================== INCREASE KEY ====================
+    const increaseViz = new HeapVisualizer('increase-tree', 'increase-array', 'increase-description');
+    let increaseHeap = [50, 30, 40, 10, 20, 15, 35];
+    let increaseSteps = [];
+    let increaseStep = 0;
+    let increasePlaying = false;
+    let increaseInterval = null;
+
+    function resetIncreaseKey() {
+      increaseHeap = [50, 30, 40, 10, 20, 15, 35];
+      increaseSteps = [];
+      increaseStep = 0;
+      increaseViz.heap = [...increaseHeap];
+      increaseViz.clearHighlights();
+      increaseViz.render();
+      increaseViz.setDescription('Select an index and new value, then click "Increase Key"');
+      document.getElementById('increase-step-indicator').textContent = 'Ready';
+    }
+
+    resetIncreaseKey();
+
+    function startIncreaseKey() {
+      const index = parseInt(document.getElementById('increase-index').value);
+      const newValue = parseInt(document.getElementById('increase-value').value);
+
+      if (isNaN(index) || index < 0 || index >= increaseHeap.length) {
+        increaseViz.setDescription(`Invalid index. Use 0-${increaseHeap.length - 1}`);
+        return;
+      }
+
+      if (isNaN(newValue) || newValue <= increaseHeap[index]) {
+        increaseViz.setDescription(`New value must be greater than current (${increaseHeap[index]})`);
+        return;
+      }
+
+      // Generate steps
+      increaseSteps = [];
+      const heap = [...increaseHeap];
+
+      increaseSteps.push({
+        heap: [...heap],
+        highlights: { [index]: 'highlight' },
+        desc: `Current value at index ${index}: ${heap[index]}`
+      });
+
+      heap[index] = newValue;
+      let i = index;
+
+      increaseSteps.push({
+        heap: [...heap],
+        highlights: { [i]: 'highlight' },
+        desc: `Set value at index ${i} to ${newValue}`
+      });
+
+      while (i > 0) {
+        const parent = Math.floor((i - 1) / 2);
+
+        increaseSteps.push({
+          heap: [...heap],
+          highlights: { [i]: 'highlight', [parent]: 'comparing' },
+          desc: `Compare ${heap[i]} with parent ${heap[parent]}`
+        });
+
+        if (heap[i] > heap[parent]) {
+          [heap[i], heap[parent]] = [heap[parent], heap[i]];
+
+          increaseSteps.push({
+            heap: [...heap],
+            highlights: { [parent]: 'swapping', [i]: 'comparing' },
+            desc: `Swapped! Continue from index ${parent}`
+          });
+
+          i = parent;
+        } else {
+          increaseSteps.push({
+            heap: [...heap],
+            highlights: { [i]: 'sorted', [parent]: 'sorted' },
+            desc: `${heap[i]} <= ${heap[parent]}: Done!`
+          });
+          break;
+        }
+      }
+
+      if (i === 0) {
+        increaseSteps.push({
+          heap: [...heap],
+          highlights: { 0: 'sorted' },
+          desc: `Reached root. Increase-key complete!`
+        });
+      }
+
+      increaseHeap = [...heap];
+      increaseStep = 0;
+      renderIncreaseStep();
+    }
+
+    function renderIncreaseStep() {
+      if (increaseSteps.length === 0) return;
+
+      const step = increaseSteps[increaseStep];
+      increaseViz.heap = [...step.heap];
+      increaseViz.clearHighlights();
+
+      Object.entries(step.highlights).forEach(([idx, type]) => {
+        increaseViz.highlight(parseInt(idx), type);
+      });
+
+      increaseViz.render();
+      increaseViz.setDescription(step.desc);
+      document.getElementById('increase-step-indicator').textContent = `Step ${increaseStep + 1} of ${increaseSteps.length}`;
+    }
+
+    document.getElementById('increase-play').addEventListener('click', () => {
+      if (increaseSteps.length === 0) {
+        startIncreaseKey();
+        return;
+      }
+
+      if (increasePlaying) {
+        increasePlaying = false;
+        clearInterval(increaseInterval);
+        document.getElementById('increase-play').innerHTML = '&#9654;';
+      } else {
+        if (increaseStep >= increaseSteps.length - 1) increaseStep = 0;
+        increasePlaying = true;
+        document.getElementById('increase-play').innerHTML = '&#9208;';
+
+        increaseInterval = setInterval(() => {
+          if (increaseStep < increaseSteps.length - 1) {
+            increaseStep++;
+            renderIncreaseStep();
+          } else {
+            increasePlaying = false;
+            clearInterval(increaseInterval);
+            document.getElementById('increase-play').innerHTML = '&#9654;';
+          }
+        }, 1000);
+      }
+    });
+
+    document.getElementById('increase-back').addEventListener('click', () => {
+      if (increaseStep > 0) {
+        increaseStep--;
+        renderIncreaseStep();
+      }
+    });
+
+    document.getElementById('increase-forward').addEventListener('click', () => {
+      if (increaseSteps.length === 0) {
+        startIncreaseKey();
+      } else if (increaseStep < increaseSteps.length - 1) {
+        increaseStep++;
+        renderIncreaseStep();
+      }
+    });
+
+    // ==================== TASK SCHEDULER ====================
+    let taskHeap = [];
+    let taskCounter = 0;
+    let executionLog = [];
+
+    function addTask() {
+      const nameInput = document.getElementById('task-name');
+      const prioritySelect = document.getElementById('task-priority');
+
+      let name = nameInput.value.trim();
+      if (!name) {
+        taskCounter++;
+        name = `Task ${taskCounter}`;
+      }
+
+      const priority = parseInt(prioritySelect.value);
+
+      // Insert into heap
+      taskHeap.push({ name, priority, id: taskCounter });
+
+      // Heapify up
+      let i = taskHeap.length - 1;
+      while (i > 0) {
+        const parent = Math.floor((i - 1) / 2);
+        if (taskHeap[i].priority > taskHeap[parent].priority) {
+          [taskHeap[i], taskHeap[parent]] = [taskHeap[parent], taskHeap[i]];
+          i = parent;
+        } else break;
+      }
+
+      nameInput.value = '';
+      renderTaskList();
+    }
+
+    function executeNext() {
+      if (taskHeap.length === 0) {
+        addLogEntry('No tasks to execute!');
+        return;
+      }
+
+      // Extract max
+      const task = taskHeap[0];
+
+      if (taskHeap.length === 1) {
+        taskHeap = [];
+      } else {
+        taskHeap[0] = taskHeap.pop();
+
+        // Heapify down
+        let i = 0;
+        while (true) {
+          const left = 2 * i + 1;
+          const right = 2 * i + 2;
+          let largest = i;
+
+          if (left < taskHeap.length && taskHeap[left].priority > taskHeap[largest].priority) {
+            largest = left;
+          }
+          if (right < taskHeap.length && taskHeap[right].priority > taskHeap[largest].priority) {
+            largest = right;
+          }
+
+          if (largest !== i) {
+            [taskHeap[i], taskHeap[largest]] = [taskHeap[largest], taskHeap[i]];
+            i = largest;
+          } else break;
+        }
+      }
+
+      addLogEntry(`Executed: ${task.name} (Priority ${task.priority})`);
+      renderTaskList();
+    }
+
+    function executeAll() {
+      if (taskHeap.length === 0) {
+        addLogEntry('No tasks to execute!');
+        return;
+      }
+
+      const executeOne = () => {
+        if (taskHeap.length > 0) {
+          executeNext();
+          setTimeout(executeOne, 500);
+        }
+      };
+
+      executeOne();
+    }
+
+    function clearTasks() {
+      taskHeap = [];
+      executionLog = [];
+      taskCounter = 0;
+      renderTaskList();
+      document.getElementById('execution-log').innerHTML = '<div style="color: var(--text-secondary);">Waiting for tasks...</div>';
+    }
+
+    function addLogEntry(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      executionLog.unshift(`[${timestamp}] ${message}`);
+      if (executionLog.length > 20) executionLog.pop();
+
+      const logEl = document.getElementById('execution-log');
+      logEl.innerHTML = executionLog.map(entry => `<div class="log-entry">${entry}</div>`).join('');
+    }
+
+    function renderTaskList() {
+      const listEl = document.getElementById('task-list');
+
+      if (taskHeap.length === 0) {
+        listEl.innerHTML = '<div style="color: var(--text-secondary); padding: 1rem; text-align: center;">No tasks in queue</div>';
+        return;
+      }
+
+      listEl.innerHTML = taskHeap.map((task, i) => {
+        const priorityClass = task.priority >= 7 ? 'high' : (task.priority >= 4 ? 'medium' : 'low');
+        return `
+          <div class="task-item" data-index="${i}">
+            <span class="task-priority ${priorityClass}">${task.priority}</span>
+            <span style="flex: 1; margin-left: 1rem;">${task.name}</span>
+            <span style="color: var(--text-secondary); font-size: 0.75rem;">[${i}]</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderTaskList();
+
+    // ==================== QUIZ ====================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintIndex) {
+      const question = btn.closest('.quiz-question');
+      const hints = question.querySelectorAll('.hint-text');
+      const hintBtns = question.querySelectorAll('.hint-btn');
+
+      hints[hintIndex].classList.toggle('show');
+
+      if (hints[hintIndex].classList.contains('show')) {
+        btn.textContent = `Hide Hint ${hintIndex + 1}`;
+        // Show next hint button if exists
+        if (hintIndex + 1 < hintBtns.length) {
+          hintBtns[hintIndex + 1].style.display = 'inline';
+        }
+      } else {
+        btn.textContent = `Show Hint ${hintIndex + 1}`;
+      }
+    }
+
+    // KaTeX auto-render
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

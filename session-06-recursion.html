@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 6: Recursion | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --base-case: #27AE60;
+      --memoized: #9B51E0;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Call Stack Visualization */
+    .call-stack-container {
+      display: flex;
+      gap: 2rem;
+      padding: 1.5rem;
+      width: 100%;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .call-stack {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 4px;
+      min-width: 280px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .stack-frame {
+      padding: 0.75rem 1rem;
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      animation: stack-push 0.3s ease-out;
+    }
+
+    @keyframes stack-push {
+      0% { transform: translateY(-20px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .stack-frame.current {
+      background: var(--highlight);
+      border-color: var(--current-focus);
+      box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+    }
+
+    .stack-frame.returning {
+      background: rgba(46, 204, 113, 0.2);
+      border-color: var(--success);
+    }
+
+    .stack-frame.base-case {
+      background: rgba(39, 174, 96, 0.2);
+      border-color: var(--base-case);
+    }
+
+    .stack-frame .function-name {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .stack-frame .params {
+      color: var(--text-secondary);
+    }
+
+    .stack-frame .return-value {
+      color: var(--success);
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+
+    .stack-label {
+      color: white;
+      font-size: 0.875rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    /* Recursion Tree */
+    .recursion-tree {
+      flex: 1;
+      min-height: 300px;
+      position: relative;
+    }
+
+    .recursion-tree svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tree-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node circle {
+      fill: var(--background);
+      stroke: var(--accent);
+      stroke-width: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node.active circle {
+      fill: var(--current-focus);
+      stroke: var(--current-focus);
+      filter: drop-shadow(0 0 8px var(--current-focus));
+    }
+
+    .tree-node.base-case circle {
+      fill: var(--base-case);
+      stroke: var(--base-case);
+    }
+
+    .tree-node.computed circle {
+      fill: var(--success);
+      stroke: var(--success);
+    }
+
+    .tree-node.memoized circle {
+      fill: var(--memoized);
+      stroke: var(--memoized);
+    }
+
+    .tree-node text {
+      fill: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .tree-node.active text,
+    .tree-node.base-case text,
+    .tree-node.computed text,
+    .tree-node.memoized text {
+      fill: white;
+    }
+
+    .tree-edge {
+      stroke: var(--text-secondary);
+      stroke-width: 2px;
+      fill: none;
+      opacity: 0.5;
+    }
+
+    .tree-edge.active {
+      stroke: var(--current-focus);
+      opacity: 1;
+      stroke-width: 3px;
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Split View */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Code Panel */
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .copy-btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .copy-btn:hover {
+      background: var(--background);
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .try-this-input {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .try-this-input input {
+      flex: 1;
+      min-width: 100px;
+      max-width: 150px;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .try-this-input button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .try-this-input button:hover {
+      background: var(--accent-hover);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    .mistake-code {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .wrong-code, .right-code {
+      flex: 1;
+      min-width: 250px;
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+
+    .wrong-code {
+      background: rgba(235, 87, 87, 0.15);
+      border: 1px solid var(--error);
+    }
+
+    .wrong-code::before {
+      content: 'Wrong';
+      display: block;
+      color: var(--error);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .right-code {
+      background: rgba(15, 123, 108, 0.15);
+      border: 1px solid var(--success);
+    }
+
+    .right-code::before {
+      content: 'Correct';
+      display: block;
+      color: var(--success);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-box h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .complexity-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+    }
+
+    .complexity-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .complexity-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Comparison Container */
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .comparison-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+
+    .comparison-header {
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .comparison-body {
+      padding: 1rem;
+    }
+
+    .memo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+
+    .memo-table th, .memo-table td {
+      padding: 0.5rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .memo-table th {
+      background: var(--background-secondary);
+    }
+
+    .memo-table td.filled {
+      background: rgba(46, 170, 220, 0.2);
+    }
+
+    .memo-table td.hit {
+      background: rgba(155, 81, 224, 0.3);
+      animation: memo-flash 0.5s ease;
+    }
+
+    @keyframes memo-flash {
+      0% { background: rgba(155, 81, 224, 0.6); }
+      100% { background: rgba(155, 81, 224, 0.3); }
+    }
+
+    /* Counter display */
+    .counter-display {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .counter-item {
+      text-align: center;
+      padding: 0.5rem 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+    }
+
+    .counter-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .counter-value {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+
+      .comparison-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .call-stack-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .call-stack {
+        width: 100%;
+        max-height: 200px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">*</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 6</span>
+      <h1>Recursion</h1>
+      <p class="subtitle">Master recursive thinking through visual exploration of the call stack, recursion trees, and memoization</p>
+      <div class="meta">
+        <span>Time: ~30 minutes</span>
+        <span>Prerequisites: Sessions 1-5 (Python basics, loops, functions)</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Trace</strong> recursive function execution through the call stack</li>
+        <li><strong>Identify</strong> base cases and recursive cases in function definitions</li>
+        <li><strong>Visualize</strong> recursion trees to understand problem decomposition</li>
+        <li><strong>Analyze</strong> time complexity of recursive algorithms</li>
+        <li><strong>Apply</strong> memoization to optimize recursive solutions</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Understanding Recursion -->
+    <h2>1. What is Recursion?</h2>
+    <p>Recursion is a programming technique where a function calls itself to solve smaller instances of the same problem. Every recursive function needs two essential components:</p>
+
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Base Case:</strong> The condition that stops the recursion (prevents infinite loops)</li>
+      <li><strong>Recursive Case:</strong> The part where the function calls itself with a smaller/simpler input</li>
+    </ul>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Think of recursion like solving a puzzle by breaking it into smaller identical puzzles. You keep breaking down until you reach pieces so simple they can be solved directly (base case).
+    </div>
+
+    <!-- Section 2: Factorial with Call Stack -->
+    <h2>2. Factorial: Understanding the Call Stack</h2>
+    <p>Let's start with a classic example: computing $n! = n \times (n-1) \times ... \times 2 \times 1$. Watch how the call stack grows as we make recursive calls, then shrinks as values are returned.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Factorial Call Stack Visualizer</h3>
+          <div class="step-description" id="factorial-description">
+            Press Play to see how factorial(4) is computed recursively
+          </div>
+
+          <div class="viz-canvas">
+            <div class="call-stack-container">
+              <div>
+                <div class="stack-label">Call Stack</div>
+                <div class="call-stack" id="factorial-stack">
+                  <!-- Stack frames will be inserted here -->
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; color: white;">
+                <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">Current Result</div>
+                <div id="factorial-result" style="font-family: var(--font-mono); font-size: 2rem; font-weight: 600; color: var(--current-focus);">?</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-controls">
+            <button id="factorial-reset" title="Reset">|&lt;</button>
+            <button id="factorial-back" title="Step Back">&lt;</button>
+            <button id="factorial-play" title="Play/Pause">Play</button>
+            <button id="factorial-forward" title="Step Forward">&gt;</button>
+            <span class="step-indicator" id="factorial-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="factorial-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="factorial-progress" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="try-this">
+            <strong>Try This:</strong> Change the input value and watch how the call stack depth changes.
+            <div class="try-this-input">
+              <input type="number" id="factorial-input" value="4" min="0" max="10" placeholder="n">
+              <button onclick="updateFactorial()">Compute factorial(n)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+            <button class="copy-btn" onclick="copyCode('factorial-code-text')">Copy</button>
+          </div>
+          <div class="code-content" id="factorial-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">factorial</span>(<span class="variable">n</span>):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="comment"># Base case</span></span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="variable">n</span> <span class="operator"><=</span> <span class="number">1</span>:</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">        <span class="keyword">return</span> <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">    <span class="comment"># Recursive case</span></span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">    <span class="keyword">return</span> <span class="variable">n</span> <span class="operator">*</span> <span class="function">factorial</span>(<span class="variable">n</span> <span class="operator">-</span> <span class="number">1</span>)</span>
+            </div>
+          </div>
+        </div>
+        <pre id="factorial-code-text" style="display:none;">def factorial(n):
+    # Base case
+    if n <= 1:
+        return 1
+    # Recursive case
+    return n * factorial(n - 1)</pre>
+
+        <div class="variable-panel">
+          <h4>Current Frame Variables</h4>
+          <div class="variable-list" id="factorial-variables">
+            <div class="variable-item">
+              <span class="variable-name">n</span>
+              <span class="variable-value" id="var-factorial-n">--</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">return value</span>
+              <span class="variable-value" id="var-factorial-return">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h4>Complexity Analysis: Factorial</h4>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-label">Time Complexity</div>
+          <div class="complexity-value">O(n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Space Complexity</div>
+          <div class="complexity-value">O(n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Call Stack Depth</div>
+          <div class="complexity-value">n</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Fibonacci with Recursion Tree -->
+    <h2>3. Fibonacci: Visualizing the Recursion Tree</h2>
+    <p>The Fibonacci sequence is defined as: $F(n) = F(n-1) + F(n-2)$ with $F(0) = 0$ and $F(1) = 1$. This creates a tree of recursive calls that we can visualize.</p>
+
+    <div class="viz-container">
+      <h3>Fibonacci Recursion Tree</h3>
+      <div class="step-description" id="fib-description">
+        Press Play to watch the recursive calls unfold
+      </div>
+
+      <div class="viz-canvas" style="min-height: 400px;">
+        <svg id="fib-tree-svg" width="100%" height="100%" style="min-height: 380px;"></svg>
+      </div>
+
+      <div class="counter-display">
+        <div class="counter-item">
+          <div class="counter-label">Function Calls</div>
+          <div class="counter-value" id="fib-call-count">0</div>
+        </div>
+        <div class="counter-item">
+          <div class="counter-label">Result</div>
+          <div class="counter-value" id="fib-final-result">?</div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="fib-reset" title="Reset">|&lt;</button>
+        <button id="fib-back" title="Step Back">&lt;</button>
+        <button id="fib-play" title="Play/Pause">Play</button>
+        <button id="fib-forward" title="Step Forward">&gt;</button>
+        <span class="step-indicator" id="fib-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="fib-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="fib-progress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Change the input and observe how quickly the number of calls grows!
+        <div class="try-this-input">
+          <input type="number" id="fib-input" value="5" min="0" max="8" placeholder="n">
+          <button onclick="updateFibonacci()">Compute fib(n)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Notice how many times fib(2), fib(1), and fib(0) are computed repeatedly! This redundancy is why naive Fibonacci has exponential time complexity: $O(2^n)$.
+    </div>
+
+    <!-- Section 4: Memoization -->
+    <h2>4. Memoization: Optimizing Recursion</h2>
+    <p>Memoization stores the results of expensive function calls and returns the cached result when the same inputs occur again. Compare the difference!</p>
+
+    <div class="comparison-container">
+      <div class="comparison-panel">
+        <div class="comparison-header">
+          <span>Without Memoization</span>
+          <span id="no-memo-calls" style="color: var(--error); font-weight: 600;">Calls: 0</span>
+        </div>
+        <div class="comparison-body">
+          <div class="code-panel" style="margin-bottom: 1rem;">
+            <div class="code-content">
+              <div class="code-line">
+                <span class="line-content"><span class="keyword">def</span> <span class="function">fib</span>(<span class="variable">n</span>):</span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">    <span class="keyword">if</span> <span class="variable">n</span> <span class="operator"><=</span> <span class="number">1</span>:</span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">        <span class="keyword">return</span> <span class="variable">n</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">    <span class="keyword">return</span> <span class="function">fib</span>(<span class="variable">n</span><span class="operator">-</span><span class="number">1</span>) <span class="operator">+</span> <span class="function">fib</span>(<span class="variable">n</span><span class="operator">-</span><span class="number">2</span>)</span>
+              </div>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">Time Complexity</div>
+            <div style="font-family: var(--font-mono); font-size: 1.5rem; color: var(--error);">O(2^n)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison-panel">
+        <div class="comparison-header">
+          <span>With Memoization</span>
+          <span id="memo-calls" style="color: var(--success); font-weight: 600;">Calls: 0</span>
+        </div>
+        <div class="comparison-body">
+          <div class="code-panel" style="margin-bottom: 1rem;">
+            <div class="code-content">
+              <div class="code-line">
+                <span class="line-content"><span class="keyword">def</span> <span class="function">fib</span>(<span class="variable">n</span>, <span class="variable">memo</span><span class="operator">=</span>{}):</span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">    <span class="keyword">if</span> <span class="variable">n</span> <span class="keyword">in</span> <span class="variable">memo</span>:</span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">        <span class="keyword">return</span> <span class="variable">memo</span>[<span class="variable">n</span>]</span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">    <span class="keyword">if</span> <span class="variable">n</span> <span class="operator"><=</span> <span class="number">1</span>:</span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">        <span class="keyword">return</span> <span class="variable">n</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">    <span class="variable">memo</span>[<span class="variable">n</span>] <span class="operator">=</span> <span class="function">fib</span>(<span class="variable">n</span><span class="operator">-</span><span class="number">1</span>) <span class="operator">+</span> <span class="function">fib</span>(<span class="variable">n</span><span class="operator">-</span><span class="number">2</span>)</span>
+              </div>
+              <div class="code-line">
+                <span class="line-content">    <span class="keyword">return</span> <span class="variable">memo</span>[<span class="variable">n</span>]</span>
+              </div>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">Time Complexity</div>
+            <div style="font-family: var(--font-mono); font-size: 1.5rem; color: var(--success);">O(n)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Memoization Table Visualization</h3>
+      <div class="step-description" id="memo-description">
+        Watch how the memo table fills up and prevents redundant calculations
+      </div>
+
+      <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; padding: 1rem;">
+        <div>
+          <h4 style="margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">Memo Table</h4>
+          <table class="memo-table" id="memo-table">
+            <thead>
+              <tr>
+                <th>n</th>
+                <th>0</th>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+                <th>5</th>
+                <th>6</th>
+                <th>7</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>fib(n)</th>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="call-stack" id="memo-stack" style="max-height: 250px;">
+          <!-- Stack frames will be inserted here -->
+        </div>
+      </div>
+
+      <div class="counter-display">
+        <div class="counter-item">
+          <div class="counter-label">Cache Hits</div>
+          <div class="counter-value" id="memo-hits" style="color: var(--memoized);">0</div>
+        </div>
+        <div class="counter-item">
+          <div class="counter-label">New Calculations</div>
+          <div class="counter-value" id="memo-calcs">0</div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="memo-reset" title="Reset">|&lt;</button>
+        <button id="memo-back" title="Step Back">&lt;</button>
+        <button id="memo-play" title="Play/Pause">Play</button>
+        <button id="memo-forward" title="Step Forward">&gt;</button>
+        <span class="step-indicator" id="memo-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="memo-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="memo-progress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="try-this">
+        <strong>Try This:</strong> Compute different values and watch the memo table fill up.
+        <div class="try-this-input">
+          <input type="number" id="memo-input" value="6" min="0" max="7" placeholder="n">
+          <button onclick="updateMemo()">Compute with Memoization</button>
+          <button onclick="clearMemo()" style="background: var(--error);">Clear Memo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="complexity-box">
+      <h4>Complexity Comparison</h4>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-label">Naive Fibonacci</div>
+          <div class="complexity-value" style="color: var(--error);">O(2^n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">With Memoization</div>
+          <div class="complexity-value" style="color: var(--success);">O(n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Space (Memoized)</div>
+          <div class="complexity-value">O(n)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: Common Mistakes -->
+    <h2>5. Common Mistakes</h2>
+
+    <div class="common-mistake">
+      <strong>Missing Base Case:</strong> Without a base case, your function will recurse forever until it crashes with a stack overflow error.
+      <div class="mistake-code">
+        <div class="wrong-code">
+def factorial(n):
+    # No base case!
+    return n * factorial(n - 1)
+# RecursionError: maximum
+# recursion depth exceeded
+        </div>
+        <div class="right-code">
+def factorial(n):
+    if n <= 1:      # Base case
+        return 1
+    return n * factorial(n - 1)
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Not Making Progress Toward Base Case:</strong> Each recursive call must get closer to the base case.
+      <div class="mistake-code">
+        <div class="wrong-code">
+def countdown(n):
+    if n == 0:
+        return
+    print(n)
+    countdown(n)  # Oops! n unchanged
+# Infinite recursion!
+        </div>
+        <div class="right-code">
+def countdown(n):
+    if n == 0:
+        return
+    print(n)
+    countdown(n - 1)  # n decreases
+# Terminates correctly!
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Wrong Base Case Value:</strong> The base case must return the correct value for the algorithm to work.
+      <div class="mistake-code">
+        <div class="wrong-code">
+def factorial(n):
+    if n == 0:
+        return 0  # Wrong! 0! = 1
+    return n * factorial(n - 1)
+# factorial(3) = 3*2*1*0 = 0
+        </div>
+        <div class="right-code">
+def factorial(n):
+    if n == 0:
+        return 1  # Correct! 0! = 1
+    return n * factorial(n - 1)
+# factorial(3) = 3*2*1*1 = 6
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Forgetting to Return Recursive Result:</strong> The recursive call's result must be used or returned.
+      <div class="mistake-code">
+        <div class="wrong-code">
+def sum_list(lst):
+    if not lst:
+        return 0
+    sum_list(lst[1:])  # Missing return!
+    return lst[0]
+        </div>
+        <div class="right-code">
+def sum_list(lst):
+    if not lst:
+        return 0
+    return lst[0] + sum_list(lst[1:])
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Why Do We Care -->
+    <h2>6. Why Do We Care?</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Divide and Conquer Algorithms:</strong> Merge sort, quicksort, and binary search all use recursion to break problems into smaller subproblems</li>
+      <li><strong>Tree and Graph Traversal:</strong> DFS, tree operations, and many graph algorithms are naturally recursive</li>
+      <li><strong>Dynamic Programming:</strong> Many DP solutions start with a recursive formulation, then optimize with memoization</li>
+      <li><strong>Mathematical Functions:</strong> Factorial, Fibonacci, GCD, and many mathematical concepts are defined recursively</li>
+    </ul>
+
+    <!-- Section 7: Quiz -->
+    <h2>7. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question">
+        <h4>Question 1: What are the two essential components of every recursive function?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Loop and condition</div>
+          <div class="quiz-option" data-index="1">Input and output</div>
+          <div class="quiz-option" data-index="2">Base case and recursive case</div>
+          <div class="quiz-option" data-index="3">Stack and heap</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about what stops the recursion and what continues it.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Every recursive function needs a base case (stopping condition) and a recursive case (where it calls itself with a smaller input).
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 2: What is the time complexity of naive (non-memoized) Fibonacci?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(n log n)</div>
+          <div class="quiz-option" data-index="2">O(n^2)</div>
+          <div class="quiz-option" data-index="3">O(2^n)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Look at the recursion tree - each call branches into 2 more calls.</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Naive Fibonacci has exponential time complexity O(2^n) because each call generates two more calls, creating a tree that roughly doubles at each level.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 3: What is the maximum depth of the call stack for factorial(5)?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">4 frames</div>
+          <div class="quiz-option" data-index="1">5 frames</div>
+          <div class="quiz-option" data-index="2">6 frames</div>
+          <div class="quiz-option" data-index="3">10 frames</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Count the calls: factorial(5), factorial(4), factorial(3), factorial(2), factorial(1).</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The call stack will have 5 frames at maximum depth: factorial(5) -> factorial(4) -> factorial(3) -> factorial(2) -> factorial(1).
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 4: How does memoization improve Fibonacci's time complexity?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">By using less memory</div>
+          <div class="quiz-option" data-index="1">By making fewer recursive calls in each function</div>
+          <div class="quiz-option" data-index="2">By storing and reusing previously computed results</div>
+          <div class="quiz-option" data-index="3">By converting recursion to iteration</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about what "memo" (short for memoization) means - it's related to "memory".</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Memoization stores previously computed values in a cache (usually a dictionary), so when the same subproblem is encountered again, we return the cached result instead of recomputing it.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 5: What happens if you call this function?</h4>
+        <pre style="background: var(--code-bg); padding: 1rem; border-radius: 4px; font-family: var(--font-mono); margin-bottom: 1rem;">def mystery(n):
+    return mystery(n - 1) + 1</pre>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">RecursionError: maximum recursion depth exceeded</div>
+          <div class="quiz-option" data-index="1">Returns n</div>
+          <div class="quiz-option" data-index="2">Returns 1</div>
+          <div class="quiz-option" data-index="3">Returns infinity</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Look carefully - is there a base case?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> This function has no base case, so it will keep calling itself forever until Python's recursion limit is reached and it raises a RecursionError.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 8: Dive Deeper -->
+    <h2>8. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://visualgo.net/en/recursion" target="_blank">VisuAlgo - Recursion Visualization</a></li>
+      <li><a href="https://docs.python.org/3/library/functools.html#functools.lru_cache" target="_blank">Python functools.lru_cache - Built-in Memoization</a></li>
+      <li><a href="https://www.geeksforgeeks.org/recursion/" target="_blank">GeeksforGeeks - Recursion Tutorial</a></li>
+      <li><a href="https://leetcode.com/tag/recursion/" target="_blank">LeetCode - Recursion Problems</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-05-selection-insertion-sort.html"><- Session 5: Selection & Insertion Sort</a>
+      <a href="session-07-divide-and-conquer.html">Session 7: Divide and Conquer -></a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'O' : '*';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'O' : '*';
+
+    // Copy code functionality
+    function copyCode(elementId) {
+      const code = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Code copied to clipboard!');
+      });
+    }
+
+    // =============================================
+    // FACTORIAL ANIMATOR
+    // =============================================
+    class FactorialAnimator {
+      constructor(n) {
+        this.n = n;
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        this.steps = [];
+        const n = this.n;
+
+        // Generate call steps (pushing onto stack)
+        for (let i = n; i >= 1; i--) {
+          this.steps.push({
+            type: 'call',
+            n: i,
+            stack: Array.from({length: n - i + 1}, (_, idx) => ({
+              n: n - idx,
+              state: idx === n - i ? 'current' : 'waiting',
+              returnValue: null
+            })),
+            line: i === 1 ? 3 : 6,
+            desc: i === 1 ? `factorial(1): Base case reached! Return 1` : `Call factorial(${i}), need factorial(${i-1})`,
+            currentN: i
+          });
+        }
+
+        // Generate return steps (popping from stack)
+        let result = 1;
+        for (let i = 1; i <= n; i++) {
+          const prevResult = result;
+          result = i * result;
+
+          const stackSize = n - i + 1;
+          const stack = [];
+          for (let j = 0; j < stackSize; j++) {
+            const frameN = n - j;
+            if (j === 0) {
+              stack.push({
+                n: frameN,
+                state: 'returning',
+                returnValue: frameN <= i ? (frameN === i ? result : null) : null
+              });
+            } else {
+              stack.push({
+                n: frameN,
+                state: 'waiting',
+                returnValue: null
+              });
+            }
+          }
+
+          this.steps.push({
+            type: 'return',
+            n: i,
+            result: result,
+            stack: stack,
+            line: i === 1 ? 4 : 6,
+            desc: i === 1 ? `Return 1 (base case)` : `factorial(${i}) = ${i} * ${prevResult} = ${result}`,
+            currentN: i,
+            returnValue: result
+          });
+        }
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        // Render call stack
+        const stackContainer = document.getElementById('factorial-stack');
+        stackContainer.innerHTML = '';
+
+        if (step.stack) {
+          step.stack.forEach((frame, idx) => {
+            const frameEl = document.createElement('div');
+            frameEl.className = 'stack-frame';
+            if (frame.state === 'current') frameEl.classList.add('current');
+            if (frame.state === 'returning') frameEl.classList.add('returning');
+            if (frame.n <= 1 && step.type === 'call' && frame.state === 'current') frameEl.classList.add('base-case');
+
+            let content = `<span class="function-name">factorial</span>(<span class="params">${frame.n}</span>)`;
+            if (frame.returnValue !== null) {
+              content += `<span class="return-value">-> ${frame.returnValue}</span>`;
+            }
+            frameEl.innerHTML = content;
+            stackContainer.appendChild(frameEl);
+          });
+        }
+
+        // Update result display
+        document.getElementById('factorial-result').textContent =
+          step.returnValue !== undefined ? step.returnValue : '?';
+
+        // Update code highlighting
+        document.querySelectorAll('#factorial-code .code-line').forEach(line => {
+          line.classList.remove('highlighted', 'executed');
+          if (parseInt(line.dataset.line) === step.line) {
+            line.classList.add('highlighted');
+          }
+        });
+
+        // Update variables
+        document.getElementById('var-factorial-n').textContent = step.currentN;
+        document.getElementById('var-factorial-return').textContent =
+          step.returnValue !== undefined ? step.returnValue : '--';
+
+        // Update description
+        document.getElementById('factorial-description').textContent = step.desc;
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        document.getElementById('factorial-progress').style.width = `${progress}%`;
+        document.getElementById('factorial-step-indicator').textContent =
+          `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('factorial-play').textContent = 'Pause';
+        document.getElementById('factorial-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1000 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('factorial-play').textContent = 'Play';
+        document.getElementById('factorial-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    let factorialAnimator = new FactorialAnimator(4);
+
+    function updateFactorial() {
+      const n = parseInt(document.getElementById('factorial-input').value) || 4;
+      const clampedN = Math.max(0, Math.min(10, n));
+      document.getElementById('factorial-input').value = clampedN;
+      factorialAnimator = new FactorialAnimator(clampedN);
+    }
+
+    // Factorial controls
+    document.getElementById('factorial-play').addEventListener('click', () => {
+      factorialAnimator.isPlaying ? factorialAnimator.pause() : factorialAnimator.play();
+    });
+    document.getElementById('factorial-reset').addEventListener('click', () => factorialAnimator.reset());
+    document.getElementById('factorial-back').addEventListener('click', () => factorialAnimator.stepBackward());
+    document.getElementById('factorial-forward').addEventListener('click', () => factorialAnimator.stepForward());
+    document.getElementById('factorial-speed').addEventListener('change', (e) => {
+      factorialAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // =============================================
+    // FIBONACCI TREE ANIMATOR
+    // =============================================
+    class FibonacciTreeAnimator {
+      constructor(n) {
+        this.n = n;
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+        this.nodePositions = {};
+        this.callCount = 0;
+
+        this.buildTree();
+        this.generateSteps();
+        this.render();
+      }
+
+      buildTree() {
+        // Build tree structure
+        this.tree = this.createNode(this.n, 0, 0);
+        this.assignPositions(this.tree, 0, 0, 400);
+      }
+
+      createNode(n, depth, id) {
+        const node = {
+          id: id,
+          n: n,
+          depth: depth,
+          left: null,
+          right: null,
+          state: 'pending',
+          value: null
+        };
+
+        if (n > 1) {
+          node.left = this.createNode(n - 1, depth + 1, id * 2 + 1);
+          node.right = this.createNode(n - 2, depth + 1, id * 2 + 2);
+        }
+
+        return node;
+      }
+
+      assignPositions(node, depth, xMin, xMax) {
+        if (!node) return;
+
+        const xMid = (xMin + xMax) / 2;
+        node.x = xMid;
+        node.y = 40 + depth * 60;
+
+        const spacing = (xMax - xMin) / 2;
+        this.assignPositions(node.left, depth + 1, xMin, xMid);
+        this.assignPositions(node.right, depth + 1, xMid, xMax);
+      }
+
+      generateSteps() {
+        this.steps = [];
+        this.callCount = 0;
+        this.generateStepsRecursive(this.tree);
+      }
+
+      generateStepsRecursive(node) {
+        if (!node) return 0;
+
+        this.callCount++;
+
+        // Step: activate this node
+        this.steps.push({
+          type: 'call',
+          nodeId: node.id,
+          n: node.n,
+          callCount: this.callCount,
+          desc: `Call fib(${node.n})`
+        });
+
+        if (node.n <= 1) {
+          // Base case
+          this.steps.push({
+            type: 'base',
+            nodeId: node.id,
+            n: node.n,
+            value: node.n,
+            callCount: this.callCount,
+            desc: `Base case: fib(${node.n}) = ${node.n}`
+          });
+          return node.n;
+        }
+
+        // Recursive calls
+        const leftVal = this.generateStepsRecursive(node.left);
+        const rightVal = this.generateStepsRecursive(node.right);
+        const result = leftVal + rightVal;
+
+        // Return step
+        this.steps.push({
+          type: 'return',
+          nodeId: node.id,
+          n: node.n,
+          value: result,
+          leftVal: leftVal,
+          rightVal: rightVal,
+          callCount: this.callCount,
+          desc: `fib(${node.n}) = fib(${node.n-1}) + fib(${node.n-2}) = ${leftVal} + ${rightVal} = ${result}`
+        });
+
+        return result;
+      }
+
+      findNode(root, id) {
+        if (!root) return null;
+        if (root.id === id) return root;
+        return this.findNode(root.left, id) || this.findNode(root.right, id);
+      }
+
+      render() {
+        const svg = document.getElementById('fib-tree-svg');
+        const step = this.steps[this.currentStep];
+
+        // Reset all nodes
+        this.resetTree(this.tree);
+
+        // Apply states up to current step
+        for (let i = 0; i <= this.currentStep; i++) {
+          const s = this.steps[i];
+          const node = this.findNode(this.tree, s.nodeId);
+          if (node) {
+            if (s.type === 'call') {
+              node.state = 'active';
+            } else if (s.type === 'base') {
+              node.state = 'base-case';
+              node.value = s.value;
+            } else if (s.type === 'return') {
+              node.state = 'computed';
+              node.value = s.value;
+            }
+          }
+        }
+
+        // Highlight current node
+        if (step) {
+          const currentNode = this.findNode(this.tree, step.nodeId);
+          if (currentNode && step.type === 'call') {
+            currentNode.state = 'active';
+          }
+        }
+
+        // Render SVG
+        this.renderSVG(svg);
+
+        // Update counters
+        document.getElementById('fib-call-count').textContent = step ? step.callCount : 0;
+        if (this.currentStep === this.steps.length - 1) {
+          const finalStep = this.steps[this.steps.length - 1];
+          document.getElementById('fib-final-result').textContent = finalStep.value;
+        } else {
+          document.getElementById('fib-final-result').textContent = '?';
+        }
+
+        // Update description
+        document.getElementById('fib-description').textContent = step ? step.desc : 'Press Play to start';
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        document.getElementById('fib-progress').style.width = `${progress}%`;
+        document.getElementById('fib-step-indicator').textContent =
+          `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      resetTree(node) {
+        if (!node) return;
+        node.state = 'pending';
+        node.value = null;
+        this.resetTree(node.left);
+        this.resetTree(node.right);
+      }
+
+      renderSVG(svg) {
+        let html = '';
+
+        // Draw edges first
+        html += this.renderEdges(this.tree);
+
+        // Draw nodes
+        html += this.renderNodes(this.tree);
+
+        svg.innerHTML = html;
+      }
+
+      renderEdges(node) {
+        if (!node) return '';
+        let html = '';
+
+        if (node.left) {
+          const isActive = node.state !== 'pending' && node.left.state !== 'pending';
+          html += `<line class="tree-edge ${isActive ? 'active' : ''}"
+                         x1="${node.x}" y1="${node.y}"
+                         x2="${node.left.x}" y2="${node.left.y}"/>`;
+          html += this.renderEdges(node.left);
+        }
+
+        if (node.right) {
+          const isActive = node.state !== 'pending' && node.right.state !== 'pending';
+          html += `<line class="tree-edge ${isActive ? 'active' : ''}"
+                         x1="${node.x}" y1="${node.y}"
+                         x2="${node.right.x}" y2="${node.right.y}"/>`;
+          html += this.renderEdges(node.right);
+        }
+
+        return html;
+      }
+
+      renderNodes(node) {
+        if (!node) return '';
+        let html = '';
+
+        const stateClass = node.state !== 'pending' ? node.state : '';
+        const label = node.value !== null ? node.value : `f(${node.n})`;
+
+        html += `<g class="tree-node ${stateClass}" transform="translate(${node.x}, ${node.y})">
+                   <circle r="22"/>
+                   <text dy="0.35em">${label}</text>
+                 </g>`;
+
+        html += this.renderNodes(node.left);
+        html += this.renderNodes(node.right);
+
+        return html;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('fib-play').textContent = 'Pause';
+        document.getElementById('fib-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 800 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('fib-play').textContent = 'Play';
+        document.getElementById('fib-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    let fibAnimator = new FibonacciTreeAnimator(5);
+
+    function updateFibonacci() {
+      const n = parseInt(document.getElementById('fib-input').value) || 5;
+      const clampedN = Math.max(0, Math.min(8, n));
+      document.getElementById('fib-input').value = clampedN;
+      fibAnimator = new FibonacciTreeAnimator(clampedN);
+    }
+
+    // Fib controls
+    document.getElementById('fib-play').addEventListener('click', () => {
+      fibAnimator.isPlaying ? fibAnimator.pause() : fibAnimator.play();
+    });
+    document.getElementById('fib-reset').addEventListener('click', () => fibAnimator.reset());
+    document.getElementById('fib-back').addEventListener('click', () => fibAnimator.stepBackward());
+    document.getElementById('fib-forward').addEventListener('click', () => fibAnimator.stepForward());
+    document.getElementById('fib-speed').addEventListener('change', (e) => {
+      fibAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // =============================================
+    // MEMOIZATION ANIMATOR
+    // =============================================
+    class MemoAnimator {
+      constructor(n, memo = {}) {
+        this.n = n;
+        this.memo = {...memo};
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+        this.cacheHits = 0;
+        this.newCalcs = 0;
+
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        this.steps = [];
+        this.cacheHits = 0;
+        this.newCalcs = 0;
+        this.tempMemo = {...this.memo};
+        this.callStack = [];
+
+        this.generateStepsRecursive(this.n);
+
+        // Final step
+        this.steps.push({
+          type: 'complete',
+          memo: {...this.tempMemo},
+          stack: [],
+          result: this.tempMemo[this.n],
+          cacheHits: this.cacheHits,
+          newCalcs: this.newCalcs,
+          desc: `Complete! fib(${this.n}) = ${this.tempMemo[this.n]}`
+        });
+      }
+
+      generateStepsRecursive(n) {
+        this.callStack.push(n);
+
+        // Check memo
+        if (this.tempMemo[n] !== undefined) {
+          this.cacheHits++;
+          this.steps.push({
+            type: 'memo-hit',
+            n: n,
+            value: this.tempMemo[n],
+            memo: {...this.tempMemo},
+            stack: [...this.callStack],
+            cacheHits: this.cacheHits,
+            newCalcs: this.newCalcs,
+            desc: `Cache hit! fib(${n}) = ${this.tempMemo[n]} (already computed)`
+          });
+          this.callStack.pop();
+          return this.tempMemo[n];
+        }
+
+        // Call step
+        this.steps.push({
+          type: 'call',
+          n: n,
+          memo: {...this.tempMemo},
+          stack: [...this.callStack],
+          cacheHits: this.cacheHits,
+          newCalcs: this.newCalcs,
+          desc: `Call fib(${n})`
+        });
+
+        // Base case
+        if (n <= 1) {
+          this.newCalcs++;
+          this.tempMemo[n] = n;
+          this.steps.push({
+            type: 'base',
+            n: n,
+            value: n,
+            memo: {...this.tempMemo},
+            stack: [...this.callStack],
+            cacheHits: this.cacheHits,
+            newCalcs: this.newCalcs,
+            desc: `Base case: fib(${n}) = ${n}, store in memo`
+          });
+          this.callStack.pop();
+          return n;
+        }
+
+        // Recursive calls
+        const left = this.generateStepsRecursive(n - 1);
+        const right = this.generateStepsRecursive(n - 2);
+        const result = left + right;
+
+        this.newCalcs++;
+        this.tempMemo[n] = result;
+
+        this.steps.push({
+          type: 'compute',
+          n: n,
+          value: result,
+          left: left,
+          right: right,
+          memo: {...this.tempMemo},
+          stack: [...this.callStack],
+          cacheHits: this.cacheHits,
+          newCalcs: this.newCalcs,
+          desc: `fib(${n}) = ${left} + ${right} = ${result}, store in memo`
+        });
+
+        this.callStack.pop();
+        return result;
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        // Render memo table
+        const tableBody = document.querySelector('#memo-table tbody tr');
+        const cells = tableBody.querySelectorAll('td');
+        cells.forEach((cell, idx) => {
+          const val = step.memo[idx];
+          cell.textContent = val !== undefined ? val : '-';
+          cell.className = val !== undefined ? 'filled' : '';
+          if (step.type === 'memo-hit' && step.n === idx) {
+            cell.classList.add('hit');
+          }
+        });
+
+        // Render stack
+        const stackContainer = document.getElementById('memo-stack');
+        stackContainer.innerHTML = '';
+        if (step.stack) {
+          [...step.stack].reverse().forEach((n, idx) => {
+            const frameEl = document.createElement('div');
+            frameEl.className = 'stack-frame';
+            if (idx === 0) frameEl.classList.add('current');
+            frameEl.innerHTML = `<span class="function-name">fib</span>(<span class="params">${n}</span>)`;
+            stackContainer.appendChild(frameEl);
+          });
+        }
+
+        // Update counters
+        document.getElementById('memo-hits').textContent = step.cacheHits;
+        document.getElementById('memo-calcs').textContent = step.newCalcs;
+
+        // Update description
+        document.getElementById('memo-description').textContent = step.desc;
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        document.getElementById('memo-progress').style.width = `${progress}%`;
+        document.getElementById('memo-step-indicator').textContent =
+          `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('memo-play').textContent = 'Pause';
+        document.getElementById('memo-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 800 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('memo-play').textContent = 'Play';
+        document.getElementById('memo-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    let globalMemo = {};
+    let memoAnimator = new MemoAnimator(6, globalMemo);
+
+    function updateMemo() {
+      const n = parseInt(document.getElementById('memo-input').value) || 6;
+      const clampedN = Math.max(0, Math.min(7, n));
+      document.getElementById('memo-input').value = clampedN;
+      memoAnimator = new MemoAnimator(clampedN, globalMemo);
+      // Update global memo after animation completes
+      if (memoAnimator.steps.length > 0) {
+        const lastStep = memoAnimator.steps[memoAnimator.steps.length - 1];
+        globalMemo = {...lastStep.memo};
+      }
+    }
+
+    function clearMemo() {
+      globalMemo = {};
+      memoAnimator = new MemoAnimator(6, globalMemo);
+    }
+
+    // Memo controls
+    document.getElementById('memo-play').addEventListener('click', () => {
+      memoAnimator.isPlaying ? memoAnimator.pause() : memoAnimator.play();
+    });
+    document.getElementById('memo-reset').addEventListener('click', () => memoAnimator.reset());
+    document.getElementById('memo-back').addEventListener('click', () => memoAnimator.stepBackward());
+    document.getElementById('memo-forward').addEventListener('click', () => memoAnimator.stepForward());
+    document.getElementById('memo-speed').addEventListener('change', (e) => {
+      memoAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // =============================================
+    // COMPARISON COUNTERS
+    // =============================================
+    function countFibCalls(n) {
+      if (n <= 1) return 1;
+      return 1 + countFibCalls(n - 1) + countFibCalls(n - 2);
+    }
+
+    function countMemoFibCalls(n, computed = new Set()) {
+      if (n <= 1) {
+        computed.add(n);
+        return 1;
+      }
+      if (computed.has(n)) return 1;
+
+      computed.add(n);
+      return 1 + countMemoFibCalls(n - 1, computed) + countMemoFibCalls(n - 2, computed);
+    }
+
+    // Update comparison counters for n=10
+    document.getElementById('no-memo-calls').textContent = `Calls: ${countFibCalls(10)}`;
+    document.getElementById('memo-calls').textContent = `Calls: ${2 * 10 - 1}`;
+
+    // =============================================
+    // QUIZ FUNCTIONALITY
+    // =============================================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn) {
+      const hint = btn.nextElementSibling;
+      hint.classList.toggle('show');
+      btn.textContent = hint.classList.contains('show') ? 'Hide Hint' : 'Show Hint';
+    }
+
+    // =============================================
+    // KEYBOARD SHORTCUTS
+    // =============================================
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          // Toggle current visible animator
+          break;
+        case 'ArrowRight':
+          factorialAnimator.stepForward();
+          break;
+        case 'ArrowLeft':
+          factorialAnimator.stepBackward();
+          break;
+        case 'r':
+        case 'R':
+          factorialAnimator.reset();
+          break;
+      }
+    });
+
+    // =============================================
+    // KATEX RENDER
+    // =============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

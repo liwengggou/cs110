@@ -1,0 +1,2291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 17: Red-Black Trees | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --rbt-red: #DC2626;
+      --rbt-red-light: #FEE2E2;
+      --rbt-black: #1F2937;
+      --rbt-black-light: #374151;
+      --rbt-nil: #6B7280;
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+
+      --rbt-red: #EF4444;
+      --rbt-red-light: #7F1D1D;
+      --rbt-black: #4B5563;
+      --rbt-black-light: #6B7280;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 300px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Tree Node Styles */
+    .tree-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tree-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tree-node:hover {
+      filter: brightness(1.1);
+    }
+
+    .tree-node.red circle {
+      fill: var(--rbt-red);
+      stroke: #B91C1C;
+      stroke-width: 2;
+    }
+
+    .tree-node.black circle {
+      fill: var(--rbt-black);
+      stroke: #111827;
+      stroke-width: 2;
+    }
+
+    .tree-node.nil circle {
+      fill: var(--rbt-nil);
+      stroke: #4B5563;
+      stroke-width: 1;
+    }
+
+    .tree-node text {
+      fill: white;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 14px;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .tree-node.highlight circle {
+      stroke: var(--current-focus);
+      stroke-width: 4;
+      filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.6));
+    }
+
+    .tree-node.violation circle {
+      stroke: var(--error);
+      stroke-width: 4;
+      animation: pulse-violation 0.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-violation {
+      0%, 100% { filter: drop-shadow(0 0 4px rgba(235, 87, 87, 0.5)); }
+      50% { filter: drop-shadow(0 0 12px rgba(235, 87, 87, 0.8)); }
+    }
+
+    .tree-edge {
+      stroke: #9CA3AF;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .tree-edge.highlight {
+      stroke: var(--current-focus);
+      stroke-width: 3;
+    }
+
+    /* Property Cards */
+    .property-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .property-card {
+      background: var(--background-secondary);
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .property-card.valid {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .property-card.invalid {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .property-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .property-card p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .property-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .property-card.valid .property-icon {
+      background: var(--success);
+      color: white;
+    }
+
+    .property-card.invalid .property-icon {
+      background: var(--error);
+      color: white;
+    }
+
+    .property-card:not(.valid):not(.invalid) .property-icon {
+      background: var(--text-secondary);
+      color: white;
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Case Badge */
+    .case-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .case-badge.case-1 {
+      background: var(--rbt-red);
+      color: white;
+    }
+
+    .case-badge.case-2 {
+      background: var(--warning);
+      color: black;
+    }
+
+    .case-badge.case-3 {
+      background: var(--purple);
+      color: white;
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Input Controls */
+    .input-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .input-controls input {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      background: var(--background);
+      color: var(--text-primary);
+      width: 120px;
+    }
+
+    .input-controls button {
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .input-controls button:hover {
+      background: var(--accent-hover);
+    }
+
+    .input-controls button.secondary {
+      background: var(--background-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .input-controls button.secondary:hover {
+      background: var(--border);
+    }
+
+    /* Black Height Display */
+    .bh-display {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .bh-item {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .bh-node {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: white;
+      font-size: 0.875rem;
+    }
+
+    .bh-node.red { background: var(--rbt-red); }
+    .bh-node.black { background: var(--rbt-black); }
+
+    .bh-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-section {
+      margin-top: 1rem;
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-right: 1rem;
+    }
+
+    .hint-btn:hover {
+      text-decoration: underline;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Rotation Diagram */
+    .rotation-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      padding: 1rem;
+    }
+
+    .rotation-arrow {
+      font-size: 2rem;
+      color: var(--accent);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .complexity-table th,
+    .complexity-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .complexity-table th {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .complexity-table td:last-child {
+      font-family: var(--font-mono);
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0.75rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+
+    .legend-color.red { background: var(--rbt-red); }
+    .legend-color.black { background: var(--rbt-black); }
+    .legend-color.nil { background: var(--rbt-nil); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .rotation-container { flex-direction: column; }
+      .rotation-arrow { transform: rotate(90deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">*</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 17</span>
+      <h1>Red-Black Trees</h1>
+      <p class="subtitle">Self-balancing binary search trees with guaranteed O(log n) operations</p>
+      <div class="meta">
+        <span>~35 minutes</span>
+        <span>Prerequisites: Binary Search Trees, Tree Rotations</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Identify</strong> the 5 properties that define a valid Red-Black Tree</li>
+        <li><strong>Calculate</strong> the black-height of nodes and understand its significance</li>
+        <li><strong>Perform</strong> left and right rotations to maintain tree balance</li>
+        <li><strong>Apply</strong> fix-up procedures after insertion (Cases 1, 2, and 3)</li>
+        <li><strong>Understand</strong> why RBTs guarantee O(log n) height</li>
+        <li><strong>Trace</strong> through deletion fix-up cases</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: RBT Properties -->
+    <h2>1. The Five Red-Black Tree Properties</h2>
+    <p>A Red-Black Tree is a self-balancing binary search tree where each node has an extra bit for color (red or black). The tree must satisfy these five properties to remain balanced:</p>
+
+    <div class="viz-container">
+      <h3>Interactive Property Checker</h3>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color red"></div> Red Node</div>
+        <div class="legend-item"><div class="legend-color black"></div> Black Node</div>
+        <div class="legend-item"><div class="legend-color nil"></div> NIL (Leaf)</div>
+      </div>
+
+      <div class="step-description" id="property-description">
+        Click "Check Properties" to verify all 5 RBT properties
+      </div>
+
+      <div class="viz-canvas" id="property-canvas" style="height: 350px;">
+        <svg id="property-tree" class="tree-svg"></svg>
+      </div>
+
+      <div class="property-grid" id="property-grid">
+        <div class="property-card" id="prop-1">
+          <h4><span class="property-icon">1</span> Node Color</h4>
+          <p>Every node is either red or black</p>
+        </div>
+        <div class="property-card" id="prop-2">
+          <h4><span class="property-icon">2</span> Root is Black</h4>
+          <p>The root node must be black</p>
+        </div>
+        <div class="property-card" id="prop-3">
+          <h4><span class="property-icon">3</span> Leaves (NIL) are Black</h4>
+          <p>All NIL leaves are considered black</p>
+        </div>
+        <div class="property-card" id="prop-4">
+          <h4><span class="property-icon">4</span> Red Node Children</h4>
+          <p>If a node is red, both children must be black (no red-red)</p>
+        </div>
+        <div class="property-card" id="prop-5">
+          <h4><span class="property-icon">5</span> Black-Height</h4>
+          <p>Every path from a node to its NIL descendants has the same number of black nodes</p>
+        </div>
+      </div>
+
+      <div class="input-controls">
+        <button onclick="checkAllProperties()">Check Properties</button>
+        <button class="secondary" onclick="toggleViolation()">Toggle Violation</button>
+        <button class="secondary" onclick="resetPropertyTree()">Reset Tree</button>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Property 4 (no red-red) and Property 5 (equal black-height) work together to ensure the tree stays approximately balanced. The longest path (alternating red-black) is at most twice the shortest path (all black).
+    </div>
+
+    <!-- Section 2: Black-Height -->
+    <h2>2. Understanding Black-Height</h2>
+    <p>The <strong>black-height</strong> of a node is the number of black nodes on any path from that node to a NIL leaf (not counting the node itself, but counting the NIL). This concept is crucial for understanding RBT balance.</p>
+
+    <div class="viz-container">
+      <h3>Black-Height Calculator</h3>
+      <div class="step-description" id="bh-description">
+        Click on any node to see its black-height
+      </div>
+
+      <div class="viz-canvas" id="bh-canvas" style="height: 350px;">
+        <svg id="bh-tree" class="tree-svg"></svg>
+      </div>
+
+      <div class="bh-display" id="bh-display">
+        <!-- Populated by JavaScript -->
+      </div>
+
+      <div class="input-controls">
+        <button onclick="showAllBlackHeights()">Show All Black-Heights</button>
+        <button class="secondary" onclick="clearBlackHeights()">Clear</button>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The black-height of the root determines the minimum height of the tree. If bh(root) = k, then the tree has at least $2^k - 1$ internal nodes. This leads to a maximum height of $2 \log_2(n+1)$, guaranteeing O(log n) operations.
+    </div>
+
+    <!-- Section 3: Rotations -->
+    <h2>3. Tree Rotations</h2>
+    <p>Rotations are local operations that change the structure of the tree while preserving the BST property. They are the fundamental operations used to restore RBT properties after insertions and deletions.</p>
+
+    <div class="viz-container">
+      <h3>Left Rotation Animator</h3>
+      <div class="step-description" id="left-rotate-description">
+        Left rotation pivots around node X, making its right child Y the new parent
+      </div>
+
+      <div class="rotation-container">
+        <div class="viz-canvas" id="left-rotate-before" style="width: 300px; height: 250px;">
+          <svg id="left-before-svg" class="tree-svg"></svg>
+        </div>
+        <div class="rotation-arrow">--></div>
+        <div class="viz-canvas" id="left-rotate-after" style="width: 300px; height: 250px;">
+          <svg id="left-after-svg" class="tree-svg"></svg>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="left-rotate-reset" onclick="resetLeftRotation()">Reset</button>
+        <button id="left-rotate-play" onclick="animateLeftRotation()">Animate</button>
+        <span class="step-indicator" id="left-rotate-step">Ready</span>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Right Rotation Animator</h3>
+      <div class="step-description" id="right-rotate-description">
+        Right rotation pivots around node Y, making its left child X the new parent
+      </div>
+
+      <div class="rotation-container">
+        <div class="viz-canvas" id="right-rotate-before" style="width: 300px; height: 250px;">
+          <svg id="right-before-svg" class="tree-svg"></svg>
+        </div>
+        <div class="rotation-arrow">--></div>
+        <div class="viz-canvas" id="right-rotate-after" style="width: 300px; height: 250px;">
+          <svg id="right-after-svg" class="tree-svg"></svg>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="right-rotate-reset" onclick="resetRightRotation()">Reset</button>
+        <button id="right-rotate-play" onclick="animateRightRotation()">Animate</button>
+        <span class="step-indicator" id="right-rotate-step">Ready</span>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Forgetting to update parent pointers during rotation. When rotating, you must update: (1) the pivot's parent, (2) the moved subtree's parent, and (3) the grandparent's child pointer.
+    </div>
+
+    <!-- Section 4: Insertion with Fix-Up -->
+    <h2>4. RBT Insertion with Fix-Up</h2>
+    <p>When inserting a new node, we first perform a standard BST insertion and color the new node <span style="color: var(--rbt-red); font-weight: 600;">RED</span>. This may violate Property 4 (no red-red), requiring a fix-up procedure.</p>
+
+    <div class="viz-container">
+      <h3>Insertion Fix-Up Visualizer</h3>
+      <div class="step-description" id="insert-description">
+        Enter a value to insert and watch the fix-up process
+      </div>
+
+      <div class="viz-canvas" id="insert-canvas" style="height: 400px;">
+        <svg id="insert-tree" class="tree-svg"></svg>
+      </div>
+
+      <div class="input-controls">
+        <input type="number" id="insert-value" placeholder="Value" min="1" max="99">
+        <button onclick="insertNode()">Insert</button>
+        <button class="secondary" onclick="resetInsertTree()">Reset Tree</button>
+        <button class="secondary" onclick="insertRandom()">Random Insert</button>
+      </div>
+
+      <div class="step-controls">
+        <button id="insert-reset" onclick="resetInsertAnimation()">Reset</button>
+        <button id="insert-back" onclick="insertStepBack()">Back</button>
+        <button id="insert-play" onclick="insertPlayPause()">Play</button>
+        <button id="insert-forward" onclick="insertStepForward()">Forward</button>
+        <span class="step-indicator" id="insert-step-indicator">Step 0 of 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="insert-speed" onchange="setInsertSpeed(this.value)">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="insert-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>The Three Fix-Up Cases</h3>
+    <p>After inserting a red node, if its parent is also red, we have one of three cases:</p>
+
+    <div class="property-grid">
+      <div class="property-card">
+        <h4><span class="case-badge case-1">Case 1</span> Uncle is Red</h4>
+        <p>Recolor parent, uncle, and grandparent. Move problem up to grandparent.</p>
+      </div>
+      <div class="property-card">
+        <h4><span class="case-badge case-2">Case 2</span> Uncle is Black (Triangle)</h4>
+        <p>Node is inner grandchild. Rotate parent to convert to Case 3.</p>
+      </div>
+      <div class="property-card">
+        <h4><span class="case-badge case-3">Case 3</span> Uncle is Black (Line)</h4>
+        <p>Node is outer grandchild. Rotate grandparent and recolor.</p>
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try This:</strong> Insert the values 10, 20, 30, 15, 25 in sequence. Watch how each insertion triggers different fix-up cases. Notice that Case 1 can cascade upward!
+    </div>
+
+    <!-- Section 5: Deletion with Fix-Up -->
+    <h2>5. RBT Deletion Overview</h2>
+    <p>Deletion in RBTs is more complex than insertion. When we delete a black node, we may violate Property 5 (equal black-height), creating a "double-black" situation that requires fix-up.</p>
+
+    <div class="viz-container">
+      <h3>Deletion Cases Summary</h3>
+      <div class="step-description">
+        Deletion fix-up handles four main cases based on the sibling's color and its children
+      </div>
+
+      <div class="property-grid">
+        <div class="property-card">
+          <h4><span class="case-badge case-1">Case 1</span> Sibling is Red</h4>
+          <p>Rotate sibling up, recolor, and reduce to other cases.</p>
+        </div>
+        <div class="property-card">
+          <h4><span class="case-badge case-2">Case 2</span> Sibling Black, Both Children Black</h4>
+          <p>Recolor sibling red, move double-black up to parent.</p>
+        </div>
+        <div class="property-card">
+          <h4><span class="case-badge case-3">Case 3</span> Sibling Black, Near Child Red</h4>
+          <p>Rotate sibling's red child up, recolor to reduce to Case 4.</p>
+        </div>
+        <div class="property-card">
+          <h4><span class="case-badge case-1">Case 4</span> Sibling Black, Far Child Red</h4>
+          <p>Rotate sibling up, recolor appropriately. Fixes double-black!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake:</strong> Trying to memorize deletion cases without understanding the underlying goal. Remember: we're trying to "push" an extra black up the tree until we can absorb it (at a red node or root) or rotate it away.
+    </div>
+
+    <!-- Section 6: Guaranteed O(log n) -->
+    <h2>6. Why O(log n) is Guaranteed</h2>
+    <p>The RBT properties ensure that the tree height is always bounded by $2 \log_2(n+1)$. Here's why:</p>
+
+    <div class="complexity-box">
+      <h4>Height Bound Proof Sketch</h4>
+      <ol style="padding-left: 1.5rem; margin-top: 1rem;">
+        <li style="margin-bottom: 0.5rem;">Every path from root to NIL has the same number of black nodes (Property 5)</li>
+        <li style="margin-bottom: 0.5rem;">No two consecutive red nodes are allowed (Property 4)</li>
+        <li style="margin-bottom: 0.5rem;">Therefore, the longest path (alternating red-black) is at most 2x the shortest (all black)</li>
+        <li style="margin-bottom: 0.5rem;">If black-height = k, shortest path = k, longest path &le; 2k</li>
+        <li>A tree with n nodes has height h &le; $2 \log_2(n+1)$</li>
+      </ol>
+    </div>
+
+    <div class="complexity-box">
+      <h4>Time Complexity Summary</h4>
+      <table class="complexity-table">
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Average Case</th>
+            <th>Worst Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Search</td>
+            <td>O(log n)</td>
+            <td>O(log n)</td>
+          </tr>
+          <tr>
+            <td>Insert</td>
+            <td>O(log n)</td>
+            <td>O(log n)</td>
+          </tr>
+          <tr>
+            <td>Delete</td>
+            <td>O(log n)</td>
+            <td>O(log n)</td>
+          </tr>
+          <tr>
+            <td>Rotations per operation</td>
+            <td>O(1)</td>
+            <td>O(1) for insert, O(log n) for delete</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Unlike AVL trees that may require O(log n) rotations per operation, RBT insertions require at most 2 rotations, and deletions at most 3 rotations (though recoloring may propagate up). This makes RBTs slightly faster in practice for insert-heavy workloads.
+    </div>
+
+    <!-- Section 7: Quick Check -->
+    <h2>7. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question" id="quiz-1">
+        <h4>Question 1: Which property is violated if we have a red node with a red child?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">Property 2: Root must be black</div>
+          <div class="quiz-option" data-index="1">Property 3: NIL leaves are black</div>
+          <div class="quiz-option" data-index="2">Property 5: Equal black-height on all paths</div>
+          <div class="quiz-option" data-index="3">Property 4: Red nodes must have black children</div>
+        </div>
+        <div class="hint-section">
+          <button class="hint-btn" onclick="toggleHint('quiz-1', 1)">Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint('quiz-1', 2)">Hint 2</button>
+          <div class="hint-text" id="quiz-1-hint-1">Think about which property specifically talks about the color relationship between parent and child.</div>
+          <div class="hint-text" id="quiz-1-hint-2">Property 4 is often called the "no red-red" rule because it forbids consecutive red nodes.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Property 4 states that if a node is red, both its children must be black. This prevents any path from having two consecutive red nodes.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-2">
+        <h4>Question 2: If a Red-Black Tree has a black-height of 3 (from root to any NIL), what is the minimum number of internal nodes?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">3</div>
+          <div class="quiz-option" data-index="1">7</div>
+          <div class="quiz-option" data-index="2">15</div>
+          <div class="quiz-option" data-index="3">8</div>
+        </div>
+        <div class="hint-section">
+          <button class="hint-btn" onclick="toggleHint('quiz-2', 1)">Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint('quiz-2', 2)">Hint 2</button>
+          <div class="hint-text" id="quiz-2-hint-1">The minimum occurs when all internal nodes are black (forming a perfect binary tree of black nodes).</div>
+          <div class="hint-text" id="quiz-2-hint-2">A perfect binary tree of height k has $2^k - 1$ nodes. With black-height 3, we have 3 levels of black nodes.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The minimum occurs with a perfect binary tree of all black nodes. With black-height 3, we have $2^3 - 1 = 7$ internal nodes.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-3">
+        <h4>Question 3: After inserting a red node, when do we apply Case 1 fix-up?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">When the uncle is red</div>
+          <div class="quiz-option" data-index="1">When the uncle is black and node is an inner grandchild</div>
+          <div class="quiz-option" data-index="2">When the uncle is black and node is an outer grandchild</div>
+          <div class="quiz-option" data-index="3">When the parent is black</div>
+        </div>
+        <div class="hint-section">
+          <button class="hint-btn" onclick="toggleHint('quiz-3', 1)">Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint('quiz-3', 2)">Hint 2</button>
+          <div class="hint-text" id="quiz-3-hint-1">Case 1 is the only case that involves recoloring without any rotations.</div>
+          <div class="hint-text" id="quiz-3-hint-2">In Case 1, we can "push" the red color up by recoloring the parent, uncle to black, and grandparent to red.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Case 1 applies when the uncle is red. We recolor the parent and uncle to black, the grandparent to red, and then check if the grandparent causes a violation.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-4">
+        <h4>Question 4: How many rotations are required at most for a single RBT insertion?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">1</div>
+          <div class="quiz-option" data-index="1">2</div>
+          <div class="quiz-option" data-index="2">O(log n)</div>
+          <div class="quiz-option" data-index="3">0</div>
+        </div>
+        <div class="hint-section">
+          <button class="hint-btn" onclick="toggleHint('quiz-4', 1)">Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint('quiz-4', 2)">Hint 2</button>
+          <div class="hint-text" id="quiz-4-hint-1">Case 2 requires one rotation to convert to Case 3, and Case 3 requires one rotation to fix the violation.</div>
+          <div class="hint-text" id="quiz-4-hint-2">Case 1 only does recoloring (0 rotations) and may repeat, but once we hit Case 2 or 3, we do at most 2 rotations and we're done.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> At most 2 rotations are needed. Case 2 converts to Case 3 with one rotation, and Case 3 fixes the violation with one more rotation. This constant bound makes RBT insertion very efficient.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="quiz-5">
+        <h4>Question 5: What is the maximum height of a Red-Black Tree with n nodes?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">$\log_2(n)$</div>
+          <div class="quiz-option" data-index="1">$\log_2(n) + 1$</div>
+          <div class="quiz-option" data-index="2">$2\log_2(n+1)$</div>
+          <div class="quiz-option" data-index="3">$n - 1$</div>
+        </div>
+        <div class="hint-section">
+          <button class="hint-btn" onclick="toggleHint('quiz-5', 1)">Hint 1</button>
+          <button class="hint-btn" onclick="toggleHint('quiz-5', 2)">Hint 2</button>
+          <div class="hint-text" id="quiz-5-hint-1">The longest path can have alternating red and black nodes, making it twice the length of the all-black shortest path.</div>
+          <div class="hint-text" id="quiz-5-hint-2">If black-height is k, shortest path is k, longest is 2k. A tree with black-height k has at least $2^k - 1$ nodes.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The maximum height is $2\log_2(n+1)$. This comes from the fact that the longest path (alternating red-black) is at most twice the shortest path (all black), and the black-height relates logarithmically to the number of nodes.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 8: Summary -->
+    <h2>8. Summary</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Five Properties:</strong> Color, black root, black NILs, no red-red, equal black-height</li>
+      <li><strong>Black-Height:</strong> Count of black nodes to NIL; key to understanding balance</li>
+      <li><strong>Rotations:</strong> Local restructuring operations that preserve BST property</li>
+      <li><strong>Insertion Fix-Up:</strong> Three cases based on uncle's color and node position</li>
+      <li><strong>Deletion Fix-Up:</strong> Four cases based on sibling's color and children</li>
+      <li><strong>Guaranteed O(log n):</strong> Height is always at most $2\log_2(n+1)$</li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-16-avl-trees.html">&larr; Session 16: AVL Trees</a>
+      <a href="session-18-btrees.html">Session 18: B-Trees &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // ==================== Theme Toggle ====================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'O' : '*';
+      localStorage.setItem('theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'O' : '*';
+
+    // ==================== Tree Node Class ====================
+    class RBTNode {
+      constructor(value, color = 'red') {
+        this.value = value;
+        this.color = color;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+        this.x = 0;
+        this.y = 0;
+      }
+    }
+
+    // ==================== Tree Drawing Utilities ====================
+    function calculatePositions(node, x, y, xOffset, level = 0) {
+      if (!node || node.value === null) return;
+
+      node.x = x;
+      node.y = y;
+      node.level = level;
+
+      const nextOffset = xOffset * 0.55;
+      const yStep = 70;
+
+      if (node.left) {
+        calculatePositions(node.left, x - xOffset, y + yStep, nextOffset, level + 1);
+      }
+      if (node.right) {
+        calculatePositions(node.right, x + xOffset, y + yStep, nextOffset, level + 1);
+      }
+    }
+
+    function drawTree(svg, root, options = {}) {
+      const {
+        showNil = true,
+        highlightNode = null,
+        violationNode = null,
+        nodeRadius = 22
+      } = options;
+
+      svg.innerHTML = '';
+      if (!root) return;
+
+      const svgRect = svg.getBoundingClientRect();
+      const centerX = svgRect.width / 2;
+      const startY = 50;
+      const xOffset = Math.min(150, svgRect.width / 4);
+
+      calculatePositions(root, centerX, startY, xOffset);
+
+      // Draw edges first
+      function drawEdges(node) {
+        if (!node || node.value === null) return;
+
+        if (node.left && node.left.value !== null) {
+          const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          edge.setAttribute('x1', node.x);
+          edge.setAttribute('y1', node.y);
+          edge.setAttribute('x2', node.left.x);
+          edge.setAttribute('y2', node.left.y);
+          edge.setAttribute('class', 'tree-edge');
+          svg.appendChild(edge);
+          drawEdges(node.left);
+        } else if (showNil && node.left) {
+          const nilX = node.x - 30;
+          const nilY = node.y + 50;
+          const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          edge.setAttribute('x1', node.x);
+          edge.setAttribute('y1', node.y);
+          edge.setAttribute('x2', nilX);
+          edge.setAttribute('y2', nilY);
+          edge.setAttribute('class', 'tree-edge');
+          edge.setAttribute('stroke-dasharray', '4');
+          svg.appendChild(edge);
+          drawNilNode(svg, nilX, nilY);
+        }
+
+        if (node.right && node.right.value !== null) {
+          const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          edge.setAttribute('x1', node.x);
+          edge.setAttribute('y1', node.y);
+          edge.setAttribute('x2', node.right.x);
+          edge.setAttribute('y2', node.right.y);
+          edge.setAttribute('class', 'tree-edge');
+          svg.appendChild(edge);
+          drawEdges(node.right);
+        } else if (showNil && node.right) {
+          const nilX = node.x + 30;
+          const nilY = node.y + 50;
+          const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          edge.setAttribute('x1', node.x);
+          edge.setAttribute('y1', node.y);
+          edge.setAttribute('x2', nilX);
+          edge.setAttribute('y2', nilY);
+          edge.setAttribute('class', 'tree-edge');
+          edge.setAttribute('stroke-dasharray', '4');
+          svg.appendChild(edge);
+          drawNilNode(svg, nilX, nilY);
+        }
+      }
+
+      function drawNilNode(svg, x, y) {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'tree-node nil');
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x);
+        circle.setAttribute('cy', y);
+        circle.setAttribute('r', 12);
+        g.appendChild(circle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('font-size', '10');
+        text.textContent = 'NIL';
+        g.appendChild(text);
+
+        svg.appendChild(g);
+      }
+
+      drawEdges(root);
+
+      // Draw nodes
+      function drawNodes(node) {
+        if (!node || node.value === null) return;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', `tree-node ${node.color}`);
+
+        if (highlightNode && node.value === highlightNode) {
+          g.classList.add('highlight');
+        }
+        if (violationNode && node.value === violationNode) {
+          g.classList.add('violation');
+        }
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x);
+        circle.setAttribute('cy', node.y);
+        circle.setAttribute('r', nodeRadius);
+        g.appendChild(circle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y);
+        text.textContent = node.value;
+        g.appendChild(text);
+
+        g.dataset.value = node.value;
+        svg.appendChild(g);
+
+        if (node.left) drawNodes(node.left);
+        if (node.right) drawNodes(node.right);
+      }
+
+      drawNodes(root);
+    }
+
+    // ==================== Property Checker ====================
+    let propertyTree = null;
+    let hasViolation = false;
+
+    function createNilNode() {
+      const nil = new RBTNode(null, 'black');
+      return nil;
+    }
+
+    function createSampleTree() {
+      // Create a valid RBT
+      const root = new RBTNode(20, 'black');
+
+      root.left = new RBTNode(10, 'red');
+      root.left.parent = root;
+      root.right = new RBTNode(30, 'red');
+      root.right.parent = root;
+
+      root.left.left = new RBTNode(5, 'black');
+      root.left.left.parent = root.left;
+      root.left.right = new RBTNode(15, 'black');
+      root.left.right.parent = root.left;
+
+      root.right.left = new RBTNode(25, 'black');
+      root.right.left.parent = root.right;
+      root.right.right = new RBTNode(35, 'black');
+      root.right.right.parent = root.right;
+
+      // Add NIL children
+      addNilChildren(root);
+
+      return root;
+    }
+
+    function addNilChildren(node) {
+      if (!node || node.value === null) return;
+
+      if (!node.left) {
+        node.left = createNilNode();
+        node.left.parent = node;
+      } else {
+        addNilChildren(node.left);
+      }
+
+      if (!node.right) {
+        node.right = createNilNode();
+        node.right.parent = node;
+      } else {
+        addNilChildren(node.right);
+      }
+    }
+
+    function checkAllProperties() {
+      const results = {
+        1: true,
+        2: propertyTree ? propertyTree.color === 'black' : false,
+        3: true,
+        4: true,
+        5: true
+      };
+
+      // Check property 4: No red-red
+      function checkNoRedRed(node) {
+        if (!node || node.value === null) return true;
+        if (node.color === 'red') {
+          if ((node.left && node.left.value !== null && node.left.color === 'red') ||
+              (node.right && node.right.value !== null && node.right.color === 'red')) {
+            return false;
+          }
+        }
+        return checkNoRedRed(node.left) && checkNoRedRed(node.right);
+      }
+
+      // Check property 5: Equal black-height
+      function getBlackHeight(node) {
+        if (!node || node.value === null) return 1; // NIL counts as 1
+
+        const leftBH = getBlackHeight(node.left);
+        const rightBH = getBlackHeight(node.right);
+
+        if (leftBH === -1 || rightBH === -1 || leftBH !== rightBH) return -1;
+
+        return leftBH + (node.color === 'black' ? 1 : 0);
+      }
+
+      results[4] = checkNoRedRed(propertyTree);
+      results[5] = getBlackHeight(propertyTree) !== -1;
+
+      // Update UI
+      for (let i = 1; i <= 5; i++) {
+        const card = document.getElementById(`prop-${i}`);
+        card.classList.remove('valid', 'invalid');
+        card.classList.add(results[i] ? 'valid' : 'invalid');
+        card.querySelector('.property-icon').textContent = results[i] ? '\u2713' : '\u2717';
+      }
+
+      const allValid = Object.values(results).every(v => v);
+      document.getElementById('property-description').textContent =
+        allValid ? 'All 5 RBT properties are satisfied!' : 'Some properties are violated. Check the cards below.';
+
+      // Redraw tree to show violations
+      const svg = document.getElementById('property-tree');
+      let violationNode = null;
+
+      if (!results[4]) {
+        // Find a red-red violation
+        function findRedRed(node) {
+          if (!node || node.value === null) return null;
+          if (node.color === 'red' && node.parent && node.parent.color === 'red') {
+            return node.value;
+          }
+          return findRedRed(node.left) || findRedRed(node.right);
+        }
+        violationNode = findRedRed(propertyTree);
+      }
+
+      drawTree(svg, propertyTree, { showNil: true, violationNode });
+    }
+
+    function toggleViolation() {
+      if (!propertyTree) return;
+
+      hasViolation = !hasViolation;
+
+      if (hasViolation) {
+        // Create a red-red violation
+        if (propertyTree.left && propertyTree.left.left) {
+          propertyTree.left.left.color = 'red';
+        }
+      } else {
+        // Fix the violation
+        if (propertyTree.left && propertyTree.left.left) {
+          propertyTree.left.left.color = 'black';
+        }
+      }
+
+      const svg = document.getElementById('property-tree');
+      drawTree(svg, propertyTree, { showNil: true });
+
+      // Reset property cards
+      for (let i = 1; i <= 5; i++) {
+        const card = document.getElementById(`prop-${i}`);
+        card.classList.remove('valid', 'invalid');
+        card.querySelector('.property-icon').textContent = i;
+      }
+
+      document.getElementById('property-description').textContent =
+        hasViolation ? 'Violation introduced! Click "Check Properties" to see which property is violated.'
+                     : 'Tree reset to valid state. Click "Check Properties" to verify.';
+    }
+
+    function resetPropertyTree() {
+      hasViolation = false;
+      propertyTree = createSampleTree();
+      const svg = document.getElementById('property-tree');
+      drawTree(svg, propertyTree, { showNil: true });
+
+      for (let i = 1; i <= 5; i++) {
+        const card = document.getElementById(`prop-${i}`);
+        card.classList.remove('valid', 'invalid');
+        card.querySelector('.property-icon').textContent = i;
+      }
+
+      document.getElementById('property-description').textContent =
+        'Click "Check Properties" to verify all 5 RBT properties';
+    }
+
+    // ==================== Black-Height Calculator ====================
+    let bhTree = null;
+
+    function createBHTree() {
+      bhTree = createSampleTree();
+      const svg = document.getElementById('bh-tree');
+      drawTree(svg, bhTree, { showNil: false });
+
+      // Add click handlers
+      svg.querySelectorAll('.tree-node').forEach(node => {
+        node.addEventListener('click', () => {
+          const value = parseInt(node.dataset.value);
+          showBlackHeight(value);
+        });
+      });
+    }
+
+    function getBlackHeightOf(node) {
+      if (!node || node.value === null) return 0;
+
+      let height = 0;
+      let current = node.left || node.right;
+
+      function countBlack(n) {
+        if (!n || n.value === null) return 0;
+        return (n.color === 'black' ? 1 : 0) + countBlack(n.left);
+      }
+
+      // Count black nodes on leftmost path to NIL
+      let n = node;
+      while (n && n.value !== null) {
+        n = n.left || n.right;
+        if (n && n.value !== null && n.color === 'black') height++;
+      }
+
+      return height + 1; // +1 for NIL
+    }
+
+    function findNode(root, value) {
+      if (!root || root.value === null) return null;
+      if (root.value === value) return root;
+      return findNode(root.left, value) || findNode(root.right, value);
+    }
+
+    function showBlackHeight(value) {
+      const node = findNode(bhTree, value);
+      if (!node) return;
+
+      const bh = getBlackHeightOf(node);
+
+      const svg = document.getElementById('bh-tree');
+      drawTree(svg, bhTree, { showNil: false, highlightNode: value });
+
+      // Re-add click handlers
+      svg.querySelectorAll('.tree-node').forEach(n => {
+        n.addEventListener('click', () => {
+          const v = parseInt(n.dataset.value);
+          showBlackHeight(v);
+        });
+      });
+
+      document.getElementById('bh-description').textContent =
+        `Node ${value} has black-height = ${bh}`;
+
+      // Update display
+      const display = document.getElementById('bh-display');
+      display.innerHTML = `
+        <div class="bh-item">
+          <div class="bh-node ${node.color}">${value}</div>
+          <span>bh = </span>
+          <span class="bh-value">${bh}</span>
+        </div>
+      `;
+    }
+
+    function showAllBlackHeights() {
+      const display = document.getElementById('bh-display');
+      display.innerHTML = '';
+
+      function traverse(node) {
+        if (!node || node.value === null) return;
+
+        const bh = getBlackHeightOf(node);
+        display.innerHTML += `
+          <div class="bh-item">
+            <div class="bh-node ${node.color}">${node.value}</div>
+            <span>bh = </span>
+            <span class="bh-value">${bh}</span>
+          </div>
+        `;
+
+        traverse(node.left);
+        traverse(node.right);
+      }
+
+      traverse(bhTree);
+      document.getElementById('bh-description').textContent =
+        'All black-heights displayed. Notice they match on all paths!';
+    }
+
+    function clearBlackHeights() {
+      document.getElementById('bh-display').innerHTML = '';
+      document.getElementById('bh-description').textContent =
+        'Click on any node to see its black-height';
+
+      const svg = document.getElementById('bh-tree');
+      drawTree(svg, bhTree, { showNil: false });
+
+      svg.querySelectorAll('.tree-node').forEach(node => {
+        node.addEventListener('click', () => {
+          const value = parseInt(node.dataset.value);
+          showBlackHeight(value);
+        });
+      });
+    }
+
+    // ==================== Rotation Animations ====================
+    function createRotationBeforeLeft() {
+      const x = new RBTNode('X', 'black');
+      x.left = new RBTNode('a', 'black');
+      x.left.parent = x;
+
+      const y = new RBTNode('Y', 'red');
+      y.parent = x;
+      x.right = y;
+
+      y.left = new RBTNode('b', 'black');
+      y.left.parent = y;
+      y.right = new RBTNode('c', 'black');
+      y.right.parent = y;
+
+      return x;
+    }
+
+    function createRotationAfterLeft() {
+      const y = new RBTNode('Y', 'red');
+
+      const x = new RBTNode('X', 'black');
+      x.parent = y;
+      y.left = x;
+
+      x.left = new RBTNode('a', 'black');
+      x.left.parent = x;
+      x.right = new RBTNode('b', 'black');
+      x.right.parent = x;
+
+      y.right = new RBTNode('c', 'black');
+      y.right.parent = y;
+
+      return y;
+    }
+
+    function resetLeftRotation() {
+      const beforeSvg = document.getElementById('left-before-svg');
+      const afterSvg = document.getElementById('left-after-svg');
+
+      beforeSvg.innerHTML = '';
+      afterSvg.innerHTML = '';
+
+      const before = createRotationBeforeLeft();
+      drawTree(beforeSvg, before, { showNil: false, highlightNode: 'X' });
+
+      document.getElementById('left-rotate-step').textContent = 'Ready';
+      document.getElementById('left-rotate-description').textContent =
+        'Left rotation pivots around node X, making its right child Y the new parent';
+    }
+
+    function animateLeftRotation() {
+      const afterSvg = document.getElementById('left-after-svg');
+      const after = createRotationAfterLeft();
+      drawTree(afterSvg, after, { showNil: false, highlightNode: 'Y' });
+
+      document.getElementById('left-rotate-step').textContent = 'Complete!';
+      document.getElementById('left-rotate-description').textContent =
+        'After left rotation: Y is now the root, X is Y\'s left child, and subtree b moved from Y to X';
+    }
+
+    function createRotationBeforeRight() {
+      const y = new RBTNode('Y', 'black');
+
+      const x = new RBTNode('X', 'red');
+      x.parent = y;
+      y.left = x;
+
+      x.left = new RBTNode('a', 'black');
+      x.left.parent = x;
+      x.right = new RBTNode('b', 'black');
+      x.right.parent = x;
+
+      y.right = new RBTNode('c', 'black');
+      y.right.parent = y;
+
+      return y;
+    }
+
+    function createRotationAfterRight() {
+      const x = new RBTNode('X', 'red');
+      x.left = new RBTNode('a', 'black');
+      x.left.parent = x;
+
+      const y = new RBTNode('Y', 'black');
+      y.parent = x;
+      x.right = y;
+
+      y.left = new RBTNode('b', 'black');
+      y.left.parent = y;
+      y.right = new RBTNode('c', 'black');
+      y.right.parent = y;
+
+      return x;
+    }
+
+    function resetRightRotation() {
+      const beforeSvg = document.getElementById('right-before-svg');
+      const afterSvg = document.getElementById('right-after-svg');
+
+      beforeSvg.innerHTML = '';
+      afterSvg.innerHTML = '';
+
+      const before = createRotationBeforeRight();
+      drawTree(beforeSvg, before, { showNil: false, highlightNode: 'Y' });
+
+      document.getElementById('right-rotate-step').textContent = 'Ready';
+      document.getElementById('right-rotate-description').textContent =
+        'Right rotation pivots around node Y, making its left child X the new parent';
+    }
+
+    function animateRightRotation() {
+      const afterSvg = document.getElementById('right-after-svg');
+      const after = createRotationAfterRight();
+      drawTree(afterSvg, after, { showNil: false, highlightNode: 'X' });
+
+      document.getElementById('right-rotate-step').textContent = 'Complete!';
+      document.getElementById('right-rotate-description').textContent =
+        'After right rotation: X is now the root, Y is X\'s right child, and subtree b moved from X to Y';
+    }
+
+    // ==================== RBT Insertion ====================
+    let insertTree = null;
+    let insertSteps = [];
+    let insertCurrentStep = 0;
+    let insertPlaying = false;
+    let insertInterval = null;
+    let insertSpeed = 1;
+
+    function createInsertTree() {
+      insertTree = new RBTNode(20, 'black');
+      addNilChildren(insertTree);
+      return insertTree;
+    }
+
+    function cloneTree(node) {
+      if (!node || node.value === null) return createNilNode();
+
+      const newNode = new RBTNode(node.value, node.color);
+      newNode.left = cloneTree(node.left);
+      newNode.right = cloneTree(node.right);
+
+      if (newNode.left) newNode.left.parent = newNode;
+      if (newNode.right) newNode.right.parent = newNode;
+
+      return newNode;
+    }
+
+    function bstInsert(root, value) {
+      if (!root || root.value === null) {
+        const newNode = new RBTNode(value, 'red');
+        addNilChildren(newNode);
+        return newNode;
+      }
+
+      if (value < root.value) {
+        if (!root.left || root.left.value === null) {
+          root.left = new RBTNode(value, 'red');
+          root.left.parent = root;
+          addNilChildren(root.left);
+        } else {
+          bstInsert(root.left, value);
+        }
+      } else {
+        if (!root.right || root.right.value === null) {
+          root.right = new RBTNode(value, 'red');
+          root.right.parent = root;
+          addNilChildren(root.right);
+        } else {
+          bstInsert(root.right, value);
+        }
+      }
+
+      return root;
+    }
+
+    function getGrandparent(node) {
+      if (!node || !node.parent) return null;
+      return node.parent.parent;
+    }
+
+    function getUncle(node) {
+      const gp = getGrandparent(node);
+      if (!gp) return null;
+
+      if (node.parent === gp.left) {
+        return gp.right;
+      } else {
+        return gp.left;
+      }
+    }
+
+    function rotateLeft(root, node) {
+      const right = node.right;
+      node.right = right.left;
+
+      if (right.left && right.left.value !== null) {
+        right.left.parent = node;
+      }
+
+      right.parent = node.parent;
+
+      if (!node.parent) {
+        root = right;
+      } else if (node === node.parent.left) {
+        node.parent.left = right;
+      } else {
+        node.parent.right = right;
+      }
+
+      right.left = node;
+      node.parent = right;
+
+      return root;
+    }
+
+    function rotateRight(root, node) {
+      const left = node.left;
+      node.left = left.right;
+
+      if (left.right && left.right.value !== null) {
+        left.right.parent = node;
+      }
+
+      left.parent = node.parent;
+
+      if (!node.parent) {
+        root = left;
+      } else if (node === node.parent.right) {
+        node.parent.right = left;
+      } else {
+        node.parent.left = left;
+      }
+
+      left.right = node;
+      node.parent = left;
+
+      return root;
+    }
+
+    function generateInsertSteps(value) {
+      insertSteps = [];
+
+      // Step 0: Initial state
+      insertSteps.push({
+        tree: cloneTree(insertTree),
+        description: `Starting insertion of ${value}`,
+        highlight: null,
+        caseType: null
+      });
+
+      // BST Insert
+      insertTree = bstInsert(insertTree, value);
+      let inserted = findNode(insertTree, value);
+
+      insertSteps.push({
+        tree: cloneTree(insertTree),
+        description: `BST insert: ${value} placed as a RED node`,
+        highlight: value,
+        caseType: null
+      });
+
+      // Fix-up
+      let current = inserted;
+
+      while (current !== insertTree && current.parent && current.parent.color === 'red') {
+        const parent = current.parent;
+        const grandparent = getGrandparent(current);
+
+        if (!grandparent) break;
+
+        const uncle = getUncle(current);
+        const uncleColor = (uncle && uncle.value !== null) ? uncle.color : 'black';
+
+        if (parent === grandparent.left) {
+          if (uncleColor === 'red') {
+            // Case 1: Uncle is red
+            parent.color = 'black';
+            if (uncle && uncle.value !== null) uncle.color = 'black';
+            grandparent.color = 'red';
+
+            insertSteps.push({
+              tree: cloneTree(insertTree),
+              description: `Case 1: Uncle is RED. Recolor parent (${parent.value}) and uncle to BLACK, grandparent (${grandparent.value}) to RED`,
+              highlight: grandparent.value,
+              caseType: 1
+            });
+
+            current = grandparent;
+          } else {
+            if (current === parent.right) {
+              // Case 2: Triangle - rotate to line
+              current = parent;
+              insertTree = rotateLeft(insertTree, current);
+
+              insertSteps.push({
+                tree: cloneTree(insertTree),
+                description: `Case 2: Uncle is BLACK, triangle formation. Left-rotate around parent to form a line`,
+                highlight: current.value,
+                caseType: 2
+              });
+            }
+
+            // Case 3: Line - rotate and recolor
+            const newParent = current.parent;
+            const newGrandparent = getGrandparent(current);
+
+            if (newParent) newParent.color = 'black';
+            if (newGrandparent) {
+              newGrandparent.color = 'red';
+              insertTree = rotateRight(insertTree, newGrandparent);
+            }
+
+            insertSteps.push({
+              tree: cloneTree(insertTree),
+              description: `Case 3: Uncle is BLACK, line formation. Right-rotate grandparent, recolor`,
+              highlight: current.value,
+              caseType: 3
+            });
+          }
+        } else {
+          // Mirror cases
+          if (uncleColor === 'red') {
+            parent.color = 'black';
+            if (uncle && uncle.value !== null) uncle.color = 'black';
+            grandparent.color = 'red';
+
+            insertSteps.push({
+              tree: cloneTree(insertTree),
+              description: `Case 1: Uncle is RED. Recolor parent (${parent.value}) and uncle to BLACK, grandparent (${grandparent.value}) to RED`,
+              highlight: grandparent.value,
+              caseType: 1
+            });
+
+            current = grandparent;
+          } else {
+            if (current === parent.left) {
+              current = parent;
+              insertTree = rotateRight(insertTree, current);
+
+              insertSteps.push({
+                tree: cloneTree(insertTree),
+                description: `Case 2: Uncle is BLACK, triangle formation. Right-rotate around parent to form a line`,
+                highlight: current.value,
+                caseType: 2
+              });
+            }
+
+            const newParent = current.parent;
+            const newGrandparent = getGrandparent(current);
+
+            if (newParent) newParent.color = 'black';
+            if (newGrandparent) {
+              newGrandparent.color = 'red';
+              insertTree = rotateLeft(insertTree, newGrandparent);
+            }
+
+            insertSteps.push({
+              tree: cloneTree(insertTree),
+              description: `Case 3: Uncle is BLACK, line formation. Left-rotate grandparent, recolor`,
+              highlight: current.value,
+              caseType: 3
+            });
+          }
+        }
+      }
+
+      // Ensure root is black
+      insertTree.color = 'black';
+
+      insertSteps.push({
+        tree: cloneTree(insertTree),
+        description: `Insertion complete! Root ensured to be BLACK`,
+        highlight: null,
+        caseType: null
+      });
+
+      insertCurrentStep = 0;
+      renderInsertStep();
+    }
+
+    function renderInsertStep() {
+      if (insertSteps.length === 0) return;
+
+      const step = insertSteps[insertCurrentStep];
+      const svg = document.getElementById('insert-tree');
+
+      drawTree(svg, step.tree, {
+        showNil: false,
+        highlightNode: step.highlight
+      });
+
+      let desc = step.description;
+      if (step.caseType) {
+        desc = `<span class="case-badge case-${step.caseType}">Case ${step.caseType}</span> ${desc}`;
+      }
+      document.getElementById('insert-description').innerHTML = desc;
+
+      const progress = insertSteps.length > 1
+        ? (insertCurrentStep / (insertSteps.length - 1)) * 100
+        : 0;
+      document.getElementById('insert-progress').style.width = `${progress}%`;
+      document.getElementById('insert-step-indicator').textContent =
+        `Step ${insertCurrentStep + 1} of ${insertSteps.length}`;
+    }
+
+    function insertNode() {
+      const input = document.getElementById('insert-value');
+      const value = parseInt(input.value);
+
+      if (isNaN(value) || value < 1 || value > 99) {
+        alert('Please enter a value between 1 and 99');
+        return;
+      }
+
+      // Check if value already exists
+      if (findNode(insertTree, value)) {
+        alert('Value already exists in the tree');
+        return;
+      }
+
+      generateInsertSteps(value);
+      input.value = '';
+    }
+
+    function insertRandom() {
+      let value;
+      do {
+        value = Math.floor(Math.random() * 99) + 1;
+      } while (findNode(insertTree, value));
+
+      document.getElementById('insert-value').value = value;
+      insertNode();
+    }
+
+    function resetInsertTree() {
+      insertTree = createInsertTree();
+      insertSteps = [];
+      insertCurrentStep = 0;
+      insertPlaying = false;
+      clearInterval(insertInterval);
+
+      const svg = document.getElementById('insert-tree');
+      drawTree(svg, insertTree, { showNil: false });
+
+      document.getElementById('insert-description').textContent =
+        'Enter a value to insert and watch the fix-up process';
+      document.getElementById('insert-progress').style.width = '0%';
+      document.getElementById('insert-step-indicator').textContent = 'Step 0 of 0';
+      document.getElementById('insert-play').textContent = 'Play';
+    }
+
+    function resetInsertAnimation() {
+      insertCurrentStep = 0;
+      renderInsertStep();
+    }
+
+    function insertStepBack() {
+      if (insertCurrentStep > 0) {
+        insertCurrentStep--;
+        renderInsertStep();
+      }
+    }
+
+    function insertStepForward() {
+      if (insertCurrentStep < insertSteps.length - 1) {
+        insertCurrentStep++;
+        renderInsertStep();
+      }
+    }
+
+    function insertPlayPause() {
+      if (insertSteps.length === 0) return;
+
+      insertPlaying = !insertPlaying;
+      const btn = document.getElementById('insert-play');
+
+      if (insertPlaying) {
+        btn.textContent = 'Pause';
+        btn.classList.add('playing');
+
+        if (insertCurrentStep >= insertSteps.length - 1) {
+          insertCurrentStep = 0;
+        }
+
+        insertInterval = setInterval(() => {
+          if (insertCurrentStep < insertSteps.length - 1) {
+            insertCurrentStep++;
+            renderInsertStep();
+          } else {
+            insertPlaying = false;
+            clearInterval(insertInterval);
+            btn.textContent = 'Play';
+            btn.classList.remove('playing');
+          }
+        }, 1500 / insertSpeed);
+      } else {
+        clearInterval(insertInterval);
+        btn.textContent = 'Play';
+        btn.classList.remove('playing');
+      }
+    }
+
+    function setInsertSpeed(speed) {
+      insertSpeed = parseFloat(speed);
+      if (insertPlaying) {
+        insertPlayPause();
+        insertPlayPause();
+      }
+    }
+
+    // ==================== Quiz ====================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(quizId, hintNum) {
+      const hint = document.getElementById(`${quizId}-hint-${hintNum}`);
+      hint.classList.toggle('show');
+    }
+
+    // ==================== Initialization ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize property tree
+      propertyTree = createSampleTree();
+      const propertySvg = document.getElementById('property-tree');
+      drawTree(propertySvg, propertyTree, { showNil: true });
+
+      // Initialize black-height tree
+      createBHTree();
+
+      // Initialize rotation diagrams
+      resetLeftRotation();
+      resetRightRotation();
+
+      // Initialize insertion tree
+      insertTree = createInsertTree();
+      const insertSvg = document.getElementById('insert-tree');
+      drawTree(insertSvg, insertTree, { showNil: false });
+
+      // KaTeX auto-render
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

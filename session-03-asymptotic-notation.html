@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 3: Introduction to Asymptotic Notation | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+
+      /* Complexity colors */
+      --color-o1: #2ECC71;
+      --color-ologn: #3498DB;
+      --color-on: #9B59B6;
+      --color-onlogn: #F39C12;
+      --color-on2: #E74C3C;
+      --color-o2n: #C0392B;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 350px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .code-line.executed {
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Complexity Box */
+    .complexity-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .complexity-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .complexity-item:hover {
+      border-color: var(--accent);
+    }
+
+    .complexity-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .complexity-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    /* Graph Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .legend-item.inactive {
+      opacity: 0.3;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    /* Drag and Drop Game */
+    .matching-game {
+      display: flex;
+      gap: 2rem;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .code-cards, .complexity-targets {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .code-card {
+      padding: 1rem;
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      margin-bottom: 0.75rem;
+      cursor: grab;
+      transition: all 0.2s ease;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+
+    .code-card:active {
+      cursor: grabbing;
+    }
+
+    .code-card.dragging {
+      opacity: 0.5;
+      transform: scale(1.02);
+    }
+
+    .code-card.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .code-card.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .drop-zone {
+      padding: 1rem;
+      background: var(--background-secondary);
+      border: 2px dashed var(--border);
+      border-radius: var(--border-radius);
+      margin-bottom: 0.75rem;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .drop-zone.has-card {
+      border-style: solid;
+    }
+
+    .drop-zone .complexity-label {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.75rem;
+    }
+
+    .hint-container {
+      margin-top: 0.5rem;
+    }
+
+    .hint-text {
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* N Value Slider */
+    .n-slider-container {
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+    }
+
+    .n-slider-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .n-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 1.25rem;
+    }
+
+    .n-slider {
+      width: 100%;
+      height: 8px;
+      appearance: none;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .n-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .n-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Operation Counter */
+    .operation-counter {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .op-count-item {
+      text-align: center;
+      padding: 0.75rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+    }
+
+    .op-count-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .op-count-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes highlight-flash {
+      0% { background: rgba(241, 196, 15, 0.5); }
+      100% { background: rgba(241, 196, 15, 0.2); }
+    }
+
+    /* Table Styles */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table th {
+      background: var(--background-secondary);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:hover {
+      background: var(--code-bg);
+    }
+
+    .comparison-table code {
+      font-size: 0.8rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+
+      .matching-game {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .legend {
+        justify-content: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">*</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 3</span>
+      <h1>Introduction to Asymptotic Notation</h1>
+      <p class="subtitle">Understand how to analyze and compare algorithm efficiency using Big-O notation</p>
+      <div class="meta">
+        <span>~30 minutes</span>
+        <span>Prerequisites: Sessions 1-2 (Python basics, algorithm fundamentals)</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Analyze</strong> the time complexity of simple algorithms</li>
+        <li><strong>Compare</strong> growth rates of common complexity classes</li>
+        <li><strong>Identify</strong> the Big-O notation for given code snippets</li>
+        <li><strong>Trace</strong> operation counts as input size increases</li>
+        <li><strong>Apply</strong> asymptotic analysis to algorithm selection decisions</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: What is Big-O? -->
+    <h2>1. What is Big-O Notation?</h2>
+    <p>Big-O notation describes the <strong>upper bound</strong> of an algorithm's growth rate. It tells us how the running time or space requirements grow as the input size <em>n</em> increases. We focus on the <strong>dominant term</strong> and ignore constants because, for large inputs, the shape of the growth curve matters more than the exact numbers.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Big-O answers the question: "As my input gets really large, how much slower will my algorithm become?" An O(n) algorithm doubles its time when input doubles, but an O(n&sup2;) algorithm quadruples!
+    </div>
+
+    <div class="complexity-box">
+      <h3>Common Complexity Classes</h3>
+      <div class="complexity-grid">
+        <div class="complexity-item" style="border-color: var(--color-o1);">
+          <div class="complexity-label">Constant</div>
+          <div class="complexity-value" style="color: var(--color-o1);">O(1)</div>
+        </div>
+        <div class="complexity-item" style="border-color: var(--color-ologn);">
+          <div class="complexity-label">Logarithmic</div>
+          <div class="complexity-value" style="color: var(--color-ologn);">O(log n)</div>
+        </div>
+        <div class="complexity-item" style="border-color: var(--color-on);">
+          <div class="complexity-label">Linear</div>
+          <div class="complexity-value" style="color: var(--color-on);">O(n)</div>
+        </div>
+        <div class="complexity-item" style="border-color: var(--color-onlogn);">
+          <div class="complexity-label">Linearithmic</div>
+          <div class="complexity-value" style="color: var(--color-onlogn);">O(n log n)</div>
+        </div>
+        <div class="complexity-item" style="border-color: var(--color-on2);">
+          <div class="complexity-label">Quadratic</div>
+          <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+        </div>
+        <div class="complexity-item" style="border-color: var(--color-o2n);">
+          <div class="complexity-label">Exponential</div>
+          <div class="complexity-value" style="color: var(--color-o2n);">O(2&#8319;)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Growth Rate Visualizer -->
+    <h2>2. Interactive Growth Rate Visualizer</h2>
+    <p>Watch how different complexity classes grow as the input size <em>n</em> increases. Notice how quickly exponential growth dominates all others!</p>
+
+    <div class="viz-container">
+      <h3>Growth Rate Comparison</h3>
+      <div class="step-description" id="growth-description">
+        Adjust the slider to see how operations scale with input size
+      </div>
+
+      <div class="viz-canvas" id="growth-chart"></div>
+
+      <div class="legend" id="growth-legend">
+        <div class="legend-item" data-series="o1">
+          <div class="legend-color" style="background: var(--color-o1);"></div>
+          <span>O(1)</span>
+        </div>
+        <div class="legend-item" data-series="ologn">
+          <div class="legend-color" style="background: var(--color-ologn);"></div>
+          <span>O(log n)</span>
+        </div>
+        <div class="legend-item" data-series="on">
+          <div class="legend-color" style="background: var(--color-on);"></div>
+          <span>O(n)</span>
+        </div>
+        <div class="legend-item" data-series="onlogn">
+          <div class="legend-color" style="background: var(--color-onlogn);"></div>
+          <span>O(n log n)</span>
+        </div>
+        <div class="legend-item" data-series="on2">
+          <div class="legend-color" style="background: var(--color-on2);"></div>
+          <span>O(n&sup2;)</span>
+        </div>
+        <div class="legend-item" data-series="o2n">
+          <div class="legend-color" style="background: var(--color-o2n);"></div>
+          <span>O(2&#8319;)</span>
+        </div>
+      </div>
+
+      <div class="n-slider-container">
+        <div class="n-slider-label">
+          <span>Input size (n):</span>
+          <span class="n-value" id="n-value-display">50</span>
+        </div>
+        <input type="range" class="n-slider" id="n-slider" min="1" max="100" value="50">
+      </div>
+
+      <div class="operation-counter" id="operation-counter">
+        <!-- Filled by JavaScript -->
+      </div>
+
+      <div class="step-controls">
+        <button id="growth-reset" title="Reset">Reset</button>
+        <button id="growth-play" title="Animate">Animate Growth</button>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="growth-speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try This:</strong> Toggle different complexity classes in the legend to compare them directly. At what value of <em>n</em> does O(n&sup2;) start to become impractical?
+    </div>
+
+    <!-- Section 3: Code Complexity Analyzer -->
+    <h2>3. Code Complexity Analyzer</h2>
+    <p>Step through code examples and watch how operations are counted. Understanding where operations come from helps you identify the complexity of your own code.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Operation Counter</h3>
+          <div class="step-description" id="analyzer-description">
+            Select an algorithm and step through to count operations
+          </div>
+
+          <div style="padding: 1rem;">
+            <label style="font-size: 0.875rem; color: var(--text-secondary);">Choose Algorithm:</label>
+            <select id="algorithm-select" style="padding: 0.5rem; margin-top: 0.5rem; width: 100%; border: 1px solid var(--border); border-radius: 4px; background: var(--background); color: var(--text-primary); font-family: var(--font-mono);">
+              <option value="linear">Linear Search - O(n)</option>
+              <option value="nested">Nested Loop - O(n&sup2;)</option>
+              <option value="binary">Binary Search - O(log n)</option>
+            </select>
+          </div>
+
+          <div class="viz-canvas" id="analyzer-viz" style="min-height: 200px;">
+            <!-- Operation visualization -->
+          </div>
+
+          <div class="step-controls">
+            <button id="analyzer-reset" title="Reset">Reset</button>
+            <button id="analyzer-back" title="Step Back">Step Back</button>
+            <button id="analyzer-play" title="Play/Pause">Play</button>
+            <button id="analyzer-forward" title="Step Forward">Step Forward</button>
+            <span class="step-indicator" id="analyzer-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="analyzer-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="analyzer-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="analyzer-code">
+            <!-- Code lines generated by JavaScript -->
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Operation Counts</h4>
+          <div class="variable-list" id="analyzer-variables">
+            <div class="variable-item">
+              <span class="variable-name">Comparisons</span>
+              <span class="variable-value" id="var-comparisons">0</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">Assignments</span>
+              <span class="variable-value" id="var-assignments">0</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">Total Ops</span>
+              <span class="variable-value" id="var-total-ops">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Drag and Drop Matching Game -->
+    <h2>4. Complexity Matching Game</h2>
+    <p>Test your understanding! Drag each code pattern to its correct complexity class.</p>
+
+    <div class="viz-container">
+      <h3>Match the Code to Complexity</h3>
+      <div class="step-description" id="game-description">
+        Drag code snippets to their matching Big-O complexity
+      </div>
+
+      <div class="matching-game">
+        <div class="code-cards" id="code-cards">
+          <div class="code-card" draggable="true" data-complexity="on2" data-id="1">
+            <code>for i in range(n):<br>&nbsp;&nbsp;for j in range(n):<br>&nbsp;&nbsp;&nbsp;&nbsp;print(i, j)</code>
+          </div>
+          <div class="code-card" draggable="true" data-complexity="on" data-id="2">
+            <code>for i in range(n):<br>&nbsp;&nbsp;print(i)</code>
+          </div>
+          <div class="code-card" draggable="true" data-complexity="o1" data-id="3">
+            <code>return arr[0] + arr[1]</code>
+          </div>
+          <div class="code-card" draggable="true" data-complexity="ologn" data-id="4">
+            <code>while n > 1:<br>&nbsp;&nbsp;n = n // 2</code>
+          </div>
+          <div class="code-card" draggable="true" data-complexity="onlogn" data-id="5">
+            <code>for i in range(n):<br>&nbsp;&nbsp;j = n<br>&nbsp;&nbsp;while j > 1:<br>&nbsp;&nbsp;&nbsp;&nbsp;j = j // 2</code>
+          </div>
+        </div>
+
+        <div class="complexity-targets" id="complexity-targets">
+          <div class="drop-zone" data-accepts="o1">
+            <span class="complexity-label">O(1)</span>
+          </div>
+          <div class="drop-zone" data-accepts="ologn">
+            <span class="complexity-label">O(log n)</span>
+          </div>
+          <div class="drop-zone" data-accepts="on">
+            <span class="complexity-label">O(n)</span>
+          </div>
+          <div class="drop-zone" data-accepts="onlogn">
+            <span class="complexity-label">O(n log n)</span>
+          </div>
+          <div class="drop-zone" data-accepts="on2">
+            <span class="complexity-label">O(n&sup2;)</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 1rem;">
+        <button id="check-matches" style="padding: 0.75rem 1.5rem; background: var(--accent); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; font-size: 1rem;">Check Answers</button>
+        <button id="reset-game" style="padding: 0.75rem 1.5rem; background: var(--background); color: var(--text-primary); border: 1px solid var(--border); border-radius: var(--border-radius); cursor: pointer; font-size: 1rem; margin-left: 0.5rem;">Reset Game</button>
+      </div>
+
+      <div id="game-result" style="text-align: center; margin-top: 1rem; font-weight: 600;"></div>
+    </div>
+
+    <!-- Section 5: Common Mistakes -->
+    <h2>5. Common Mistakes</h2>
+
+    <div class="common-mistake">
+      <strong>Confusing O(n) with O(n&sup2;):</strong> A single loop is O(n). Two <em>nested</em> loops where both depend on n give O(n&sup2;). Two <em>sequential</em> loops (one after another) are still O(n) + O(n) = O(n).
+    </div>
+
+    <div class="common-mistake">
+      <strong>Ignoring the constant factors too early:</strong> While Big-O ignores constants, in practice O(100n) can be slower than O(n&sup2;) for small n. Big-O tells us about <em>asymptotic</em> behavior - what happens as n gets very large.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Forgetting hidden loops:</strong> Built-in operations like <code>list.copy()</code>, <code>str.join()</code>, or <code>x in list</code> are O(n) operations! Putting them inside a loop makes the total O(n&sup2;).
+    </div>
+
+    <div class="common-mistake">
+      <strong>Mixing up best, average, and worst case:</strong> Big-O typically refers to <em>worst case</em>. Binary search is O(log n) worst case, but O(1) best case (if the target is in the middle).
+    </div>
+
+    <!-- Section 6: Comparison Table -->
+    <h2>6. At-a-Glance Comparison</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Complexity</th>
+          <th>Name</th>
+          <th>n=10</th>
+          <th>n=100</th>
+          <th>n=1000</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>O(1)</code></td>
+          <td>Constant</td>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+          <td>Array index access</td>
+        </tr>
+        <tr>
+          <td><code>O(log n)</code></td>
+          <td>Logarithmic</td>
+          <td>3</td>
+          <td>7</td>
+          <td>10</td>
+          <td>Binary search</td>
+        </tr>
+        <tr>
+          <td><code>O(n)</code></td>
+          <td>Linear</td>
+          <td>10</td>
+          <td>100</td>
+          <td>1,000</td>
+          <td>Linear search</td>
+        </tr>
+        <tr>
+          <td><code>O(n log n)</code></td>
+          <td>Linearithmic</td>
+          <td>33</td>
+          <td>664</td>
+          <td>9,966</td>
+          <td>Merge sort</td>
+        </tr>
+        <tr>
+          <td><code>O(n&sup2;)</code></td>
+          <td>Quadratic</td>
+          <td>100</td>
+          <td>10,000</td>
+          <td>1,000,000</td>
+          <td>Bubble sort</td>
+        </tr>
+        <tr>
+          <td><code>O(2&#8319;)</code></td>
+          <td>Exponential</td>
+          <td>1,024</td>
+          <td>1.27 x 10&sup3;&#8304;</td>
+          <td>--</td>
+          <td>Naive Fibonacci</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 7: Why Do We Care -->
+    <h2>7. Why Do We Care?</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><strong>Scalability:</strong> Will your app still work when you have 1 million users instead of 1,000?</li>
+      <li><strong>Resource Efficiency:</strong> Faster algorithms mean lower server costs and better user experience</li>
+      <li><strong>Interview Preparation:</strong> Complexity analysis is a core topic in technical interviews</li>
+      <li><strong>Algorithm Selection:</strong> Choose the right tool for the job (sorting small lists vs. large datasets)</li>
+    </ul>
+
+    <!-- Section 8: Quiz -->
+    <h2>8. Quick Check</h2>
+
+    <div class="quiz-container">
+      <div class="quiz-question" id="q1">
+        <h4>Question 1: What is the time complexity of this code?</h4>
+        <pre style="background: var(--code-bg); padding: 1rem; border-radius: 4px; font-family: var(--font-mono); margin-bottom: 1rem; font-size: 0.875rem;">for i in range(n):
+    print(i)
+for j in range(n):
+    print(j)</pre>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(n&sup2;)</div>
+          <div class="quiz-option" data-index="1">O(n)</div>
+          <div class="quiz-option" data-index="2">O(2n)</div>
+          <div class="quiz-option" data-index="3">O(log n)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">These are sequential loops, not nested loops.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">O(n) + O(n) = O(2n) = O(n) (we drop constants)</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Two sequential loops each run n times. Total: n + n = 2n operations. Since we drop constants in Big-O, this is O(n).
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q2">
+        <h4>Question 2: Which complexity class grows fastest?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">O(n&sup2;)</div>
+          <div class="quiz-option" data-index="1">O(n log n)</div>
+          <div class="quiz-option" data-index="2">O(n&sup3;)</div>
+          <div class="quiz-option" data-index="3">O(2&#8319;)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">Exponential functions eventually outgrow any polynomial.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">For n=20: n&sup3;=8000, but 2&#8319; = 1,048,576</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Exponential growth (O(2&#8319;)) eventually surpasses any polynomial growth (O(n&sup2;), O(n&sup3;), etc.). This is why exponential algorithms are usually impractical for large inputs.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q3">
+        <h4>Question 3: What is the complexity of binary search?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(log n)</div>
+          <div class="quiz-option" data-index="2">O(n log n)</div>
+          <div class="quiz-option" data-index="3">O(1)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">Binary search halves the search space with each comparison.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">How many times can you halve n before reaching 1? That's log&sub2;(n).</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Binary search eliminates half the remaining elements with each step. To go from n elements to 1, you need log&sub2;(n) steps, giving O(log n) complexity.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q4">
+        <h4>Question 4: What hidden complexity does this code have?</h4>
+        <pre style="background: var(--code-bg); padding: 1rem; border-radius: 4px; font-family: var(--font-mono); margin-bottom: 1rem; font-size: 0.875rem;">result = []
+for i in range(n):
+    result = result + [i]  # Creates new list each time!</pre>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">O(1)</div>
+          <div class="quiz-option" data-index="1">O(n)</div>
+          <div class="quiz-option" data-index="2">O(n&sup2;)</div>
+          <div class="quiz-option" data-index="3">O(n log n)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">The + operator on lists creates a new list by copying all elements.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">Copy sizes: 1, 2, 3, ..., n. Total copies: 1+2+3+...+n = n(n+1)/2</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Using <code>result + [i]</code> copies the entire list each iteration. The copies grow: 1 + 2 + 3 + ... + n = n(n+1)/2 = O(n&sup2;). Use <code>result.append(i)</code> instead for O(n)!
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q5">
+        <h4>Question 5: If an O(n) algorithm takes 1ms for n=1000, how long for n=1,000,000?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">100 ms</div>
+          <div class="quiz-option" data-index="1">1 second (1000 ms)</div>
+          <div class="quiz-option" data-index="2">1,000 seconds</div>
+          <div class="quiz-option" data-index="3">1,000,000 ms</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">O(n) means time grows linearly with input size.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">1,000,000 / 1,000 = 1,000x larger input. Time scales by same factor.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> For O(n), time scales linearly. Input increased 1000x (from 1000 to 1,000,000), so time also increases 1000x: 1ms * 1000 = 1000ms = 1 second.
+        </div>
+      </div>
+    </div>
+
+    <!-- Dive Deeper -->
+    <h2>9. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://www.bigocheatsheet.com/" target="_blank">Big-O Cheat Sheet - Visual Reference</a></li>
+      <li><a href="https://visualgo.net/en/sorting" target="_blank">VisuAlgo - Sorting Algorithm Visualizations</a></li>
+      <li><a href="https://discrete.gr/complexity/" target="_blank">A Gentle Introduction to Algorithm Complexity</a></li>
+      <li><strong>LeetCode Practice:</strong> <a href="https://leetcode.com/problems/two-sum/" target="_blank">Two Sum</a>, <a href="https://leetcode.com/problems/binary-search/" target="_blank">Binary Search</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-02-algorithm-fundamentals.html">Session 2: Fundamentals of Algorithms</a>
+      <a href="session-04-runtime-analysis.html">Session 4: Runtime Analysis</a>
+    </nav>
+  </div>
+
+  <script>
+    // ==================== Theme Toggle ====================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'O' : '*';
+      localStorage.setItem('theme', next);
+
+      // Redraw charts with new theme
+      if (typeof drawGrowthChart === 'function') {
+        drawGrowthChart();
+      }
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'O' : '*';
+
+    // ==================== Growth Rate Visualizer ====================
+    const complexityFunctions = {
+      o1: n => 1,
+      ologn: n => Math.max(1, Math.log2(n)),
+      on: n => n,
+      onlogn: n => n * Math.max(1, Math.log2(n)),
+      on2: n => n * n,
+      o2n: n => Math.pow(2, Math.min(n, 20)) // Cap to avoid infinity
+    };
+
+    const complexityColors = {
+      o1: '#2ECC71',
+      ologn: '#3498DB',
+      on: '#9B59B6',
+      onlogn: '#F39C12',
+      on2: '#E74C3C',
+      o2n: '#C0392B'
+    };
+
+    const complexityLabels = {
+      o1: 'O(1)',
+      ologn: 'O(log n)',
+      on: 'O(n)',
+      onlogn: 'O(n log n)',
+      on2: 'O(n^2)',
+      o2n: 'O(2^n)'
+    };
+
+    let activeSeries = new Set(['o1', 'ologn', 'on', 'onlogn', 'on2', 'o2n']);
+    let currentN = 50;
+    let growthAnimationId = null;
+
+    function drawGrowthChart() {
+      const container = document.getElementById('growth-chart');
+      const width = container.clientWidth;
+      const height = container.clientHeight || 350;
+      const margin = { top: 30, right: 30, bottom: 50, left: 70 };
+
+      // Clear previous
+      container.innerHTML = '';
+
+      const svg = d3.select('#growth-chart')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // Calculate max Y based on active series
+      let maxY = 1;
+      activeSeries.forEach(key => {
+        const val = complexityFunctions[key](currentN);
+        if (val > maxY && val < Infinity) maxY = val;
+      });
+      maxY = Math.min(maxY * 1.1, 10000); // Cap for visibility
+
+      const xScale = d3.scaleLinear().domain([0, currentN]).range([0, innerWidth]);
+      const yScale = d3.scaleLinear().domain([0, maxY]).range([innerHeight, 0]);
+
+      // Grid lines
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const gridColor = isDark ? '#333' : '#ddd';
+      const textColor = isDark ? '#9B9B9B' : '#6B6B6B';
+
+      g.append('g')
+        .attr('class', 'grid')
+        .attr('transform', `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).ticks(10).tickSize(-innerHeight).tickFormat(''))
+        .selectAll('line')
+        .attr('stroke', gridColor)
+        .attr('stroke-opacity', 0.5);
+
+      g.append('g')
+        .attr('class', 'grid')
+        .call(d3.axisLeft(yScale).ticks(5).tickSize(-innerWidth).tickFormat(''))
+        .selectAll('line')
+        .attr('stroke', gridColor)
+        .attr('stroke-opacity', 0.5);
+
+      // Axes
+      g.append('g')
+        .attr('transform', `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).ticks(10))
+        .selectAll('text')
+        .attr('fill', textColor);
+
+      g.append('g')
+        .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => {
+          if (d >= 1000000) return (d/1000000).toFixed(1) + 'M';
+          if (d >= 1000) return (d/1000).toFixed(1) + 'K';
+          return d;
+        }))
+        .selectAll('text')
+        .attr('fill', textColor);
+
+      // Axis labels
+      g.append('text')
+        .attr('x', innerWidth / 2)
+        .attr('y', innerHeight + 40)
+        .attr('text-anchor', 'middle')
+        .attr('fill', textColor)
+        .attr('font-size', '12px')
+        .text('Input Size (n)');
+
+      g.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -innerHeight / 2)
+        .attr('y', -50)
+        .attr('text-anchor', 'middle')
+        .attr('fill', textColor)
+        .attr('font-size', '12px')
+        .text('Operations');
+
+      // Draw lines
+      const line = d3.line()
+        .x(d => xScale(d.x))
+        .y(d => yScale(Math.min(d.y, maxY)))
+        .curve(d3.curveMonotoneX);
+
+      activeSeries.forEach(key => {
+        const data = [];
+        for (let i = 0; i <= currentN; i++) {
+          const y = complexityFunctions[key](i);
+          data.push({ x: i, y: y });
+        }
+
+        g.append('path')
+          .datum(data)
+          .attr('fill', 'none')
+          .attr('stroke', complexityColors[key])
+          .attr('stroke-width', 2.5)
+          .attr('d', line);
+
+        // End point dot
+        const lastPoint = data[data.length - 1];
+        if (lastPoint.y <= maxY) {
+          g.append('circle')
+            .attr('cx', xScale(lastPoint.x))
+            .attr('cy', yScale(lastPoint.y))
+            .attr('r', 5)
+            .attr('fill', complexityColors[key]);
+        }
+      });
+
+      // Update operation counter
+      updateOperationCounter();
+    }
+
+    function updateOperationCounter() {
+      const container = document.getElementById('operation-counter');
+      container.innerHTML = '';
+
+      Object.keys(complexityFunctions).forEach(key => {
+        if (!activeSeries.has(key)) return;
+
+        const val = complexityFunctions[key](currentN);
+        const displayVal = val >= 1000000000 ? 'HUGE!' :
+                          val >= 1000000 ? (val/1000000).toFixed(1) + 'M' :
+                          val >= 1000 ? (val/1000).toFixed(1) + 'K' :
+                          Math.round(val);
+
+        const item = document.createElement('div');
+        item.className = 'op-count-item';
+        item.innerHTML = `
+          <div class="op-count-label" style="color: ${complexityColors[key]}">${complexityLabels[key]}</div>
+          <div class="op-count-value" style="color: ${complexityColors[key]}">${displayVal}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // N Slider
+    const nSlider = document.getElementById('n-slider');
+    const nValueDisplay = document.getElementById('n-value-display');
+
+    nSlider.addEventListener('input', () => {
+      currentN = parseInt(nSlider.value);
+      nValueDisplay.textContent = currentN;
+      drawGrowthChart();
+    });
+
+    // Legend toggle
+    document.querySelectorAll('.legend-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const series = item.dataset.series;
+        if (activeSeries.has(series)) {
+          activeSeries.delete(series);
+          item.classList.add('inactive');
+        } else {
+          activeSeries.add(series);
+          item.classList.remove('inactive');
+        }
+        drawGrowthChart();
+      });
+    });
+
+    // Animate growth
+    document.getElementById('growth-play').addEventListener('click', function() {
+      if (growthAnimationId) {
+        cancelAnimationFrame(growthAnimationId);
+        growthAnimationId = null;
+        this.textContent = 'Animate Growth';
+        return;
+      }
+
+      this.textContent = 'Stop';
+      currentN = 1;
+      nSlider.value = 1;
+      nValueDisplay.textContent = 1;
+
+      const speed = parseFloat(document.getElementById('growth-speed').value);
+
+      function animate() {
+        if (currentN < 100) {
+          currentN += Math.ceil(speed);
+          if (currentN > 100) currentN = 100;
+          nSlider.value = currentN;
+          nValueDisplay.textContent = currentN;
+          drawGrowthChart();
+          growthAnimationId = requestAnimationFrame(animate);
+        } else {
+          document.getElementById('growth-play').textContent = 'Animate Growth';
+          growthAnimationId = null;
+        }
+      }
+
+      animate();
+    });
+
+    document.getElementById('growth-reset').addEventListener('click', () => {
+      if (growthAnimationId) {
+        cancelAnimationFrame(growthAnimationId);
+        growthAnimationId = null;
+        document.getElementById('growth-play').textContent = 'Animate Growth';
+      }
+      currentN = 50;
+      nSlider.value = 50;
+      nValueDisplay.textContent = 50;
+      drawGrowthChart();
+    });
+
+    // Initial draw
+    window.addEventListener('resize', drawGrowthChart);
+    setTimeout(drawGrowthChart, 100);
+
+    // ==================== Code Complexity Analyzer ====================
+    const algorithms = {
+      linear: {
+        code: [
+          { line: 1, content: '<span class="keyword">def</span> <span class="function">linear_search</span>(arr, target):', indent: 0 },
+          { line: 2, content: '    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="function">len</span>(arr)):', indent: 1 },
+          { line: 3, content: '        <span class="keyword">if</span> arr[i] == target:', indent: 2 },
+          { line: 4, content: '            <span class="keyword">return</span> i', indent: 2 },
+          { line: 5, content: '    <span class="keyword">return</span> <span class="number">-1</span>', indent: 1 }
+        ],
+        array: [3, 7, 2, 9, 5, 1, 8, 4],
+        target: 5,
+        generateSteps: function() {
+          const steps = [];
+          const arr = this.array;
+          const target = this.target;
+
+          steps.push({
+            line: 1,
+            desc: `Call linear_search with target = ${target}`,
+            highlight: [],
+            comparisons: 0,
+            assignments: 0
+          });
+
+          for (let i = 0; i < arr.length; i++) {
+            steps.push({
+              line: 2,
+              desc: `Loop iteration: i = ${i}`,
+              highlight: [i],
+              comparisons: steps[steps.length - 1].comparisons,
+              assignments: steps[steps.length - 1].assignments + 1
+            });
+
+            const found = arr[i] === target;
+            steps.push({
+              line: 3,
+              desc: `Compare arr[${i}] = ${arr[i]} with target ${target}: ${found ? 'MATCH!' : 'No match'}`,
+              highlight: [i],
+              comparing: true,
+              comparisons: steps[steps.length - 1].comparisons + 1,
+              assignments: steps[steps.length - 1].assignments
+            });
+
+            if (found) {
+              steps.push({
+                line: 4,
+                desc: `Found target at index ${i}! Return ${i}`,
+                highlight: [i],
+                found: true,
+                comparisons: steps[steps.length - 1].comparisons,
+                assignments: steps[steps.length - 1].assignments
+              });
+              return steps;
+            }
+          }
+
+          steps.push({
+            line: 5,
+            desc: 'Target not found, return -1',
+            highlight: [],
+            comparisons: steps[steps.length - 1].comparisons,
+            assignments: steps[steps.length - 1].assignments
+          });
+
+          return steps;
+        }
+      },
+      nested: {
+        code: [
+          { line: 1, content: '<span class="keyword">def</span> <span class="function">print_pairs</span>(n):', indent: 0 },
+          { line: 2, content: '    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):', indent: 1 },
+          { line: 3, content: '        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(n):', indent: 2 },
+          { line: 4, content: '            <span class="function">print</span>(i, j)', indent: 3 }
+        ],
+        n: 4,
+        generateSteps: function() {
+          const steps = [];
+          const n = this.n;
+
+          steps.push({
+            line: 1,
+            desc: `Call print_pairs with n = ${n}`,
+            highlight: [],
+            i: null,
+            j: null,
+            comparisons: 0,
+            assignments: 0
+          });
+
+          for (let i = 0; i < n; i++) {
+            steps.push({
+              line: 2,
+              desc: `Outer loop: i = ${i}`,
+              highlight: [],
+              i: i,
+              j: null,
+              comparisons: steps[steps.length - 1].comparisons + 1,
+              assignments: steps[steps.length - 1].assignments + 1
+            });
+
+            for (let j = 0; j < n; j++) {
+              steps.push({
+                line: 3,
+                desc: `Inner loop: j = ${j}`,
+                highlight: [],
+                i: i,
+                j: j,
+                comparisons: steps[steps.length - 1].comparisons + 1,
+                assignments: steps[steps.length - 1].assignments + 1
+              });
+
+              steps.push({
+                line: 4,
+                desc: `Print (${i}, ${j})`,
+                highlight: [],
+                i: i,
+                j: j,
+                pair: [i, j],
+                comparisons: steps[steps.length - 1].comparisons,
+                assignments: steps[steps.length - 1].assignments
+              });
+            }
+          }
+
+          return steps;
+        }
+      },
+      binary: {
+        code: [
+          { line: 1, content: '<span class="keyword">def</span> <span class="function">binary_search</span>(arr, target):', indent: 0 },
+          { line: 2, content: '    left, right = <span class="number">0</span>, <span class="function">len</span>(arr) - <span class="number">1</span>', indent: 1 },
+          { line: 3, content: '    <span class="keyword">while</span> left <= right:', indent: 1 },
+          { line: 4, content: '        mid = (left + right) // <span class="number">2</span>', indent: 2 },
+          { line: 5, content: '        <span class="keyword">if</span> arr[mid] == target:', indent: 2 },
+          { line: 6, content: '            <span class="keyword">return</span> mid', indent: 3 },
+          { line: 7, content: '        <span class="keyword">elif</span> arr[mid] < target:', indent: 2 },
+          { line: 8, content: '            left = mid + <span class="number">1</span>', indent: 3 },
+          { line: 9, content: '        <span class="keyword">else</span>:', indent: 2 },
+          { line: 10, content: '            right = mid - <span class="number">1</span>', indent: 3 },
+          { line: 11, content: '    <span class="keyword">return</span> <span class="number">-1</span>', indent: 1 }
+        ],
+        array: [1, 3, 5, 7, 9, 11, 13, 15],
+        target: 7,
+        generateSteps: function() {
+          const steps = [];
+          const arr = [...this.array];
+          const target = this.target;
+          let left = 0, right = arr.length - 1;
+
+          steps.push({
+            line: 1,
+            desc: `Call binary_search for target = ${target}`,
+            highlight: [],
+            left: null,
+            right: null,
+            mid: null,
+            comparisons: 0,
+            assignments: 0
+          });
+
+          steps.push({
+            line: 2,
+            desc: `Initialize left = 0, right = ${right}`,
+            highlight: [],
+            left: left,
+            right: right,
+            mid: null,
+            range: [left, right],
+            comparisons: 0,
+            assignments: 2
+          });
+
+          while (left <= right) {
+            steps.push({
+              line: 3,
+              desc: `Check: left(${left}) <= right(${right})? Yes`,
+              highlight: [],
+              left: left,
+              right: right,
+              mid: null,
+              range: [left, right],
+              comparisons: steps[steps.length - 1].comparisons + 1,
+              assignments: steps[steps.length - 1].assignments
+            });
+
+            const mid = Math.floor((left + right) / 2);
+            steps.push({
+              line: 4,
+              desc: `Calculate mid = (${left} + ${right}) / 2 = ${mid}`,
+              highlight: [mid],
+              left: left,
+              right: right,
+              mid: mid,
+              range: [left, right],
+              comparisons: steps[steps.length - 1].comparisons,
+              assignments: steps[steps.length - 1].assignments + 1
+            });
+
+            if (arr[mid] === target) {
+              steps.push({
+                line: 5,
+                desc: `Compare arr[${mid}] = ${arr[mid]} with ${target}: MATCH!`,
+                highlight: [mid],
+                left: left,
+                right: right,
+                mid: mid,
+                found: true,
+                comparisons: steps[steps.length - 1].comparisons + 1,
+                assignments: steps[steps.length - 1].assignments
+              });
+              steps.push({
+                line: 6,
+                desc: `Return index ${mid}`,
+                highlight: [mid],
+                left: left,
+                right: right,
+                mid: mid,
+                found: true,
+                comparisons: steps[steps.length - 1].comparisons,
+                assignments: steps[steps.length - 1].assignments
+              });
+              return steps;
+            } else if (arr[mid] < target) {
+              steps.push({
+                line: 7,
+                desc: `arr[${mid}] = ${arr[mid]} < ${target}: Search right half`,
+                highlight: [mid],
+                left: left,
+                right: right,
+                mid: mid,
+                comparisons: steps[steps.length - 1].comparisons + 2,
+                assignments: steps[steps.length - 1].assignments
+              });
+              left = mid + 1;
+              steps.push({
+                line: 8,
+                desc: `Update left = ${left}`,
+                highlight: [],
+                left: left,
+                right: right,
+                mid: mid,
+                range: [left, right],
+                comparisons: steps[steps.length - 1].comparisons,
+                assignments: steps[steps.length - 1].assignments + 1
+              });
+            } else {
+              steps.push({
+                line: 9,
+                desc: `arr[${mid}] = ${arr[mid]} > ${target}: Search left half`,
+                highlight: [mid],
+                left: left,
+                right: right,
+                mid: mid,
+                comparisons: steps[steps.length - 1].comparisons + 2,
+                assignments: steps[steps.length - 1].assignments
+              });
+              right = mid - 1;
+              steps.push({
+                line: 10,
+                desc: `Update right = ${right}`,
+                highlight: [],
+                left: left,
+                right: right,
+                mid: mid,
+                range: [left, right],
+                comparisons: steps[steps.length - 1].comparisons,
+                assignments: steps[steps.length - 1].assignments + 1
+              });
+            }
+          }
+
+          steps.push({
+            line: 11,
+            desc: 'Target not found, return -1',
+            highlight: [],
+            left: left,
+            right: right,
+            mid: null,
+            comparisons: steps[steps.length - 1].comparisons,
+            assignments: steps[steps.length - 1].assignments
+          });
+
+          return steps;
+        }
+      }
+    };
+
+    let currentAlgorithm = 'linear';
+    let analyzerSteps = [];
+    let analyzerCurrentStep = 0;
+    let analyzerPlaying = false;
+    let analyzerInterval = null;
+
+    function initAnalyzer() {
+      const algo = algorithms[currentAlgorithm];
+      analyzerSteps = algo.generateSteps();
+      analyzerCurrentStep = 0;
+
+      // Render code
+      const codeContainer = document.getElementById('analyzer-code');
+      codeContainer.innerHTML = '';
+      algo.code.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'code-line';
+        div.dataset.line = line.line;
+        div.innerHTML = `
+          <span class="line-number">${line.line}</span>
+          <span class="line-content">${line.content}</span>
+        `;
+        codeContainer.appendChild(div);
+      });
+
+      renderAnalyzerStep();
+    }
+
+    function renderAnalyzerStep() {
+      const step = analyzerSteps[analyzerCurrentStep] || {};
+      const algo = algorithms[currentAlgorithm];
+
+      // Update description
+      document.getElementById('analyzer-description').textContent = step.desc || 'Ready to start';
+
+      // Update code highlighting
+      document.querySelectorAll('#analyzer-code .code-line').forEach(line => {
+        line.classList.remove('highlighted', 'executed');
+        const lineNum = parseInt(line.dataset.line);
+        if (lineNum === step.line) {
+          line.classList.add('highlighted');
+        }
+      });
+
+      // Update variables
+      document.getElementById('var-comparisons').textContent = step.comparisons || 0;
+      document.getElementById('var-assignments').textContent = step.assignments || 0;
+      document.getElementById('var-total-ops').textContent = (step.comparisons || 0) + (step.assignments || 0);
+
+      // Update visualization
+      const viz = document.getElementById('analyzer-viz');
+      viz.innerHTML = '';
+
+      if (currentAlgorithm === 'linear' || currentAlgorithm === 'binary') {
+        const arr = algo.array;
+        const container = document.createElement('div');
+        container.style.cssText = 'display: flex; gap: 4px; justify-content: center; align-items: center; height: 100%; padding: 2rem;';
+
+        arr.forEach((val, i) => {
+          const box = document.createElement('div');
+          box.style.cssText = `
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--accent);
+            color: white;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            flex-direction: column;
+          `;
+
+          // Highlighting
+          if (step.highlight && step.highlight.includes(i)) {
+            box.style.background = step.found ? 'var(--success)' :
+                                   step.comparing ? 'var(--comparing)' : 'var(--current-focus)';
+            box.style.transform = 'scale(1.1)';
+            box.style.boxShadow = '0 0 15px rgba(241, 196, 15, 0.5)';
+          }
+
+          // Range indication for binary search
+          if (currentAlgorithm === 'binary' && step.range) {
+            if (i < step.range[0] || i > step.range[1]) {
+              box.style.opacity = '0.3';
+            }
+          }
+
+          box.innerHTML = `
+            <span style="font-size: 1.25rem;">${val}</span>
+            <span style="font-size: 0.75rem; opacity: 0.7;">[${i}]</span>
+          `;
+          container.appendChild(box);
+        });
+
+        viz.appendChild(container);
+      } else if (currentAlgorithm === 'nested') {
+        // Grid visualization for nested loops
+        const n = algo.n;
+        const container = document.createElement('div');
+        container.style.cssText = 'display: flex; flex-direction: column; gap: 4px; justify-content: center; align-items: center; height: 100%; padding: 1rem;';
+
+        for (let i = 0; i < n; i++) {
+          const row = document.createElement('div');
+          row.style.cssText = 'display: flex; gap: 4px;';
+
+          for (let j = 0; j < n; j++) {
+            const cell = document.createElement('div');
+            cell.style.cssText = `
+              width: 45px; height: 45px;
+              display: flex; align-items: center; justify-content: center;
+              background: var(--accent);
+              color: white;
+              font-family: var(--font-mono);
+              font-size: 0.75rem;
+              border-radius: 4px;
+              transition: all 0.3s ease;
+              opacity: 0.3;
+            `;
+
+            // Highlight current cell
+            if (step.pair && step.pair[0] === i && step.pair[1] === j) {
+              cell.style.background = 'var(--current-focus)';
+              cell.style.opacity = '1';
+              cell.style.transform = 'scale(1.1)';
+            } else if (step.i !== null && step.j !== null) {
+              // Already visited
+              if (i < step.i || (i === step.i && j < step.j)) {
+                cell.style.background = 'var(--success)';
+                cell.style.opacity = '0.6';
+              }
+            }
+
+            cell.textContent = `(${i},${j})`;
+            row.appendChild(cell);
+          }
+          container.appendChild(row);
+        }
+
+        viz.appendChild(container);
+      }
+
+      // Update progress
+      const progress = analyzerSteps.length > 1 ? (analyzerCurrentStep / (analyzerSteps.length - 1)) * 100 : 0;
+      document.getElementById('analyzer-progress').style.width = `${progress}%`;
+      document.getElementById('analyzer-step-indicator').textContent = `Step ${analyzerCurrentStep + 1} of ${analyzerSteps.length}`;
+    }
+
+    function analyzerPlay() {
+      if (analyzerCurrentStep >= analyzerSteps.length - 1) {
+        analyzerCurrentStep = 0;
+      }
+      analyzerPlaying = true;
+      document.getElementById('analyzer-play').textContent = 'Pause';
+      document.getElementById('analyzer-play').classList.add('playing');
+
+      const speed = parseFloat(document.getElementById('analyzer-speed').value);
+      analyzerInterval = setInterval(() => {
+        if (analyzerCurrentStep < analyzerSteps.length - 1) {
+          analyzerCurrentStep++;
+          renderAnalyzerStep();
+        } else {
+          analyzerPause();
+        }
+      }, 1000 / speed);
+    }
+
+    function analyzerPause() {
+      analyzerPlaying = false;
+      clearInterval(analyzerInterval);
+      document.getElementById('analyzer-play').textContent = 'Play';
+      document.getElementById('analyzer-play').classList.remove('playing');
+    }
+
+    // Algorithm selector
+    document.getElementById('algorithm-select').addEventListener('change', (e) => {
+      currentAlgorithm = e.target.value;
+      analyzerPause();
+      initAnalyzer();
+    });
+
+    // Analyzer controls
+    document.getElementById('analyzer-play').addEventListener('click', () => {
+      analyzerPlaying ? analyzerPause() : analyzerPlay();
+    });
+
+    document.getElementById('analyzer-reset').addEventListener('click', () => {
+      analyzerPause();
+      analyzerCurrentStep = 0;
+      renderAnalyzerStep();
+    });
+
+    document.getElementById('analyzer-back').addEventListener('click', () => {
+      if (analyzerCurrentStep > 0) {
+        analyzerCurrentStep--;
+        renderAnalyzerStep();
+      }
+    });
+
+    document.getElementById('analyzer-forward').addEventListener('click', () => {
+      if (analyzerCurrentStep < analyzerSteps.length - 1) {
+        analyzerCurrentStep++;
+        renderAnalyzerStep();
+      }
+    });
+
+    document.getElementById('analyzer-speed').addEventListener('change', () => {
+      if (analyzerPlaying) {
+        analyzerPause();
+        analyzerPlay();
+      }
+    });
+
+    // Initialize
+    initAnalyzer();
+
+    // ==================== Drag and Drop Matching Game ====================
+    const codeCards = document.querySelectorAll('.code-card');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    let draggedCard = null;
+
+    codeCards.forEach(card => {
+      card.addEventListener('dragstart', (e) => {
+        draggedCard = card;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        draggedCard = null;
+      });
+    });
+
+    dropZones.forEach(zone => {
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+      });
+
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('drag-over');
+      });
+
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+
+        if (draggedCard) {
+          // Remove from previous zone if any
+          const currentZone = draggedCard.parentElement;
+          if (currentZone.classList.contains('drop-zone')) {
+            currentZone.classList.remove('has-card');
+            const label = document.createElement('span');
+            label.className = 'complexity-label';
+            label.textContent = complexityLabels[currentZone.dataset.accepts];
+            currentZone.innerHTML = '';
+            currentZone.appendChild(label);
+          }
+
+          // Check if zone already has a card
+          const existingCard = zone.querySelector('.code-card');
+          if (existingCard) {
+            document.getElementById('code-cards').appendChild(existingCard);
+            existingCard.classList.remove('correct', 'incorrect');
+          }
+
+          zone.innerHTML = '';
+          zone.appendChild(draggedCard);
+          zone.classList.add('has-card');
+          draggedCard.classList.remove('correct', 'incorrect');
+        }
+      });
+    });
+
+    // Check answers
+    document.getElementById('check-matches').addEventListener('click', () => {
+      let correct = 0;
+      let total = 0;
+
+      dropZones.forEach(zone => {
+        const card = zone.querySelector('.code-card');
+        if (card) {
+          total++;
+          const isCorrect = card.dataset.complexity === zone.dataset.accepts;
+          card.classList.remove('correct', 'incorrect');
+          card.classList.add(isCorrect ? 'correct' : 'incorrect');
+          if (isCorrect) correct++;
+        }
+      });
+
+      const result = document.getElementById('game-result');
+      if (total === 0) {
+        result.textContent = 'Drag the code cards to the complexity zones first!';
+        result.style.color = 'var(--warning)';
+      } else if (correct === 5) {
+        result.textContent = 'Perfect! All 5 correct!';
+        result.style.color = 'var(--success)';
+      } else {
+        result.textContent = `${correct} of ${total} correct. Keep trying!`;
+        result.style.color = correct > 2 ? 'var(--warning)' : 'var(--error)';
+      }
+    });
+
+    // Reset game
+    document.getElementById('reset-game').addEventListener('click', () => {
+      const cardsContainer = document.getElementById('code-cards');
+
+      codeCards.forEach(card => {
+        card.classList.remove('correct', 'incorrect');
+        cardsContainer.appendChild(card);
+      });
+
+      dropZones.forEach(zone => {
+        zone.classList.remove('has-card');
+        zone.innerHTML = `<span class="complexity-label">${complexityLabels[zone.dataset.accepts]}</span>`;
+      });
+
+      document.getElementById('game-result').textContent = '';
+    });
+
+    // ==================== Quiz Functionality ====================
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintIndex) {
+      const container = btn.closest('.hint-container');
+      const hints = container.querySelectorAll('.hint-text');
+      const buttons = container.querySelectorAll('.hint-btn');
+
+      // Show current hint
+      hints[hintIndex].classList.add('show');
+      btn.style.display = 'none';
+
+      // Show next hint button if exists
+      if (buttons[hintIndex + 1]) {
+        buttons[hintIndex + 1].style.display = 'inline';
+      }
+    }
+
+    // ==================== KaTeX Rendering ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+
+    // ==================== Keyboard Shortcuts ====================
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          analyzerPlaying ? analyzerPause() : analyzerPlay();
+          break;
+        case 'ArrowRight':
+          if (analyzerCurrentStep < analyzerSteps.length - 1) {
+            analyzerCurrentStep++;
+            renderAnalyzerStep();
+          }
+          break;
+        case 'ArrowLeft':
+          if (analyzerCurrentStep > 0) {
+            analyzerCurrentStep--;
+            renderAnalyzerStep();
+          }
+          break;
+        case 'r':
+        case 'R':
+          analyzerPause();
+          analyzerCurrentStep = 0;
+          renderAnalyzerStep();
+          break;
+      }
+    });
+  </script>
+</body>
+</html>

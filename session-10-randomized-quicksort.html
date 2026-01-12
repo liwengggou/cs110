@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 10: Randomized Quicksort | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --accent: #2EAADC;
+      --accent-hover: #2596be;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --warning: #F59E0B;
+      --purple: #9B51E0;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      --current-focus: #F1C40F;
+      --comparing: #2EAADC;
+      --swapping: #9B51E0;
+      --sorted: #0F7B6C;
+      --pivot: #E74C3C;
+      --random-highlight: #FF6B6B;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 200px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .viz-canvas.tall {
+      min-height: 350px;
+    }
+
+    /* Bar Chart Visualization */
+    .bar-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      height: 100%;
+      width: 100%;
+      padding-bottom: 30px;
+    }
+
+    .bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .bar-fill {
+      width: 30px;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .bar-fill.pivot {
+      background: var(--pivot);
+      box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);
+    }
+
+    .bar-fill.comparing {
+      background: var(--comparing);
+    }
+
+    .bar-fill.swapping {
+      background: var(--swapping);
+      animation: pulse 0.3s ease;
+    }
+
+    .bar-fill.sorted {
+      background: var(--sorted);
+    }
+
+    .bar-fill.left-partition {
+      background: #3498DB;
+    }
+
+    .bar-fill.right-partition {
+      background: #E67E22;
+    }
+
+    .bar-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.8);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    /* Step Controls */
+    .step-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-controls button.playing {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .step-controls button.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .step-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      margin-top: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: height 0.2s;
+    }
+
+    .progress-container:hover .progress-bar {
+      height: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Step Description */
+    .step-description {
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-description::before {
+      content: '>';
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    /* Code Panel */
+    .viz-code-split {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .viz-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-section {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header .language-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .code-content {
+      padding: 1rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.125rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      transition: background 0.2s ease;
+      position: relative;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid var(--current-focus);
+      margin-left: -3px;
+    }
+
+    .line-number {
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+    .variable { color: #e06c75; }
+    .operator { color: #56b6c2; }
+
+    /* Variable Panel */
+    .variable-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .variable-panel h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .variable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .variable-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--background);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    .variable-name {
+      color: var(--accent);
+    }
+
+    .variable-value {
+      color: var(--text-primary);
+    }
+
+    .variable-value.changed {
+      color: var(--current-focus);
+      font-weight: 600;
+      animation: value-change 0.4s ease-out;
+    }
+
+    @keyframes value-change {
+      0% { background: rgba(241, 196, 15, 0.5); transform: scale(1.1); }
+      100% { background: transparent; transform: scale(1); }
+    }
+
+    /* Callout Boxes */
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #F1C40F;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .key-insight strong {
+      color: #D68910;
+    }
+
+    .try-this {
+      background: rgba(46, 170, 220, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .try-this strong {
+      color: var(--accent);
+    }
+
+    .common-mistake {
+      background: rgba(235, 87, 87, 0.1);
+      border-left: 4px solid var(--error);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .common-mistake strong {
+      color: var(--error);
+    }
+
+    /* Comparison Container */
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .comparison-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+
+    .comparison-header {
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .comparison-header.deterministic {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--error);
+    }
+
+    .comparison-header.randomized {
+      background: rgba(46, 204, 113, 0.1);
+      color: var(--success);
+    }
+
+    .comparison-body {
+      padding: 1rem;
+    }
+
+    .comparison-canvas {
+      height: 180px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+
+    /* Stats Display */
+    .stats-display {
+      display: flex;
+      justify-content: space-around;
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    /* Histogram */
+    .histogram-container {
+      height: 250px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      position: relative;
+    }
+
+    .histogram-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      height: 100%;
+      gap: 2px;
+    }
+
+    .histogram-bar {
+      background: var(--accent);
+      min-width: 8px;
+      border-radius: 2px 2px 0 0;
+      transition: height 0.3s ease;
+    }
+
+    .histogram-axis {
+      position: absolute;
+      bottom: 0;
+      left: 1rem;
+      right: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      padding-top: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.625rem;
+      color: rgba(255,255,255,0.6);
+      font-family: var(--font-mono);
+    }
+
+    /* Algorithm Type Cards */
+    .algo-type-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .algo-type-card {
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .algo-type-card.las-vegas {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.05);
+    }
+
+    .algo-type-card.monte-carlo {
+      border-color: var(--purple);
+      background: rgba(155, 81, 224, 0.05);
+    }
+
+    .algo-type-card h4 {
+      margin-bottom: 0.5rem;
+    }
+
+    .algo-type-card.las-vegas h4 {
+      color: var(--success);
+    }
+
+    .algo-type-card.monte-carlo h4 {
+      color: var(--purple);
+    }
+
+    .algo-characteristics {
+      list-style: none;
+      padding: 0;
+      margin-top: 1rem;
+    }
+
+    .algo-characteristics li {
+      padding: 0.25rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      font-size: 0.9rem;
+    }
+
+    .algo-characteristics li::before {
+      content: '\2022';
+      position: absolute;
+      left: 0;
+      color: var(--text-secondary);
+    }
+
+    /* Interactive Demo Container */
+    .demo-container {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .demo-controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .demo-btn {
+      padding: 0.75rem 1.5rem;
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--background);
+      color: var(--text-primary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .demo-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .demo-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .demo-output {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      color: white;
+      font-family: var(--font-mono);
+      min-height: 100px;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin: 0 0 1rem 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .quiz-option:hover {
+      background: var(--code-bg);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--error);
+      background: rgba(235, 87, 87, 0.1);
+    }
+
+    .hint-container {
+      margin-top: 0.75rem;
+    }
+
+    .hint-btn {
+      font-size: 0.875rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .hint-text {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(46, 170, 220, 0.1);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .hint-text.show {
+      display: block;
+    }
+
+    .quiz-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-explanation.show {
+      display: block;
+    }
+
+    /* Math Display */
+    .math-block {
+      background: var(--background-secondary);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      margin: 1.5rem 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Keyboard Hints */
+    .keyboard-hints {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .keyboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      height: 1.5rem;
+      padding: 0 0.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes randomSelect {
+      0% { box-shadow: 0 0 0 rgba(231, 76, 60, 0); }
+      50% { box-shadow: 0 0 20px rgba(231, 76, 60, 0.8); }
+      100% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.6); }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .viz-code-split {
+        flex-direction: column;
+      }
+
+      .code-section {
+        flex: 1;
+      }
+
+      .comparison-container,
+      .algo-type-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+
+      .step-controls { flex-wrap: wrap; }
+      .step-controls button { flex: 1; min-width: 40px; }
+      .speed-control { width: 100%; justify-content: center; margin-top: 0.5rem; margin-left: 0; }
+
+      .keyboard-hints { display: none; }
+
+      .bar-fill { width: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">Moon</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">Session 10</span>
+      <h1>Randomized Quicksort</h1>
+      <p class="subtitle">Using randomization to achieve expected O(n log n) performance and avoid worst-case behavior</p>
+      <div class="meta">
+        <span>Time: ~35 minutes</span>
+        <span>Prerequisites: Basic Quicksort, Probability</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>Learning Objectives</h3>
+      <ul>
+        <li><strong>Understand</strong> why randomization improves algorithm performance</li>
+        <li><strong>Implement</strong> random pivot selection in Quicksort</li>
+        <li><strong>Analyze</strong> expected running time using probabilistic methods</li>
+        <li><strong>Distinguish</strong> between Las Vegas and Monte Carlo algorithms</li>
+        <li><strong>Demonstrate</strong> how randomization reduces worst-case probability</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Why Randomization? -->
+    <h2>1. Why Randomization in Algorithms?</h2>
+    <p>Traditional (deterministic) Quicksort has a weakness: on already-sorted or reverse-sorted input, choosing the first or last element as pivot leads to O(n^2) time complexity. Randomization solves this by making the algorithm's performance independent of input order.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> By randomly selecting the pivot, we ensure that no adversary can construct an input that consistently causes worst-case behavior. The expected running time becomes O(n log n) regardless of input order.
+    </div>
+
+    <div class="viz-container">
+      <h3>The Problem with Deterministic Pivot Selection</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">Consider what happens when we always pick the first element as pivot on a sorted array:</p>
+
+      <div class="comparison-container">
+        <div class="comparison-panel">
+          <div class="comparison-header deterministic">Deterministic (First Element)</div>
+          <div class="comparison-body">
+            <div class="comparison-canvas" id="det-demo-canvas"></div>
+            <div class="stats-display">
+              <div class="stat-item">
+                <div class="stat-value" id="det-comparisons">0</div>
+                <div class="stat-label">Comparisons</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="det-recursion">0</div>
+                <div class="stat-label">Recursion Depth</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="comparison-panel">
+          <div class="comparison-header randomized">Randomized Pivot</div>
+          <div class="comparison-body">
+            <div class="comparison-canvas" id="rand-demo-canvas"></div>
+            <div class="stats-display">
+              <div class="stat-item">
+                <div class="stat-value" id="rand-comparisons">0</div>
+                <div class="stat-label">Comparisons</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="rand-recursion">0</div>
+                <div class="stat-label">Recursion Depth</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="comparison-start">Run Comparison</button>
+        <button id="comparison-reset">Reset</button>
+        <span class="step-indicator">Input: Sorted array [1, 2, 3, ..., 10]</span>
+      </div>
+    </div>
+
+    <!-- Section 2: Randomized Quicksort Algorithm -->
+    <h2>2. Randomized Quicksort Algorithm</h2>
+    <p>The only change from standard Quicksort is in the partition step: instead of always choosing a fixed position (first, last, or middle), we randomly select an element as the pivot.</p>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Step-by-Step Randomized Quicksort</h3>
+          <div class="step-description" id="rqs-description">
+            Press Play to watch randomized Quicksort in action
+          </div>
+
+          <div class="viz-canvas tall" id="rqs-canvas">
+            <div class="bar-container" id="rqs-bars"></div>
+          </div>
+
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--pivot)"></div>
+              <span>Pivot</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--comparing)"></div>
+              <span>Comparing</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--swapping)"></div>
+              <span>Swapping</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--sorted)"></div>
+              <span>Sorted Position</span>
+            </div>
+          </div>
+
+          <div class="step-controls">
+            <button id="rqs-reset" title="Reset">|&lt;</button>
+            <button id="rqs-back" title="Step Back">&lt;&lt;</button>
+            <button id="rqs-play" title="Play/Pause">Play</button>
+            <button id="rqs-forward" title="Step Forward">&gt;&gt;</button>
+            <span class="step-indicator" id="rqs-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="rqs-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="rqs-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="rqs-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">import</span> random</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">randomized_quicksort</span>(arr, low, high):</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    <span class="keyword">if</span> low < high:</span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">        <span class="comment"># Random pivot selection</span></span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">        pivot_idx = random.randint(low, high)</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">        arr[pivot_idx], arr[high] = arr[high], arr[pivot_idx]</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">        </span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">        <span class="comment"># Partition</span></span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content">        pi = partition(arr, low, high)</span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content">        </span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">        <span class="comment"># Recurse</span></span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">        randomized_quicksort(arr, low, pi - 1)</span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">        randomized_quicksort(arr, pi + 1, high)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Current State</h4>
+          <div class="variable-list" id="rqs-variables">
+            <div class="variable-item">
+              <span class="variable-name">pivot_idx</span>
+              <span class="variable-value" id="var-pivot-idx">--</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">pivot_value</span>
+              <span class="variable-value" id="var-pivot-value">--</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">low</span>
+              <span class="variable-value" id="var-low">--</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">high</span>
+              <span class="variable-value" id="var-high">--</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">comparisons</span>
+              <span class="variable-value" id="var-comparisons">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Expected Running Time Analysis -->
+    <h2>3. Expected Running Time Analysis</h2>
+    <p>The key to analyzing randomized Quicksort is understanding that, on average, random pivot selection produces reasonably balanced partitions.</p>
+
+    <div class="math-block">
+      <p><strong>Expected number of comparisons:</strong></p>
+      <p>$$E[C] = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n} \frac{2}{j-i+1} = O(n \log n)$$</p>
+    </div>
+
+    <div class="key-insight">
+      <strong>Intuition:</strong> Each pair of elements is compared at most once, and the probability that elements $z_i$ and $z_j$ are compared equals $\frac{2}{j-i+1}$ (they're compared only if one of them is chosen as pivot before any element between them).
+    </div>
+
+    <h3>Why O(n log n) Expected Time?</h3>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem;">
+      <li><strong>Good Pivots:</strong> A pivot is "good" if it creates partitions of at most 3n/4 elements each. This happens with probability at least 1/2.</li>
+      <li><strong>Expected Good Pivots:</strong> On average, we get a good pivot every 2 attempts.</li>
+      <li><strong>Recursion Depth:</strong> With good pivots, we need O(log n) levels of recursion.</li>
+      <li><strong>Work per Level:</strong> Each level does O(n) work total.</li>
+    </ul>
+
+    <!-- Section 4: Probability Simulator -->
+    <h2>4. Running Time Distribution Simulator</h2>
+    <p>Run multiple simulations to see how the comparison count varies. Even on worst-case inputs (sorted arrays), randomized Quicksort performs consistently well.</p>
+
+    <div class="viz-container">
+      <h3>Comparison Count Distribution</h3>
+      <div class="step-description" id="sim-description">
+        Run simulations to build the histogram
+      </div>
+
+      <div class="histogram-container" id="histogram-container">
+        <div class="histogram-bars" id="histogram-bars"></div>
+        <div class="histogram-axis">
+          <span id="hist-min">0</span>
+          <span>Comparisons</span>
+          <span id="hist-max">0</span>
+        </div>
+      </div>
+
+      <div class="stats-display">
+        <div class="stat-item">
+          <div class="stat-value" id="sim-runs">0</div>
+          <div class="stat-label">Simulations</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-mean">0</div>
+          <div class="stat-label">Mean Comparisons</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-min">0</div>
+          <div class="stat-label">Minimum</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-max">0</div>
+          <div class="stat-label">Maximum</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sim-expected">0</div>
+          <div class="stat-label">Expected (2n ln n)</div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="sim-run-1">Run 1</button>
+        <button id="sim-run-10">Run 10</button>
+        <button id="sim-run-100">Run 100</button>
+        <button id="sim-run-1000">Run 1000</button>
+        <button id="sim-reset">Reset</button>
+        <div class="speed-control">
+          <label>Input:</label>
+          <select id="sim-input-type">
+            <option value="sorted">Sorted (Worst Case)</option>
+            <option value="reversed">Reverse Sorted</option>
+            <option value="random">Random</option>
+          </select>
+        </div>
+        <div class="speed-control">
+          <label>Size:</label>
+          <select id="sim-size">
+            <option value="20">20</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try This:</strong> Run 100+ simulations on "Sorted (Worst Case)" input. Notice how the distribution clusters around the expected O(n log n) value, not the O(n^2) worst case that deterministic quicksort would give!
+    </div>
+
+    <!-- Section 5: Las Vegas vs Monte Carlo -->
+    <h2>5. Las Vegas vs Monte Carlo Algorithms</h2>
+    <p>Randomized algorithms fall into two categories based on what they randomize: running time or correctness.</p>
+
+    <div class="algo-type-container">
+      <div class="algo-type-card las-vegas">
+        <h4>Las Vegas Algorithms</h4>
+        <p>Always produce correct results, but running time is random.</p>
+        <ul class="algo-characteristics">
+          <li>Output is always correct</li>
+          <li>Running time varies</li>
+          <li>Example: Randomized Quicksort</li>
+          <li>Example: Randomized Selection</li>
+          <li>We analyze expected running time</li>
+        </ul>
+      </div>
+      <div class="algo-type-card monte-carlo">
+        <h4>Monte Carlo Algorithms</h4>
+        <p>Always run in fixed time, but may produce incorrect results.</p>
+        <ul class="algo-characteristics">
+          <li>Running time is deterministic</li>
+          <li>Output may be incorrect</li>
+          <li>Example: Miller-Rabin primality test</li>
+          <li>Example: Random sampling algorithms</li>
+          <li>We analyze error probability</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="viz-container">
+      <h3>Interactive Algorithm Type Demo</h3>
+      <div class="demo-controls">
+        <button class="demo-btn active" id="demo-las-vegas">Las Vegas Demo</button>
+        <button class="demo-btn" id="demo-monte-carlo">Monte Carlo Demo</button>
+      </div>
+
+      <div class="demo-output" id="algo-demo-output">
+        <p>Las Vegas Algorithm: Randomized Search</p>
+        <p>Task: Find the value 42 in an array</p>
+        <p style="color: var(--accent);">Click "Run Demo" to see how it works...</p>
+      </div>
+
+      <div class="step-controls">
+        <button id="algo-demo-run">Run Demo</button>
+        <button id="algo-demo-run-many">Run 10 Times</button>
+      </div>
+    </div>
+
+    <!-- Section 6: Reducing Worst-Case Probability -->
+    <h2>6. Reducing Worst-Case Probability</h2>
+    <p>One of the most powerful aspects of randomization is that it makes worst-case behavior extremely unlikely.</p>
+
+    <div class="math-block">
+      <p><strong>Probability of O(n^2) behavior:</strong></p>
+      <p>$$P(\text{running time} > 4 \cdot E[\text{running time}]) < \frac{1}{4}$$</p>
+      <p style="font-size: 0.9rem; color: var(--text-secondary);">By Markov's inequality, the probability of exceeding 4x expected time is less than 1/4.</p>
+    </div>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> The probability of getting O(n^2) performance with randomized Quicksort is astronomically small: approximately $\frac{1}{n!}$. For n=20, that's less than 1 in 2 quintillion attempts!
+    </div>
+
+    <div class="viz-container">
+      <h3>Worst-Case Probability Calculator</h3>
+      <div style="padding: 1rem;">
+        <label for="wc-size">Array size (n): </label>
+        <input type="range" id="wc-size" min="5" max="50" value="10" style="width: 200px;">
+        <span id="wc-size-display">10</span>
+      </div>
+      <div class="stats-display">
+        <div class="stat-item">
+          <div class="stat-value" id="wc-probability">0</div>
+          <div class="stat-label">P(worst partition every time)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="wc-attempts">0</div>
+          <div class="stat-label">Expected attempts for worst case</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="wc-comparison">0</div>
+          <div class="stat-label">Comparison to real events</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <h2>7. Quick Check</h2>
+
+    <div class="quiz-container">
+      <!-- Question 1 -->
+      <div class="quiz-question">
+        <h4>Question 1: Why does randomized Quicksort avoid the O(n^2) worst case?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">It uses a different sorting algorithm internally</div>
+          <div class="quiz-option" data-index="1">It pre-shuffles the array before sorting</div>
+          <div class="quiz-option" data-index="2">No single input can consistently trigger worst-case pivot choices</div>
+          <div class="quiz-option" data-index="3">It switches to merge sort for small arrays</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">Think about what causes the O(n^2) case in deterministic Quicksort - consistently unbalanced partitions.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">With random pivot selection, the choice is independent of input order, so an adversary cannot construct a "bad" input.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> By randomly selecting pivots, the algorithm's behavior becomes independent of input order. An adversary cannot construct an input that guarantees bad pivots because the pivot choice is made at runtime using randomness.
+        </div>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="quiz-question">
+        <h4>Question 2: What is the expected number of comparisons for randomized Quicksort on an array of n elements?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(n)</div>
+          <div class="quiz-option" data-index="1">O(n log n), specifically about 2n ln n</div>
+          <div class="quiz-option" data-index="2">O(n^2)</div>
+          <div class="quiz-option" data-index="3">O(log n)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">The expected case matches the average case of regular Quicksort.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">The constant factor comes from the analysis: sum over all pairs of the probability they're compared.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The expected number of comparisons is approximately 2n ln n (about 1.39n log_2 n). This comes from summing the probability that each pair of elements is compared, which is 2/(j-i+1) for elements at ranks i and j.
+        </div>
+      </div>
+
+      <!-- Question 3 -->
+      <div class="quiz-question">
+        <h4>Question 3: Randomized Quicksort is an example of which type of randomized algorithm?</h4>
+        <div class="quiz-options" data-correct="0">
+          <div class="quiz-option" data-index="0">Las Vegas - always correct, random running time</div>
+          <div class="quiz-option" data-index="1">Monte Carlo - fixed time, possibly incorrect</div>
+          <div class="quiz-option" data-index="2">Atlantic City - neither correct nor efficient</div>
+          <div class="quiz-option" data-index="3">Deterministic - no randomization used</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">Does randomized Quicksort ever produce an incorrectly sorted array?</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">Las Vegas algorithms trade guaranteed time for guaranteed correctness.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Randomized Quicksort is a Las Vegas algorithm. It always produces a correctly sorted array (guaranteed correctness), but its running time varies depending on the random pivot choices (random running time).
+        </div>
+      </div>
+
+      <!-- Question 4 -->
+      <div class="quiz-question">
+        <h4>Question 4: If you run randomized Quicksort 1000 times on the same sorted array of 100 elements, what would you expect?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">All runs take exactly the same time</div>
+          <div class="quiz-option" data-index="1">Most runs take O(n^2) time since input is sorted</div>
+          <div class="quiz-option" data-index="2">Times cluster around O(n log n) with some variation</div>
+          <div class="quiz-option" data-index="3">Times are uniformly distributed between O(n) and O(n^2)</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">Random pivot selection makes the algorithm's behavior independent of input order.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">The expected value is O(n log n), and by concentration inequalities, most runs are close to this.</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The running times will cluster around the expected O(n log n) value. The randomization makes the algorithm "immune" to the sorted input - each run randomly selects pivots, and most pivot sequences lead to reasonably balanced partitions.
+        </div>
+      </div>
+
+      <!-- Question 5 -->
+      <div class="quiz-question">
+        <h4>Question 5: What is the probability that randomized Quicksort makes the worst possible pivot choice (smallest or largest) on every partition for an array of size 10?</h4>
+        <div class="quiz-options" data-correct="3">
+          <div class="quiz-option" data-index="0">About 50%</div>
+          <div class="quiz-option" data-index="1">About 10%</div>
+          <div class="quiz-option" data-index="2">About 1%</div>
+          <div class="quiz-option" data-index="3">Less than 0.0001%</div>
+        </div>
+        <div class="hint-container">
+          <button class="hint-btn" onclick="toggleHint(this, 0)">Show Hint 1</button>
+          <div class="hint-text" data-hint="0">At each level, only 2 out of n remaining elements are "worst" pivots.</div>
+          <button class="hint-btn" onclick="toggleHint(this, 1)" style="display: none;">Show Hint 2</button>
+          <div class="hint-text" data-hint="1">The probability is roughly (2/n) * (2/(n-1)) * ... = 2^n / n!</div>
+        </div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> For n=10, the probability is approximately 2^10 / 10! = 1024 / 3,628,800 = about 0.00028, which is less than 0.03%. The probability decreases factorially with n, making worst-case behavior extraordinarily rare.
+        </div>
+      </div>
+    </div>
+
+    <!-- Dive Deeper -->
+    <h2>8. Dive Deeper</h2>
+    <ul style="padding-left: 1.5rem;">
+      <li><a href="https://en.wikipedia.org/wiki/Quicksort#Randomized_quicksort" target="_blank">Wikipedia: Randomized Quicksort</a></li>
+      <li><a href="https://www.cs.princeton.edu/~rs/talks/QuicksortIsOptimal.pdf" target="_blank">Sedgewick: Quicksort is Optimal</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Las_Vegas_algorithm" target="_blank">Las Vegas Algorithms</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Monte_Carlo_algorithm" target="_blank">Monte Carlo Algorithms</a></li>
+    </ul>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+      <a href="session-09-quicksort.html">&larr; Session 9: Quicksort</a>
+      <a href="session-11-lower-bounds.html">Session 11: Lower Bounds for Sorting &rarr;</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme Toggle with localStorage persistence
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'Sun' : 'Moon';
+      localStorage.setItem('cs110-theme', next);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('cs110-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? 'Sun' : 'Moon';
+
+    // ==================== UTILITY FUNCTIONS ====================
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // ==================== COMPARISON DEMO ====================
+
+    const comparisonDemo = {
+      detCanvas: document.getElementById('det-demo-canvas'),
+      randCanvas: document.getElementById('rand-demo-canvas'),
+      running: false,
+
+      createBars(container, arr, pivotIdx = -1, sortedIndices = []) {
+        container.innerHTML = '';
+        const barContainer = document.createElement('div');
+        barContainer.className = 'bar-container';
+        const maxVal = Math.max(...arr);
+
+        arr.forEach((val, i) => {
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          const fill = document.createElement('div');
+          fill.className = 'bar-fill';
+          if (sortedIndices.includes(i)) {
+            fill.classList.add('sorted');
+          } else if (i === pivotIdx) {
+            fill.classList.add('pivot');
+          }
+          fill.style.height = `${(val / maxVal) * 140}px`;
+          fill.style.width = '15px';
+          bar.appendChild(fill);
+          barContainer.appendChild(bar);
+        });
+        container.appendChild(barContainer);
+      },
+
+      async runDeterministic(arr) {
+        let comparisons = 0;
+        let maxDepth = 0;
+        const sorted = new Set();
+
+        const partition = async (a, low, high, depth) => {
+          if (low >= high) {
+            if (low === high) sorted.add(low);
+            return -1;
+          }
+          maxDepth = Math.max(maxDepth, depth);
+
+          const pivot = a[low]; // Always first element
+          let i = low + 1;
+
+          for (let j = low + 1; j <= high; j++) {
+            comparisons++;
+            if (a[j] < pivot) {
+              [a[i], a[j]] = [a[j], a[i]];
+              i++;
+            }
+          }
+          [a[low], a[i - 1]] = [a[i - 1], a[low]];
+          sorted.add(i - 1);
+
+          this.createBars(this.detCanvas, a, i - 1, [...sorted]);
+          document.getElementById('det-comparisons').textContent = comparisons;
+          document.getElementById('det-recursion').textContent = maxDepth;
+          await sleep(100);
+
+          return i - 1;
+        };
+
+        const quicksort = async (a, low, high, depth = 1) => {
+          if (low < high) {
+            const pi = await partition(a, low, high, depth);
+            await quicksort(a, low, pi - 1, depth + 1);
+            await quicksort(a, pi + 1, high, depth + 1);
+          } else if (low === high) {
+            sorted.add(low);
+            this.createBars(this.detCanvas, a, -1, [...sorted]);
+          }
+        };
+
+        await quicksort([...arr], 0, arr.length - 1);
+        this.createBars(this.detCanvas, arr.sort((a, b) => a - b), -1, arr.map((_, i) => i));
+      },
+
+      async runRandomized(arr) {
+        let comparisons = 0;
+        let maxDepth = 0;
+        const sorted = new Set();
+        const a = [...arr];
+
+        const partition = async (low, high, depth) => {
+          if (low >= high) {
+            if (low === high) sorted.add(low);
+            return -1;
+          }
+          maxDepth = Math.max(maxDepth, depth);
+
+          // Random pivot
+          const pivotIdx = low + Math.floor(Math.random() * (high - low + 1));
+          [a[pivotIdx], a[high]] = [a[high], a[pivotIdx]];
+
+          const pivot = a[high];
+          let i = low;
+
+          for (let j = low; j < high; j++) {
+            comparisons++;
+            if (a[j] < pivot) {
+              [a[i], a[j]] = [a[j], a[i]];
+              i++;
+            }
+          }
+          [a[i], a[high]] = [a[high], a[i]];
+          sorted.add(i);
+
+          this.createBars(this.randCanvas, a, i, [...sorted]);
+          document.getElementById('rand-comparisons').textContent = comparisons;
+          document.getElementById('rand-recursion').textContent = maxDepth;
+          await sleep(100);
+
+          return i;
+        };
+
+        const quicksort = async (low, high, depth = 1) => {
+          if (low < high) {
+            const pi = await partition(low, high, depth);
+            await quicksort(low, pi - 1, depth + 1);
+            await quicksort(pi + 1, high, depth + 1);
+          } else if (low === high) {
+            sorted.add(low);
+            this.createBars(this.randCanvas, a, -1, [...sorted]);
+          }
+        };
+
+        await quicksort(0, a.length - 1);
+        this.createBars(this.randCanvas, a, -1, a.map((_, i) => i));
+      },
+
+      async run() {
+        if (this.running) return;
+        this.running = true;
+
+        const arr = Array.from({length: 10}, (_, i) => i + 1);
+
+        document.getElementById('det-comparisons').textContent = '0';
+        document.getElementById('det-recursion').textContent = '0';
+        document.getElementById('rand-comparisons').textContent = '0';
+        document.getElementById('rand-recursion').textContent = '0';
+
+        await Promise.all([
+          this.runDeterministic([...arr]),
+          this.runRandomized([...arr])
+        ]);
+
+        this.running = false;
+      },
+
+      reset() {
+        const arr = Array.from({length: 10}, (_, i) => i + 1);
+        this.createBars(this.detCanvas, arr);
+        this.createBars(this.randCanvas, arr);
+        document.getElementById('det-comparisons').textContent = '0';
+        document.getElementById('det-recursion').textContent = '0';
+        document.getElementById('rand-comparisons').textContent = '0';
+        document.getElementById('rand-recursion').textContent = '0';
+      }
+    };
+
+    // Initialize comparison demo
+    comparisonDemo.reset();
+    document.getElementById('comparison-start').addEventListener('click', () => comparisonDemo.run());
+    document.getElementById('comparison-reset').addEventListener('click', () => comparisonDemo.reset());
+
+    // ==================== RANDOMIZED QUICKSORT ANIMATOR ====================
+
+    class RandomizedQuicksortAnimator {
+      constructor() {
+        this.canvas = document.getElementById('rqs-bars');
+        this.description = document.getElementById('rqs-description');
+        this.codePanel = document.getElementById('rqs-code');
+        this.progressBar = document.getElementById('rqs-progress');
+        this.stepIndicator = document.getElementById('rqs-step-indicator');
+
+        this.originalArray = [64, 25, 12, 22, 11, 90, 42, 31, 55, 8];
+        this.array = [...this.originalArray];
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        this.steps = [];
+        const arr = [...this.originalArray];
+        let comparisons = 0;
+
+        this.steps.push({
+          array: [...arr],
+          desc: 'Initial array - ready to sort with randomized Quicksort',
+          line: 3,
+          pivot: -1,
+          comparing: -1,
+          sorted: [],
+          vars: { pivotIdx: '--', pivotValue: '--', low: '--', high: '--', comparisons: 0 }
+        });
+
+        const partition = (a, low, high, sorted) => {
+          // Random pivot selection
+          const pivotIdx = low + Math.floor(Math.random() * (high - low + 1));
+
+          this.steps.push({
+            array: [...a],
+            desc: `Randomly selected pivot index ${pivotIdx} (value: ${a[pivotIdx]})`,
+            line: 6,
+            pivot: pivotIdx,
+            comparing: -1,
+            sorted: [...sorted],
+            vars: { pivotIdx: pivotIdx, pivotValue: a[pivotIdx], low: low, high: high, comparisons: comparisons }
+          });
+
+          // Swap pivot to end
+          [a[pivotIdx], a[high]] = [a[high], a[pivotIdx]];
+
+          this.steps.push({
+            array: [...a],
+            desc: `Moved pivot ${a[high]} to end position for partitioning`,
+            line: 7,
+            pivot: high,
+            comparing: -1,
+            sorted: [...sorted],
+            vars: { pivotIdx: high, pivotValue: a[high], low: low, high: high, comparisons: comparisons }
+          });
+
+          const pivot = a[high];
+          let i = low;
+
+          for (let j = low; j < high; j++) {
+            comparisons++;
+            this.steps.push({
+              array: [...a],
+              desc: `Comparing ${a[j]} with pivot ${pivot}`,
+              line: 10,
+              pivot: high,
+              comparing: j,
+              sorted: [...sorted],
+              vars: { pivotIdx: high, pivotValue: pivot, low: low, high: high, comparisons: comparisons }
+            });
+
+            if (a[j] < pivot) {
+              [a[i], a[j]] = [a[j], a[i]];
+              this.steps.push({
+                array: [...a],
+                desc: `${a[i]} < ${pivot}, swapped to position ${i}`,
+                line: 10,
+                pivot: high,
+                comparing: -1,
+                swapping: [i, j],
+                sorted: [...sorted],
+                vars: { pivotIdx: high, pivotValue: pivot, low: low, high: high, comparisons: comparisons }
+              });
+              i++;
+            }
+          }
+
+          [a[i], a[high]] = [a[high], a[i]];
+          sorted.push(i);
+
+          this.steps.push({
+            array: [...a],
+            desc: `Pivot ${pivot} placed at final position ${i}`,
+            line: 10,
+            pivot: i,
+            comparing: -1,
+            sorted: [...sorted],
+            vars: { pivotIdx: i, pivotValue: pivot, low: low, high: high, comparisons: comparisons }
+          });
+
+          return { pi: i, comparisons };
+        };
+
+        const quicksort = (a, low, high, sorted) => {
+          if (low < high) {
+            this.steps.push({
+              array: [...a],
+              desc: `Processing subarray from index ${low} to ${high}`,
+              line: 4,
+              pivot: -1,
+              comparing: -1,
+              sorted: [...sorted],
+              range: [low, high],
+              vars: { pivotIdx: '--', pivotValue: '--', low: low, high: high, comparisons: comparisons }
+            });
+
+            const result = partition(a, low, high, sorted);
+            const pi = result.pi;
+            comparisons = result.comparisons;
+
+            quicksort(a, low, pi - 1, sorted);
+            quicksort(a, pi + 1, high, sorted);
+          } else if (low === high && !sorted.includes(low)) {
+            sorted.push(low);
+            this.steps.push({
+              array: [...a],
+              desc: `Single element at index ${low} is in sorted position`,
+              line: 4,
+              pivot: -1,
+              comparing: -1,
+              sorted: [...sorted],
+              vars: { pivotIdx: '--', pivotValue: '--', low: low, high: high, comparisons: comparisons }
+            });
+          }
+        };
+
+        quicksort(arr, 0, arr.length - 1, []);
+
+        this.steps.push({
+          array: [...arr],
+          desc: 'Array is now fully sorted!',
+          line: 14,
+          pivot: -1,
+          comparing: -1,
+          sorted: arr.map((_, i) => i),
+          vars: { pivotIdx: '--', pivotValue: '--', low: '--', high: '--', comparisons: comparisons }
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        // Render bars
+        this.canvas.innerHTML = '';
+        const maxVal = Math.max(...step.array);
+
+        step.array.forEach((val, i) => {
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          const fill = document.createElement('div');
+          fill.className = 'bar-fill';
+          fill.style.height = `${(val / maxVal) * 250}px`;
+
+          if (step.sorted && step.sorted.includes(i)) {
+            fill.classList.add('sorted');
+          } else if (i === step.pivot) {
+            fill.classList.add('pivot');
+          } else if (i === step.comparing) {
+            fill.classList.add('comparing');
+          } else if (step.swapping && step.swapping.includes(i)) {
+            fill.classList.add('swapping');
+          }
+
+          const label = document.createElement('div');
+          label.className = 'bar-label';
+          label.textContent = val;
+
+          bar.appendChild(fill);
+          bar.appendChild(label);
+          this.canvas.appendChild(bar);
+        });
+
+        // Update description
+        this.description.textContent = step.desc;
+
+        // Update code highlighting
+        this.codePanel.querySelectorAll('.code-line').forEach(line => {
+          line.classList.remove('highlighted');
+          if (parseInt(line.dataset.line) === step.line) {
+            line.classList.add('highlighted');
+          }
+        });
+
+        // Update variables
+        if (step.vars) {
+          document.getElementById('var-pivot-idx').textContent = step.vars.pivotIdx;
+          document.getElementById('var-pivot-value').textContent = step.vars.pivotValue;
+          document.getElementById('var-low').textContent = step.vars.low;
+          document.getElementById('var-high').textContent = step.vars.high;
+          document.getElementById('var-comparisons').textContent = step.vars.comparisons;
+        }
+
+        // Update progress
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        this.progressBar.style.width = `${progress}%`;
+        this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('rqs-play').textContent = 'Pause';
+        document.getElementById('rqs-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 800 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('rqs-play').textContent = 'Play';
+        document.getElementById('rqs-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.array = [...this.originalArray];
+        this.generateSteps();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    const rqsAnimator = new RandomizedQuicksortAnimator();
+
+    document.getElementById('rqs-play').addEventListener('click', () => {
+      rqsAnimator.isPlaying ? rqsAnimator.pause() : rqsAnimator.play();
+    });
+    document.getElementById('rqs-reset').addEventListener('click', () => rqsAnimator.reset());
+    document.getElementById('rqs-back').addEventListener('click', () => rqsAnimator.stepBackward());
+    document.getElementById('rqs-forward').addEventListener('click', () => rqsAnimator.stepForward());
+    document.getElementById('rqs-speed').addEventListener('change', (e) => {
+      rqsAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // ==================== PROBABILITY SIMULATOR ====================
+
+    const simulator = {
+      results: [],
+      histogramContainer: document.getElementById('histogram-bars'),
+
+      runQuicksort(arr) {
+        let comparisons = 0;
+        const a = [...arr];
+
+        const partition = (low, high) => {
+          const pivotIdx = low + Math.floor(Math.random() * (high - low + 1));
+          [a[pivotIdx], a[high]] = [a[high], a[pivotIdx]];
+          const pivot = a[high];
+          let i = low;
+
+          for (let j = low; j < high; j++) {
+            comparisons++;
+            if (a[j] < pivot) {
+              [a[i], a[j]] = [a[j], a[i]];
+              i++;
+            }
+          }
+          [a[i], a[high]] = [a[high], a[i]];
+          return i;
+        };
+
+        const quicksort = (low, high) => {
+          if (low < high) {
+            const pi = partition(low, high);
+            quicksort(low, pi - 1);
+            quicksort(pi + 1, high);
+          }
+        };
+
+        quicksort(0, a.length - 1);
+        return comparisons;
+      },
+
+      getInputArray() {
+        const type = document.getElementById('sim-input-type').value;
+        const size = parseInt(document.getElementById('sim-size').value);
+
+        if (type === 'sorted') {
+          return Array.from({length: size}, (_, i) => i + 1);
+        } else if (type === 'reversed') {
+          return Array.from({length: size}, (_, i) => size - i);
+        } else {
+          return shuffle(Array.from({length: size}, (_, i) => i + 1));
+        }
+      },
+
+      run(count) {
+        const baseArray = this.getInputArray();
+
+        for (let i = 0; i < count; i++) {
+          const arr = [...baseArray];
+          const comparisons = this.runQuicksort(arr);
+          this.results.push(comparisons);
+        }
+
+        this.updateDisplay();
+      },
+
+      updateDisplay() {
+        const n = parseInt(document.getElementById('sim-size').value);
+
+        if (this.results.length === 0) {
+          document.getElementById('sim-runs').textContent = '0';
+          document.getElementById('sim-mean').textContent = '0';
+          document.getElementById('sim-min').textContent = '0';
+          document.getElementById('sim-max').textContent = '0';
+          document.getElementById('sim-expected').textContent = Math.round(2 * n * Math.log(n));
+          this.histogramContainer.innerHTML = '';
+          return;
+        }
+
+        const mean = this.results.reduce((a, b) => a + b, 0) / this.results.length;
+        const min = Math.min(...this.results);
+        const max = Math.max(...this.results);
+        const expected = 2 * n * Math.log(n);
+
+        document.getElementById('sim-runs').textContent = this.results.length;
+        document.getElementById('sim-mean').textContent = Math.round(mean);
+        document.getElementById('sim-min').textContent = min;
+        document.getElementById('sim-max').textContent = max;
+        document.getElementById('sim-expected').textContent = Math.round(expected);
+        document.getElementById('hist-min').textContent = min;
+        document.getElementById('hist-max').textContent = max;
+        document.getElementById('sim-description').textContent =
+          `${this.results.length} simulation(s) completed. Mean: ${Math.round(mean)}, Expected: ${Math.round(expected)}`;
+
+        // Build histogram
+        const buckets = 30;
+        const range = max - min || 1;
+        const bucketSize = range / buckets;
+        const histogram = new Array(buckets).fill(0);
+
+        this.results.forEach(val => {
+          const idx = Math.min(Math.floor((val - min) / bucketSize), buckets - 1);
+          histogram[idx]++;
+        });
+
+        const maxCount = Math.max(...histogram);
+
+        this.histogramContainer.innerHTML = '';
+        histogram.forEach(count => {
+          const bar = document.createElement('div');
+          bar.className = 'histogram-bar';
+          bar.style.height = `${(count / maxCount) * 180}px`;
+          this.histogramContainer.appendChild(bar);
+        });
+      },
+
+      reset() {
+        this.results = [];
+        this.updateDisplay();
+      }
+    };
+
+    simulator.updateDisplay();
+
+    document.getElementById('sim-run-1').addEventListener('click', () => simulator.run(1));
+    document.getElementById('sim-run-10').addEventListener('click', () => simulator.run(10));
+    document.getElementById('sim-run-100').addEventListener('click', () => simulator.run(100));
+    document.getElementById('sim-run-1000').addEventListener('click', () => simulator.run(1000));
+    document.getElementById('sim-reset').addEventListener('click', () => simulator.reset());
+    document.getElementById('sim-input-type').addEventListener('change', () => simulator.reset());
+    document.getElementById('sim-size').addEventListener('change', () => simulator.reset());
+
+    // ==================== LAS VEGAS VS MONTE CARLO DEMO ====================
+
+    const algoDemo = {
+      mode: 'las-vegas',
+      output: document.getElementById('algo-demo-output'),
+
+      lasVegasSearch(arr, target) {
+        const attempts = [];
+        const visited = new Set();
+        let found = false;
+        let idx = -1;
+
+        while (!found && visited.size < arr.length) {
+          const randomIdx = Math.floor(Math.random() * arr.length);
+          if (!visited.has(randomIdx)) {
+            visited.add(randomIdx);
+            attempts.push({ idx: randomIdx, val: arr[randomIdx] });
+            if (arr[randomIdx] === target) {
+              found = true;
+              idx = randomIdx;
+            }
+          }
+        }
+
+        return { found, idx, attempts };
+      },
+
+      monteCarloIsPrime(n, k) {
+        // Simplified Fermat primality test
+        if (n < 2) return { result: false, tests: [] };
+        if (n === 2) return { result: true, tests: [] };
+        if (n % 2 === 0) return { result: false, tests: [] };
+
+        const tests = [];
+        for (let i = 0; i < k; i++) {
+          const a = 2 + Math.floor(Math.random() * (n - 3));
+          const result = this.modPow(a, n - 1, n);
+          tests.push({ a, result, passed: result === 1 });
+          if (result !== 1) {
+            return { result: false, tests, definite: true };
+          }
+        }
+        return { result: true, tests, definite: false };
+      },
+
+      modPow(base, exp, mod) {
+        let result = 1;
+        base = base % mod;
+        while (exp > 0) {
+          if (exp % 2 === 1) {
+            result = (result * base) % mod;
+          }
+          exp = Math.floor(exp / 2);
+          base = (base * base) % mod;
+        }
+        return result;
+      },
+
+      runLasVegas() {
+        const arr = shuffle(Array.from({length: 20}, (_, i) => i * 3 + 1));
+        const target = 42;
+        const result = this.lasVegasSearch(arr, target);
+
+        let html = '<p><strong>Las Vegas: Randomized Search for 42</strong></p>';
+        html += `<p>Array: [${arr.slice(0, 10).join(', ')}...]</p>`;
+        html += '<p>Search attempts:</p>';
+
+        result.attempts.forEach((attempt, i) => {
+          const color = attempt.val === target ? '#0F7B6C' : '#9B9B9B';
+          html += `<span style="color: ${color}">  ${i + 1}. arr[${attempt.idx}] = ${attempt.val}${attempt.val === target ? ' FOUND!' : ''}</span><br>`;
+        });
+
+        html += `<p style="color: var(--success); margin-top: 0.5rem;">`;
+        html += result.found
+          ? `Result: Found 42 at index ${result.idx} in ${result.attempts.length} attempts`
+          : `Result: 42 not in array (searched all ${result.attempts.length} elements)`;
+        html += '</p>';
+        html += '<p style="color: var(--accent);">Always correct, variable time.</p>';
+
+        this.output.innerHTML = html;
+      },
+
+      runMonteCarlo() {
+        const numbers = [17, 91, 561]; // 561 is a Carmichael number - composite but passes Fermat test often
+        const n = numbers[Math.floor(Math.random() * numbers.length)];
+        const result = this.monteCarloIsPrime(n, 5);
+
+        let html = `<p><strong>Monte Carlo: Fermat Primality Test for ${n}</strong></p>`;
+        html += '<p>Testing with 5 random witnesses:</p>';
+
+        result.tests.forEach((test, i) => {
+          const color = test.passed ? '#0F7B6C' : '#EB5757';
+          html += `<span style="color: ${color}">  ${i + 1}. a=${test.a}: ${test.a}^${n-1} mod ${n} = ${test.result} ${test.passed ? '(passed)' : '(failed)'}</span><br>`;
+        });
+
+        const actuallyPrime = this.isPrime(n);
+        html += `<p style="margin-top: 0.5rem;">`;
+        html += `Algorithm says: ${result.result ? 'Probably Prime' : 'Definitely Composite'}<br>`;
+        html += `Actually: ${actuallyPrime ? 'Prime' : 'Composite'}`;
+        if (result.result && !actuallyPrime) {
+          html += `<span style="color: var(--error);"> (False positive!)</span>`;
+        }
+        html += '</p>';
+        html += '<p style="color: var(--purple);">Fixed time (5 tests), may be wrong.</p>';
+
+        this.output.innerHTML = html;
+      },
+
+      isPrime(n) {
+        if (n < 2) return false;
+        if (n === 2) return true;
+        if (n % 2 === 0) return false;
+        for (let i = 3; i <= Math.sqrt(n); i += 2) {
+          if (n % i === 0) return false;
+        }
+        return true;
+      },
+
+      runMany() {
+        if (this.mode === 'las-vegas') {
+          const arr = shuffle(Array.from({length: 20}, (_, i) => i * 3 + 1));
+          const target = 42;
+          const attempts = [];
+
+          for (let i = 0; i < 10; i++) {
+            const result = this.lasVegasSearch(arr, target);
+            attempts.push(result.attempts.length);
+          }
+
+          let html = '<p><strong>10 Las Vegas Runs (searching for 42):</strong></p>';
+          html += '<p>Attempts per run: ' + attempts.join(', ') + '</p>';
+          html += `<p>Average: ${(attempts.reduce((a,b) => a+b, 0) / 10).toFixed(1)} attempts</p>`;
+          html += '<p style="color: var(--success);">All 10 runs found the correct answer!</p>';
+
+          this.output.innerHTML = html;
+        } else {
+          let correct = 0;
+          const results = [];
+
+          for (let i = 0; i < 10; i++) {
+            const n = 561; // Carmichael number
+            const result = this.monteCarloIsPrime(n, 3);
+            if (!result.result) correct++; // Correctly identified as composite
+            results.push(result.result ? 'P' : 'C');
+          }
+
+          let html = '<p><strong>10 Monte Carlo Runs on 561 (Carmichael number):</strong></p>';
+          html += `<p>Results: ${results.join(', ')} (P=probably prime, C=composite)</p>`;
+          html += `<p>Correct answers: ${correct}/10 (561 is actually composite)</p>`;
+          html += '<p style="color: var(--purple);">Note: 561 passes Fermat test for many bases despite being composite!</p>';
+
+          this.output.innerHTML = html;
+        }
+      }
+    };
+
+    document.getElementById('demo-las-vegas').addEventListener('click', function() {
+      document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      algoDemo.mode = 'las-vegas';
+      algoDemo.output.innerHTML = '<p>Las Vegas Algorithm: Randomized Search</p><p>Task: Find the value 42 in an array</p><p style="color: var(--accent);">Click "Run Demo" to see how it works...</p>';
+    });
+
+    document.getElementById('demo-monte-carlo').addEventListener('click', function() {
+      document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      algoDemo.mode = 'monte-carlo';
+      algoDemo.output.innerHTML = '<p>Monte Carlo Algorithm: Fermat Primality Test</p><p>Task: Determine if a number is prime</p><p style="color: var(--purple);">Click "Run Demo" to see how it works...</p>';
+    });
+
+    document.getElementById('algo-demo-run').addEventListener('click', () => {
+      if (algoDemo.mode === 'las-vegas') {
+        algoDemo.runLasVegas();
+      } else {
+        algoDemo.runMonteCarlo();
+      }
+    });
+
+    document.getElementById('algo-demo-run-many').addEventListener('click', () => {
+      algoDemo.runMany();
+    });
+
+    // ==================== WORST-CASE PROBABILITY CALCULATOR ====================
+
+    const wcCalculator = {
+      update() {
+        const n = parseInt(document.getElementById('wc-size').value);
+        document.getElementById('wc-size-display').textContent = n;
+
+        // Probability of worst partition every time: (2/n) * (2/(n-1)) * ... approximately 2^n / n!
+        const logProb = n * Math.log10(2) - this.logFactorial(n);
+        const probability = Math.pow(10, logProb);
+
+        let probStr;
+        if (probability < 1e-100) {
+          probStr = `< 10^${Math.floor(logProb)}`;
+        } else if (probability < 0.0001) {
+          probStr = probability.toExponential(2);
+        } else {
+          probStr = probability.toFixed(6);
+        }
+
+        document.getElementById('wc-probability').textContent = probStr;
+
+        // Expected attempts
+        const attempts = 1 / probability;
+        let attemptStr;
+        if (attempts > 1e15) {
+          attemptStr = attempts.toExponential(2);
+        } else if (attempts > 1e6) {
+          attemptStr = (attempts / 1e6).toFixed(1) + 'M';
+        } else {
+          attemptStr = Math.round(attempts).toLocaleString();
+        }
+        document.getElementById('wc-attempts').textContent = attemptStr;
+
+        // Comparison
+        let comparison;
+        if (n <= 10) {
+          comparison = 'Very unlikely';
+        } else if (n <= 15) {
+          comparison = 'Less likely than winning lottery';
+        } else if (n <= 20) {
+          comparison = 'Less likely than being struck by lightning twice';
+        } else if (n <= 30) {
+          comparison = 'Less likely than all atoms in universe lining up';
+        } else {
+          comparison = 'Effectively impossible';
+        }
+        document.getElementById('wc-comparison').textContent = comparison;
+      },
+
+      logFactorial(n) {
+        let sum = 0;
+        for (let i = 2; i <= n; i++) {
+          sum += Math.log10(i);
+        }
+        return sum;
+      }
+    };
+
+    document.getElementById('wc-size').addEventListener('input', () => wcCalculator.update());
+    wcCalculator.update();
+
+    // ==================== QUIZ FUNCTIONALITY ====================
+
+    document.querySelectorAll('.quiz-options').forEach(optionsContainer => {
+      const options = optionsContainer.querySelectorAll('.quiz-option');
+      const correct = parseInt(optionsContainer.dataset.correct);
+      const explanation = optionsContainer.parentElement.querySelector('.quiz-explanation');
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+          option.classList.add('selected');
+
+          if (index === correct) {
+            option.classList.add('correct');
+          } else {
+            option.classList.add('incorrect');
+            options[correct].classList.add('correct');
+          }
+
+          explanation.classList.add('show');
+        });
+      });
+    });
+
+    function toggleHint(btn, hintNum) {
+      const container = btn.closest('.hint-container');
+      const hints = container.querySelectorAll('.hint-text');
+      const buttons = container.querySelectorAll('.hint-btn');
+
+      hints[hintNum].classList.toggle('show');
+
+      if (hints[hintNum].classList.contains('show')) {
+        btn.textContent = `Hide Hint ${hintNum + 1}`;
+        // Show next hint button if exists
+        if (buttons[hintNum + 1]) {
+          buttons[hintNum + 1].style.display = 'inline';
+        }
+      } else {
+        btn.textContent = `Show Hint ${hintNum + 1}`;
+      }
+    }
+
+    // ==================== KEYBOARD SHORTCUTS ====================
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          rqsAnimator.isPlaying ? rqsAnimator.pause() : rqsAnimator.play();
+          break;
+        case 'ArrowRight':
+          rqsAnimator.stepForward();
+          break;
+        case 'ArrowLeft':
+          rqsAnimator.stepBackward();
+          break;
+        case 'r':
+        case 'R':
+          rqsAnimator.reset();
+          break;
+      }
+    });
+
+    // ==================== KATEX RENDERING ====================
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>
