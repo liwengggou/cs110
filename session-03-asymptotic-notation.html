@@ -977,11 +977,44 @@
 
     <!-- Section 1: What is Big-O? -->
     <h2>1. What is Big-O Notation?</h2>
-    <p>Big-O notation describes the <strong>upper bound</strong> of an algorithm's growth rate. It tells us how the running time or space requirements grow as the input size <em>n</em> increases. We focus on the <strong>dominant term</strong> and ignore constants because, for large inputs, the shape of the growth curve matters more than the exact numbers.</p>
+    <p>Big-O notation describes how an algorithm's work <strong>scales</strong> as input size grows. It doesn't tell you <em>how long</em> something takes—it tells you <em>how the work changes</em> when you increase the input.</p>
 
     <div class="key-insight">
-      <strong>Key Insight:</strong> Big-O answers the question: "As my input gets really large, how much slower will my algorithm become?" An O(n) algorithm doubles its time when input doubles, but an O(n&sup2;) algorithm quadruples!
+      <strong>The Key Question Big-O Answers:</strong> "If I double my input size, what happens to the work my algorithm does?"
+      <ul style="margin-top: 0.75rem; margin-bottom: 0;">
+        <li><strong>O(1):</strong> Work stays the same (no change)</li>
+        <li><strong>O(n):</strong> Work doubles (2x input → 2x work)</li>
+        <li><strong>O(n²):</strong> Work quadruples (2x input → 4x work)</li>
+        <li><strong>O(log n):</strong> Work increases by just 1 more step</li>
+      </ul>
     </div>
+
+    <h3>Wait, What's the Unit? There Isn't One!</h3>
+    <p>This is crucial: <strong>Big-O has no unit</strong>. It's not seconds, milliseconds, or even "operations." It's a <em>ratio</em>—a way to describe the <em>shape</em> of how work scales.</p>
+
+    <div class="complexity-box">
+      <h4 style="margin-top: 0;">Think of it like this:</h4>
+      <p>Imagine you're filling buckets with water:</p>
+      <ul style="padding-left: 1.5rem;">
+        <li><strong>O(1):</strong> No matter how many buckets (n), you just turn on one faucet. 10 buckets? One faucet. 1000 buckets? Still one faucet.</li>
+        <li><strong>O(n):</strong> You fill each bucket one at a time. 10 buckets = 10 trips. 1000 buckets = 1000 trips.</li>
+        <li><strong>O(n²):</strong> For each bucket, you check every other bucket first. 10 buckets = 100 checks. 1000 buckets = 1,000,000 checks.</li>
+      </ul>
+      <p style="margin-bottom: 0;">We don't care if each trip takes 1 second or 5 seconds. We care about <em>how many trips</em> scale with the number of buckets.</p>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Misconception:</strong> "O(n²) means the algorithm takes n² seconds."<br>
+      <strong>Reality:</strong> O(n²) means if you 10x your input, the work increases by 100x. The actual time depends on your computer, the constant factors, and what each "operation" actually does.
+    </div>
+
+    <h3>Why We Ignore Constants</h3>
+    <p>We say O(n), not O(3n) or O(n + 5). Why? Because for large inputs, <strong>the shape matters more than the starting point</strong>:</p>
+    <ul style="padding-left: 1.5rem;">
+      <li>O(3n) vs O(n): Both double when input doubles. Same shape.</li>
+      <li>O(n + 1000) vs O(n): For n = 1 million, that +1000 is insignificant.</li>
+      <li>O(n) vs O(n²): Fundamentally different shapes. This distinction matters!</li>
+    </ul>
 
     <div class="complexity-box">
       <h3>Common Complexity Classes</h3>
