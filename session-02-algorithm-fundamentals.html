@@ -1030,11 +1030,132 @@
     <p>An <strong>algorithm</strong> is a well-defined computational procedure that takes some value(s) as <strong>input</strong> and produces some value(s) as <strong>output</strong>. Think of it as a recipe: a sequence of steps that transforms ingredients (input) into a dish (output).</p>
 
     <div class="key-insight">
-      <strong>Key Insight:</strong> An algorithm must be <em>precise</em> (no ambiguity), <em>finite</em> (terminates eventually), and <em>effective</em> (each step can be performed in finite time).
+      <strong>💡 Key Insight:</strong> An algorithm must be <em>precise</em> (no ambiguity), <em>finite</em> (terminates eventually), and <em>effective</em> (each step can be performed in finite time).
     </div>
 
-    <!-- Section 2: Pseudocode to Python -->
-    <h2>2. From Pseudocode to Python</h2>
+    <h3>Five Essential Properties of an Algorithm</h3>
+    <div class="viz-container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="checker-card">
+          <h4>📥 Input</h4>
+          <p>Zero or more quantities are externally supplied as input.</p>
+        </div>
+        <div class="checker-card">
+          <h4>📤 Output</h4>
+          <p>At least one quantity is produced as output.</p>
+        </div>
+        <div class="checker-card">
+          <h4>🎯 Definiteness</h4>
+          <p>Each instruction is clear and unambiguous.</p>
+        </div>
+        <div class="checker-card">
+          <h4>⏱️ Finiteness</h4>
+          <p>The algorithm terminates after a finite number of steps.</p>
+        </div>
+        <div class="checker-card">
+          <h4>⚡ Effectiveness</h4>
+          <p>Every instruction is basic enough to be carried out in finite time.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Algorithm vs. Program</h3>
+    <p>While related, algorithms and programs are distinct concepts:</p>
+    <div class="viz-container">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border);">
+            <th style="text-align: left; padding: 0.75rem;">Aspect</th>
+            <th style="text-align: left; padding: 0.75rem;">Algorithm</th>
+            <th style="text-align: left; padding: 0.75rem;">Program</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 0.75rem;"><strong>Language</strong></td>
+            <td style="padding: 0.75rem;">Pseudocode, natural language, or math</td>
+            <td style="padding: 0.75rem;">Specific programming language</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 0.75rem;"><strong>Execution</strong></td>
+            <td style="padding: 0.75rem;">Abstract, not directly executable</td>
+            <td style="padding: 0.75rem;">Runs on a computer</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 0.75rem;"><strong>Focus</strong></td>
+            <td style="padding: 0.75rem;">Logic and correctness</td>
+            <td style="padding: 0.75rem;">Implementation details</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.75rem;"><strong>Termination</strong></td>
+            <td style="padding: 0.75rem;">Must always terminate</td>
+            <td style="padding: 0.75rem;">May run indefinitely (e.g., OS)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 1.5: What is an Algorithmic Strategy? -->
+    <h2>2. What is an Algorithmic Strategy?</h2>
+    <p>An <strong>algorithmic strategy</strong> (also called an <em>algorithm design paradigm</em>) is a general approach or methodology for solving a class of problems. Rather than solving each problem from scratch, we apply proven strategies that guide how we structure our solutions.</p>
+
+    <div class="key-insight">
+      <strong>💡 Key Insight:</strong> Learning algorithmic strategies is like learning chess openings—they give you a structured way to approach new problems based on patterns that have worked before.
+    </div>
+
+    <h3>Common Algorithmic Strategies</h3>
+    <div class="viz-container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+        <div class="checker-card">
+          <h4>🔄 Brute Force</h4>
+          <p>Try all possible solutions and pick the best one. Simple but often slow.</p>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;"><em>Example: Checking every element to find the maximum</em></p>
+        </div>
+        <div class="checker-card">
+          <h4>✂️ Divide and Conquer</h4>
+          <p>Break the problem into smaller subproblems, solve them recursively, then combine results.</p>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;"><em>Example: Merge Sort, Binary Search</em></p>
+        </div>
+        <div class="checker-card">
+          <h4>🎯 Greedy</h4>
+          <p>Make the locally optimal choice at each step, hoping it leads to a global optimum.</p>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;"><em>Example: Coin change with standard denominations</em></p>
+        </div>
+        <div class="checker-card">
+          <h4>📊 Dynamic Programming</h4>
+          <p>Break into overlapping subproblems and store solutions to avoid redundant work.</p>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;"><em>Example: Fibonacci, shortest paths</em></p>
+        </div>
+        <div class="checker-card">
+          <h4>🔙 Backtracking</h4>
+          <p>Build solutions incrementally and abandon ("backtrack") when a path cannot lead to a valid solution.</p>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;"><em>Example: N-Queens, Sudoku solver</em></p>
+        </div>
+        <div class="checker-card">
+          <h4>📉 Decrease and Conquer</h4>
+          <p>Reduce the problem to a smaller instance and solve that, building up to the full solution.</p>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;"><em>Example: Insertion Sort, Euclid's GCD</em></p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Choosing the Right Strategy</h3>
+    <p>Selecting an appropriate strategy depends on the problem's structure:</p>
+    <div class="viz-container">
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.5rem 0; padding-left: 1.75rem; position: relative;"><span style="position: absolute; left: 0;">📌</span><strong>Optimal substructure?</strong> → Consider Dynamic Programming or Divide and Conquer</li>
+        <li style="padding: 0.5rem 0; padding-left: 1.75rem; position: relative;"><span style="position: absolute; left: 0;">📌</span><strong>Greedy choice property?</strong> → Consider Greedy algorithms</li>
+        <li style="padding: 0.5rem 0; padding-left: 1.75rem; position: relative;"><span style="position: absolute; left: 0;">📌</span><strong>Need to explore all possibilities?</strong> → Consider Backtracking or Brute Force</li>
+        <li style="padding: 0.5rem 0; padding-left: 1.75rem; position: relative;"><span style="position: absolute; left: 0;">📌</span><strong>Problem can be halved each step?</strong> → Consider Divide and Conquer</li>
+      </ul>
+    </div>
+
+    <div class="try-this">
+      <strong>🧪 Think About It:</strong> When you search for a word in a dictionary, which algorithmic strategy are you naturally using? (Hint: You don't check every page from the beginning!)
+    </div>
+
+    <!-- Section 3: Pseudocode to Python -->
+    <h2>3. From Pseudocode to Python</h2>
     <p>Pseudocode is a way to describe algorithms in plain language that resembles code but isn't tied to any specific programming language. Let's see how pseudocode maps to actual Python code.</p>
 
     <div class="viz-container">
@@ -1159,8 +1280,8 @@
       </div>
     </div>
 
-    <!-- Section 3: Loop Invariants -->
-    <h2>3. Loop Invariants: Proving Correctness</h2>
+    <!-- Section 4: Loop Invariants -->
+    <h2>4. Loop Invariants: Proving Correctness</h2>
     <p>A <strong>loop invariant</strong> is a property that is true before and after each iteration of a loop. We use loop invariants to prove that an algorithm is correct by showing three things:</p>
 
     <div class="invariant-box">
@@ -1293,8 +1414,8 @@
       <strong>Key Insight:</strong> Loop invariants are like mathematical induction. Initialization is the base case, maintenance is the inductive step, and termination gives us our conclusion.
     </div>
 
-    <!-- Section 4: Input/Output Specifications -->
-    <h2>4. Input/Output Specifications</h2>
+    <!-- Section 5: Input/Output Specifications -->
+    <h2>5. Input/Output Specifications</h2>
     <p>Every algorithm should have clear <strong>preconditions</strong> (requirements on inputs) and <strong>postconditions</strong> (guarantees about outputs). These form a "contract" between the algorithm and its users.</p>
 
     <div class="viz-container">
@@ -1354,8 +1475,8 @@
       <strong>Common Mistake:</strong> Initializing with "magic numbers" like 0 or -1 instead of actual array elements. Always think about edge cases: empty arrays, all negative numbers, single-element arrays.
     </div>
 
-    <!-- Section 5: Problem Decomposition -->
-    <h2>5. Problem Decomposition</h2>
+    <!-- Section 6: Problem Decomposition -->
+    <h2>6. Problem Decomposition</h2>
     <p>Breaking down complex problems into smaller, manageable subproblems is a key skill in algorithm design. This "divide and conquer" approach makes problems easier to solve and verify.</p>
 
     <div class="viz-container">
@@ -1377,8 +1498,8 @@
       <strong>Key Insight:</strong> Good problem decomposition leads to algorithms that are easier to implement, test, and analyze. Each subproblem should be self-contained with clear inputs and outputs.
     </div>
 
-    <!-- Section 6: Common Mistakes Summary -->
-    <h2>6. Common Mistakes Summary</h2>
+    <!-- Section 7: Common Mistakes Summary -->
+    <h2>7. Common Mistakes Summary</h2>
 
     <div class="common-mistake">
       <strong>Forgetting edge cases:</strong> Always consider empty inputs, single elements, and boundary conditions. What happens when n = 0? When n = 1? When all elements are the same?
@@ -1396,8 +1517,8 @@
       <strong>Incorrect termination condition:</strong> Ensure your loop will eventually terminate. For while loops, verify that the condition becomes false. For counting loops, verify the bounds are correct.
     </div>
 
-    <!-- Section 7: Why Do We Care -->
-    <h2>7. Why Do We Care?</h2>
+    <!-- Section 8: Why Do We Care -->
+    <h2>8. Why Do We Care?</h2>
     <ul style="padding-left: 1.5rem;">
       <li><strong>Safety-Critical Systems:</strong> Medical devices, aviation software, and financial systems require proven correctness -- bugs can cost lives or billions of dollars</li>
       <li><strong>Debugging:</strong> Understanding invariants helps you quickly identify where code went wrong</li>
@@ -1405,8 +1526,8 @@
       <li><strong>Optimization:</strong> Once you prove correctness, you can safely optimize without breaking functionality</li>
     </ul>
 
-    <!-- Section 8: Quiz -->
-    <h2>8. Quick Check</h2>
+    <!-- Section 9: Quiz -->
+    <h2>9. Quick Check</h2>
 
     <div class="quiz-container">
       <div class="quiz-question">
@@ -1491,8 +1612,8 @@
       </div>
     </div>
 
-    <!-- Section 9: Dive Deeper -->
-    <h2>9. Dive Deeper</h2>
+    <!-- Section 10: Dive Deeper -->
+    <h2>10. Dive Deeper</h2>
     <ul style="padding-left: 1.5rem;">
       <li><a href="https://en.wikipedia.org/wiki/Loop_invariant" target="_blank">Wikipedia: Loop Invariants</a></li>
       <li><a href="https://www.khanacademy.org/computing/computer-science/algorithms" target="_blank">Khan Academy: Algorithms Course</a></li>
@@ -1503,7 +1624,7 @@
     <!-- Footer Navigation -->
     <nav class="footer-nav">
       <a href="session-01-python-basics.html">L Session 1: Python Basics</a>
-      <a href="session-03-asymptotic-analysis.html">Session 3: Asymptotic Analysis R</a>
+      <a href="session-03-asymptotic-notation.html">Session 3: Asymptotic Notation →</a>
     </nav>
   </div>
 
