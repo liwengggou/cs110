@@ -1008,6 +1008,56 @@
       <strong>Reality:</strong> O(n²) means if you 10x your input, the work increases by 100x. The actual time depends on your computer, the constant factors, and what each "operation" actually does.
     </div>
 
+    <h3>What is "n"? (Input Size Explained)</h3>
+    <p><strong>"n" is the size of whatever your algorithm processes.</strong> It depends on the problem:</p>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Problem Type</th>
+          <th>What "n" Means</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Searching an array</td>
+          <td>Number of elements in the array</td>
+          <td><code>[3, 7, 2, 9, 5]</code> → n = 5</td>
+        </tr>
+        <tr>
+          <td>Processing a string</td>
+          <td>Number of characters</td>
+          <td><code>"hello"</code> → n = 5</td>
+        </tr>
+        <tr>
+          <td>Matrix operations</td>
+          <td>Rows × Columns (or just rows if square)</td>
+          <td>4×4 matrix → n = 4 (or 16 total cells)</td>
+        </tr>
+        <tr>
+          <td>Graph traversal</td>
+          <td>Number of nodes (vertices)</td>
+          <td>Social network with 1000 users → n = 1000</td>
+        </tr>
+        <tr>
+          <td>Finding prime factors</td>
+          <td>The number itself (or its digit count)</td>
+          <td>Factor 1000000 → n = 1,000,000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="try-this">
+      <strong>Concrete Example:</strong> Linear search through a list of student names.
+      <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+        <li>Class of 30 students → n = 30 → up to 30 comparisons</li>
+        <li>School of 3,000 students → n = 3,000 → up to 3,000 comparisons</li>
+        <li>University of 30,000 students → n = 30,000 → up to 30,000 comparisons</li>
+      </ul>
+      <p style="margin-top: 0.5rem; margin-bottom: 0;">Notice: 10× more students = 10× more work. That's O(n) behavior!</p>
+    </div>
+
     <h3>Why We Ignore Constants</h3>
     <p>We say O(n), not O(3n) or O(n + 5). Why? Because for large inputs, <strong>the shape matters more than the starting point</strong>:</p>
     <ul style="padding-left: 1.5rem;">
