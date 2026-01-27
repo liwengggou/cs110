@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Programming | CS110</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --success: #0F7B6C;
+      --error: #EB5757;
+      --canvas-bg: #1a1a2e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --canvas-bg: #0d0d1a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+    .theme-toggle {
+      position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+      background: var(--background-secondary); border: 1px solid var(--border);
+      border-radius: 50%; width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.25rem; box-shadow: var(--shadow);
+    }
+
+    header { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+
+    .session-badge {
+      display: inline-block; background: #37352F; color: white;
+      padding: 0.25rem 0.75rem; border-radius: 4px;
+      font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;
+    }
+
+    [data-theme="dark"] .session-badge { background: #E6E6E6; color: #191919; }
+
+    h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.75rem; font-weight: 600; margin-top: 3rem; margin-bottom: 1rem; }
+    h3 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; }
+    p { margin-bottom: 1rem; }
+
+    .subtitle { color: var(--text-secondary); font-size: 1.125rem; }
+    .meta { display: flex; gap: 1.5rem; margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary); }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+    }
+
+    .objectives ul { list-style: none; padding-left: 0; }
+    .objectives li { padding: 0.5rem 0; padding-left: 1.75rem; position: relative; }
+    .objectives li::before { content: '📌'; position: absolute; left: 0; }
+
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%; min-height: 200px;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; flex-direction: column; gap: 1rem;
+    }
+
+    .step-controls {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem; background: var(--code-bg);
+      border-radius: var(--border-radius); border: 1px solid var(--border);
+      margin-top: 1rem; flex-wrap: wrap;
+    }
+
+    .step-controls button {
+      padding: 0.5rem 0.75rem; background: var(--background);
+      border: 1px solid var(--border); border-radius: var(--border-radius);
+      cursor: pointer; font-size: 1rem; color: var(--text-primary);
+    }
+
+    .step-controls button:hover:not(:disabled) {
+      background: #37352F; color: white; border-color: #37352F;
+    }
+
+    [data-theme="dark"] .step-controls button:hover:not(:disabled) {
+      background: #E6E6E6; color: #191919; border-color: #E6E6E6;
+    }
+
+    .step-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .step-indicator {
+      font-family: var(--font-mono); font-size: 0.875rem;
+      color: var(--text-secondary); padding: 0 1rem;
+    }
+
+    .speed-control {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-left: auto; font-size: 0.875rem; color: var(--text-secondary);
+    }
+
+    .speed-control select {
+      padding: 0.25rem 0.5rem; border: 1px solid var(--border);
+      border-radius: 4px; background: var(--background);
+      color: var(--text-primary); font-family: var(--font-mono);
+    }
+
+    .step-description {
+      padding: 1rem; background: var(--highlight);
+      border-radius: var(--border-radius); margin-bottom: 1rem;
+      min-height: 3rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .step-description::before { content: '💡'; font-size: 1.25rem; }
+
+    .key-insight {
+      background: var(--highlight);
+      border-left: 4px solid #37352F;
+      padding: 1rem 1.5rem; margin: 1.5rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    [data-theme="dark"] .key-insight { border-left-color: #E6E6E6; }
+
+    .dp-table {
+      display: inline-grid; gap: 2px;
+      background: var(--border); padding: 2px;
+      border-radius: var(--border-radius);
+    }
+
+    .dp-cell {
+      width: 50px; height: 50px;
+      display: flex; align-items: center; justify-content: center;
+      background: #2a2a4a; color: white;
+      font-family: var(--font-mono); font-weight: 600;
+      font-size: 0.875rem; transition: all 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .dp-cell.computing {
+      background: #F1C40F; color: #000;
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+      transform: scale(1.1);
+    }
+
+    .dp-cell.computed { background: #0F7B6C; }
+    .dp-cell.looking { background: #3498DB; }
+    .dp-cell.header { background: #37352F; font-size: 0.75rem; }
+
+    .code-panel {
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      overflow: hidden; margin-top: 1rem;
+    }
+
+    .code-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.75rem 1rem; background: var(--background-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-content { padding: 1rem; overflow-x: auto; }
+
+    .code-line {
+      display: flex; padding: 0.125rem 0;
+      font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.6;
+    }
+
+    .code-line.highlighted {
+      background: rgba(241, 196, 15, 0.2);
+      border-left: 3px solid #F1C40F; margin-left: -3px;
+    }
+
+    .line-number {
+      width: 2.5rem; text-align: right; padding-right: 1rem;
+      color: var(--text-secondary); user-select: none;
+    }
+
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; font-style: italic; }
+
+    .comparison-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .comparison-card {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+    }
+
+    .comparison-card h4 { margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    .tree-viz {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.5rem; padding: 1rem;
+    }
+
+    .tree-node {
+      padding: 0.5rem 1rem; border-radius: var(--border-radius);
+      background: #37352F; color: white;
+      font-family: var(--font-mono); font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .tree-node { background: #E6E6E6; color: #191919; }
+
+    .tree-node.computing { background: #F1C40F; color: #000; }
+    .tree-node.cached { background: #0F7B6C; }
+    .tree-node.duplicate { background: #EB5757; }
+
+    .tree-children { display: flex; gap: 2rem; }
+
+    .tree-branch {
+      display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    }
+
+    .tree-connector { width: 2px; height: 15px; background: var(--text-secondary); }
+
+    .call-counter {
+      font-family: var(--font-mono); font-size: 1.25rem;
+      color: white; padding: 0.5rem 1rem;
+      background: #37352F; border-radius: var(--border-radius);
+    }
+
+    .tab-nav { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+
+    .tab-btn {
+      padding: 0.5rem 1rem; background: var(--background-secondary);
+      border: 1px solid var(--border); border-radius: var(--border-radius);
+      cursor: pointer; font-size: 0.875rem;
+    }
+
+    .tab-btn.active { background: #37352F; color: white; border-color: #37352F; }
+    [data-theme="dark"] .tab-btn.active { background: #E6E6E6; color: #191919; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .footer-nav {
+      display: flex; justify-content: space-between;
+      margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--text-primary); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .footer-nav a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .dp-cell { width: 40px; height: 40px; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">📚 Tutorial</span>
+      <h1>Dynamic Programming</h1>
+      <p class="subtitle">Master the art of solving complex problems by breaking them into simpler overlapping subproblems</p>
+      <div class="meta">
+        <span>⏱️ ~45 minutes</span>
+        <span>📋 Prerequisites: Recursion, Basic Algorithms</span>
+      </div>
+    </header>
+
+    <section class="objectives">
+      <h3>🎯 Learning Objectives</h3>
+      <ul>
+        <li><strong>Understand</strong> what dynamic programming is and when to use it</li>
+        <li><strong>Identify</strong> overlapping subproblems and optimal substructure</li>
+        <li><strong>Implement</strong> both top-down (memoization) and bottom-up (tabulation) approaches</li>
+        <li><strong>Apply</strong> DP to classic problems: Fibonacci, Coin Change, LCS</li>
+        <li><strong>Analyze</strong> time and space complexity of DP solutions</li>
+      </ul>
+    </section>
+
+    <h2>1. What is Dynamic Programming?</h2>
+    <p><strong>Dynamic Programming (DP)</strong> is an algorithmic technique for solving optimization problems by breaking them down into simpler subproblems and storing the results to avoid redundant computations.</p>
+
+    <div class="key-insight">
+      <strong>🔑 Key Insight:</strong> DP works when a problem has two properties:
+      <br><br>
+      <strong>1. Overlapping Subproblems</strong> — The same subproblems are solved multiple times<br>
+      <strong>2. Optimal Substructure</strong> — The optimal solution contains optimal solutions to subproblems
+    </div>
+
+    <h3>The Core Idea</h3>
+    <p>Instead of solving the same subproblem repeatedly, we <strong>remember</strong> (memoize) the result the first time we compute it, then simply look it up when needed again.</p>
+
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <h4>❌ Naive Recursion</h4>
+        <p>Recalculates the same values over and over</p>
+        <p><strong>Time:</strong> Often exponential O(2^n)</p>
+      </div>
+      <div class="comparison-card">
+        <h4>✅ Dynamic Programming</h4>
+        <p>Stores computed values for reuse</p>
+        <p><strong>Time:</strong> Usually polynomial O(n) or O(n²)</p>
+      </div>
+    </div>
+
+    <h2>2. Fibonacci: The Classic Example</h2>
+    <p>The Fibonacci sequence is perfect for understanding DP because naive recursion is extremely inefficient, but DP makes it lightning fast.</p>
+
+    <p><strong>Definition:</strong> F(0) = 0, F(1) = 1, F(n) = F(n-1) + F(n-2) for n > 1</p>
+
+    <div class="viz-container">
+      <h3>🌳 Recursive Call Tree Visualization</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">Watch how naive recursion creates duplicate work, while memoization eliminates it.</p>
+      
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="naive">❌ Naive Recursion</button>
+        <button class="tab-btn" data-tab="memo">✅ Memoization</button>
+      </div>
+
+      <div class="tab-content active" id="tab-naive">
+        <div class="step-description" id="fib-naive-desc">Click Play to see how naive recursion calculates F(5)</div>
+        <div class="viz-canvas" id="fib-naive-canvas">
+          <div class="call-counter">Function calls: <span id="naive-calls">0</span></div>
+          <div class="tree-viz" id="fib-naive-tree"></div>
+        </div>
+        <div class="step-controls">
+          <button onclick="fibNaive.reset()">⏮️</button>
+          <button onclick="fibNaive.stepBack()">⏪</button>
+          <button onclick="fibNaive.togglePlay()" id="fib-naive-play">▶️</button>
+          <button onclick="fibNaive.stepForward()">⏩</button>
+          <span class="step-indicator" id="fib-naive-step">Step 0/0</span>
+          <div class="speed-control">
+            <label>Speed:</label>
+            <select onchange="fibNaive.setSpeed(this.value)">
+              <option value="1000">Slow</option>
+              <option value="500" selected>Normal</option>
+              <option value="200">Fast</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-memo">
+        <div class="step-description" id="fib-memo-desc">Click Play to see how memoization avoids duplicate work</div>
+        <div class="viz-canvas" id="fib-memo-canvas">
+          <div class="call-counter">Function calls: <span id="memo-calls">0</span></div>
+          <div class="tree-viz" id="fib-memo-tree"></div>
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;" id="memo-cache"></div>
+        </div>
+        <div class="step-controls">
+          <button onclick="fibMemo.reset()">⏮️</button>
+          <button onclick="fibMemo.stepBack()">⏪</button>
+          <button onclick="fibMemo.togglePlay()" id="fib-memo-play">▶️</button>
+          <button onclick="fibMemo.stepForward()">⏩</button>
+          <span class="step-indicator" id="fib-memo-step">Step 0/0</span>
+          <div class="speed-control">
+            <label>Speed:</label>
+            <select onchange="fibMemo.setSpeed(this.value)">
+              <option value="1000">Slow</option>
+              <option value="500" selected>Normal</option>
+              <option value="200">Fast</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-header">
+          <span>📝 Python Implementation</span>
+        </div>
+        <div class="code-content">
+          <div class="code-line"><span class="line-number">1</span><span class="comment"># Naive Recursive (Exponential Time)</span></div>
+          <div class="code-line"><span class="line-number">2</span><span class="keyword">def</span> <span class="function">fib_naive</span>(n):</div>
+          <div class="code-line"><span class="line-number">3</span>    <span class="keyword">if</span> n <= <span class="number">1</span>: <span class="keyword">return</span> n</div>
+          <div class="code-line"><span class="line-number">4</span>    <span class="keyword">return</span> fib_naive(n-<span class="number">1</span>) + fib_naive(n-<span class="number">2</span>)</div>
+          <div class="code-line"><span class="line-number">5</span></div>
+          <div class="code-line"><span class="line-number">6</span><span class="comment"># Memoization (Linear Time)</span></div>
+          <div class="code-line"><span class="line-number">7</span><span class="keyword">def</span> <span class="function">fib_memo</span>(n, memo={}):</div>
+          <div class="code-line"><span class="line-number">8</span>    <span class="keyword">if</span> n <span class="keyword">in</span> memo: <span class="keyword">return</span> memo[n]</div>
+          <div class="code-line"><span class="line-number">9</span>    <span class="keyword">if</span> n <= <span class="number">1</span>: <span class="keyword">return</span> n</div>
+          <div class="code-line"><span class="line-number">10</span>    memo[n] = fib_memo(n-<span class="number">1</span>, memo) + fib_memo(n-<span class="number">2</span>, memo)</div>
+          <div class="code-line"><span class="line-number">11</span>    <span class="keyword">return</span> memo[n]</div>
+          <div class="code-line"><span class="line-number">12</span></div>
+          <div class="code-line"><span class="line-number">13</span><span class="comment"># Bottom-Up Tabulation (Linear Time, No Recursion)</span></div>
+          <div class="code-line"><span class="line-number">14</span><span class="keyword">def</span> <span class="function">fib_tab</span>(n):</div>
+          <div class="code-line"><span class="line-number">15</span>    <span class="keyword">if</span> n <= <span class="number">1</span>: <span class="keyword">return</span> n</div>
+          <div class="code-line"><span class="line-number">16</span>    dp = [<span class="number">0</span>] * (n + <span class="number">1</span>)</div>
+          <div class="code-line"><span class="line-number">17</span>    dp[<span class="number">1</span>] = <span class="number">1</span></div>
+          <div class="code-line"><span class="line-number">18</span>    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">2</span>, n + <span class="number">1</span>):</div>
+          <div class="code-line"><span class="line-number">19</span>        dp[i] = dp[i-<span class="number">1</span>] + dp[i-<span class="number">2</span>]</div>
+          <div class="code-line"><span class="line-number">20</span>    <span class="keyword">return</span> dp[n]</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>3. Two DP Approaches</h2>
+    
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <h4>🔽 Top-Down (Memoization)</h4>
+        <p>Start with the original problem and recursively break it down. Store results in a cache (dictionary/array) to avoid recomputation.</p>
+        <br>
+        <p><strong>Pros:</strong> Natural to write, only computes needed subproblems</p>
+        <p><strong>Cons:</strong> Recursion overhead, may hit stack limit</p>
+      </div>
+      <div class="comparison-card">
+        <h4>🔼 Bottom-Up (Tabulation)</h4>
+        <p>Start with the smallest subproblems and iteratively build up to the solution. Fill a table in a specific order.</p>
+        <br>
+        <p><strong>Pros:</strong> No recursion overhead, often faster</p>
+        <p><strong>Cons:</strong> Must figure out the correct order to fill the table</p>
+      </div>
+    </div>
+
+    <h2>4. Coin Change Problem</h2>
+    <p><strong>Problem:</strong> Given coins of different denominations and a total amount, find the minimum number of coins needed to make that amount.</p>
+
+    <div class="viz-container">
+      <h3>💰 Coin Change Visualization</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">Watch how the DP table fills up to find the minimum coins for amount 11 using coins [1, 5, 6]</p>
+      
+      <div class="step-description" id="coin-desc">Click Play to start the animation</div>
+      
+      <div class="viz-canvas" id="coin-canvas">
+        <div style="color: white; margin-bottom: 1rem;">Coins: [1, 5, 6] | Target: 11</div>
+        <div class="dp-table" id="coin-table" style="grid-template-columns: repeat(13, 50px);"></div>
+      </div>
+
+      <div class="step-controls">
+        <button onclick="coinChange.reset()">⏮️</button>
+        <button onclick="coinChange.stepBack()">⏪</button>
+        <button onclick="coinChange.togglePlay()" id="coin-play">▶️</button>
+        <button onclick="coinChange.stepForward()">⏩</button>
+        <span class="step-indicator" id="coin-step">Step 0/0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select onchange="coinChange.setSpeed(this.value)">
+            <option value="1000">Slow</option>
+            <option value="500" selected>Normal</option>
+            <option value="200">Fast</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-header"><span>📝 Coin Change Implementation</span></div>
+        <div class="code-content">
+          <div class="code-line"><span class="line-number">1</span><span class="keyword">def</span> <span class="function">coin_change</span>(coins, amount):</div>
+          <div class="code-line"><span class="line-number">2</span>    dp = [<span class="function">float</span>(<span class="string">'inf'</span>)] * (amount + <span class="number">1</span>)</div>
+          <div class="code-line"><span class="line-number">3</span>    dp[<span class="number">0</span>] = <span class="number">0</span>  <span class="comment"># Base case: 0 coins for amount 0</span></div>
+          <div class="code-line"><span class="line-number">4</span>    </div>
+          <div class="code-line"><span class="line-number">5</span>    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, amount + <span class="number">1</span>):</div>
+          <div class="code-line"><span class="line-number">6</span>        <span class="keyword">for</span> coin <span class="keyword">in</span> coins:</div>
+          <div class="code-line"><span class="line-number">7</span>            <span class="keyword">if</span> coin <= i:</div>
+          <div class="code-line"><span class="line-number">8</span>                dp[i] = <span class="function">min</span>(dp[i], dp[i - coin] + <span class="number">1</span>)</div>
+          <div class="code-line"><span class="line-number">9</span>    </div>
+          <div class="code-line"><span class="line-number">10</span>    <span class="keyword">return</span> dp[amount] <span class="keyword">if</span> dp[amount] != <span class="function">float</span>(<span class="string">'inf'</span>) <span class="keyword">else</span> -<span class="number">1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h2>5. Longest Common Subsequence (LCS)</h2>
+    <p><strong>Problem:</strong> Given two strings, find the length of their longest common subsequence (characters that appear in both strings in the same relative order, but not necessarily contiguous).</p>
+
+    <div class="viz-container">
+      <h3>📊 LCS Table Visualization</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">Watch how we build the LCS table for strings "ABCB" and "BDCAB"</p>
+      
+      <div class="step-description" id="lcs-desc">Click Play to see the DP table fill up</div>
+      
+      <div class="viz-canvas" id="lcs-canvas">
+        <div style="color: white; margin-bottom: 1rem;">String 1: "ABCB" | String 2: "BDCAB"</div>
+        <div class="dp-table" id="lcs-table" style="grid-template-columns: repeat(6, 50px);"></div>
+      </div>
+
+      <div class="step-controls">
+        <button onclick="lcsViz.reset()">⏮️</button>
+        <button onclick="lcsViz.stepBack()">⏪</button>
+        <button onclick="lcsViz.togglePlay()" id="lcs-play">▶️</button>
+        <button onclick="lcsViz.stepForward()">⏩</button>
+        <span class="step-indicator" id="lcs-step">Step 0/0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select onchange="lcsViz.setSpeed(this.value)">
+            <option value="1000">Slow</option>
+            <option value="500" selected>Normal</option>
+            <option value="200">Fast</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-header"><span>📝 LCS Implementation</span></div>
+        <div class="code-content">
+          <div class="code-line"><span class="line-number">1</span><span class="keyword">def</span> <span class="function">lcs</span>(s1, s2):</div>
+          <div class="code-line"><span class="line-number">2</span>    m, n = <span class="function">len</span>(s1), <span class="function">len</span>(s2)</div>
+          <div class="code-line"><span class="line-number">3</span>    dp = [[<span class="number">0</span>] * (n + <span class="number">1</span>) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="function">range</span>(m + <span class="number">1</span>)]</div>
+          <div class="code-line"><span class="line-number">4</span>    </div>
+          <div class="code-line"><span class="line-number">5</span>    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, m + <span class="number">1</span>):</div>
+          <div class="code-line"><span class="line-number">6</span>        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, n + <span class="number">1</span>):</div>
+          <div class="code-line"><span class="line-number">7</span>            <span class="keyword">if</span> s1[i-<span class="number">1</span>] == s2[j-<span class="number">1</span>]:</div>
+          <div class="code-line"><span class="line-number">8</span>                dp[i][j] = dp[i-<span class="number">1</span>][j-<span class="number">1</span>] + <span class="number">1</span></div>
+          <div class="code-line"><span class="line-number">9</span>            <span class="keyword">else</span>:</div>
+          <div class="code-line"><span class="line-number">10</span>                dp[i][j] = <span class="function">max</span>(dp[i-<span class="number">1</span>][j], dp[i][j-<span class="number">1</span>])</div>
+          <div class="code-line"><span class="line-number">11</span>    </div>
+          <div class="code-line"><span class="line-number">12</span>    <span class="keyword">return</span> dp[m][n]</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>6. DP Problem-Solving Framework</h2>
+    <div class="key-insight">
+      <strong>🧠 5-Step DP Framework:</strong>
+      <br><br>
+      <strong>1. Define the subproblem</strong> — What does dp[i] or dp[i][j] represent?<br>
+      <strong>2. Write the recurrence relation</strong> — How do subproblems relate to each other?<br>
+      <strong>3. Identify base cases</strong> — What are the trivial solutions?<br>
+      <strong>4. Determine computation order</strong> — Which subproblems must be solved first?<br>
+      <strong>5. Extract the answer</strong> — Where is the final answer in the DP table?
+    </div>
+
+    <h2>7. Summary</h2>
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <h4>📌 Key Takeaways</h4>
+        <p>• DP = Recursion + Memoization</p>
+        <p>• Look for overlapping subproblems</p>
+        <p>• Look for optimal substructure</p>
+        <p>• Choose top-down or bottom-up based on the problem</p>
+      </div>
+      <div class="comparison-card">
+        <h4>📈 Complexity</h4>
+        <p>• <strong>Time:</strong> Usually O(n) or O(n²) depending on subproblem structure</p>
+        <p>• <strong>Space:</strong> O(n) or O(n²) for the DP table (can often be optimized)</p>
+      </div>
+    </div>
+
+    <footer class="footer-nav">
+      <a href="index.html">⬅️ Back to Home</a>
+      <a href="session-06-recursion.html">Next: Recursion ➡️</a>
+    </footer>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        icon.textContent = '🌙';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.textContent = '☀️';
+      }
+    }
+
+    // Tab Navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = btn.dataset.tab;
+        const parent = btn.closest('.viz-container');
+        parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + tabId).classList.add('active');
+      });
+    });
+
+    // Animation Controller Factory
+    function createAnimationController(config) {
+      return {
+        steps: config.steps || [],
+        currentStep: 0,
+        speed: 500,
+        playing: false,
+        interval: null,
+        
+        init() { config.init?.(); this.updateDisplay(); },
+        
+        setSpeed(ms) { this.speed = parseInt(ms); },
+        
+        updateDisplay() {
+          document.getElementById(config.stepId).textContent = 
+            `Step ${this.currentStep}/${this.steps.length}`;
+          config.render?.(this.currentStep);
+        },
+        
+        stepForward() {
+          if (this.currentStep < this.steps.length) {
+            this.currentStep++;
+            this.updateDisplay();
+          }
+        },
+        
+        stepBack() {
+          if (this.currentStep > 0) {
+            this.currentStep--;
+            this.updateDisplay();
+          }
+        },
+        
+        reset() {
+          this.stop();
+          this.currentStep = 0;
+          config.init?.();
+          this.updateDisplay();
+        },
+        
+        stop() {
+          this.playing = false;
+          clearInterval(this.interval);
+          document.getElementById(config.playBtnId).textContent = '▶️';
+        },
+        
+        togglePlay() {
+          if (this.playing) {
+            this.stop();
+          } else {
+            this.playing = true;
+            document.getElementById(config.playBtnId).textContent = '⏸️';
+            this.interval = setInterval(() => {
+              if (this.currentStep < this.steps.length) {
+                this.stepForward();
+              } else {
+                this.stop();
+              }
+            }, this.speed);
+          }
+        }
+      };
+    }
+
+    // Fibonacci Naive Visualization
+    const fibNaiveSteps = [];
+    (function buildNaiveSteps() {
+      let calls = 0;
+      function trace(n, path = []) {
+        calls++;
+        fibNaiveSteps.push({ n, calls, path: [...path], action: 'compute' });
+        if (n <= 1) return n;
+        const left = trace(n - 1, [...path, 'L']);
+        const right = trace(n - 2, [...path, 'R']);
+        return left + right;
+      }
+      trace(5);
+    })();
+
+    const fibNaive = createAnimationController({
+      steps: fibNaiveSteps,
+      stepId: 'fib-naive-step',
+      playBtnId: 'fib-naive-play',
+      init() {
+        document.getElementById('naive-calls').textContent = '0';
+        document.getElementById('fib-naive-tree').innerHTML = '';
+      },
+      render(step) {
+        if (step === 0) {
+          document.getElementById('naive-calls').textContent = '0';
+          document.getElementById('fib-naive-desc').innerHTML = 'Click Play to see how naive recursion calculates F(5)';
+          return;
+        }
+        const s = fibNaiveSteps[step - 1];
+        document.getElementById('naive-calls').textContent = s.calls;
+        document.getElementById('fib-naive-desc').innerHTML = 
+          `Computing F(${s.n}) — Call #${s.calls}`;
+      }
+    });
+    fibNaive.init();
+
+    // Fibonacci Memoization Visualization  
+    const fibMemoSteps = [];
+    (function buildMemoSteps() {
+      const memo = {};
+      let calls = 0;
+      function trace(n) {
+        calls++;
+        if (memo[n] !== undefined) {
+          fibMemoSteps.push({ n, calls, action: 'cache_hit', memo: {...memo} });
+          return memo[n];
+        }
+        fibMemoSteps.push({ n, calls, action: 'compute', memo: {...memo} });
+        if (n <= 1) {
+          memo[n] = n;
+          fibMemoSteps.push({ n, calls, action: 'store', memo: {...memo}, value: n });
+          return n;
+        }
+        const result = trace(n - 1) + trace(n - 2);
+        memo[n] = result;
+        fibMemoSteps.push({ n, calls, action: 'store', memo: {...memo}, value: result });
+        return result;
+      }
+      trace(5);
+    })();
+
+    const fibMemo = createAnimationController({
+      steps: fibMemoSteps,
+      stepId: 'fib-memo-step',
+      playBtnId: 'fib-memo-play',
+      init() {
+        document.getElementById('memo-calls').textContent = '0';
+        document.getElementById('memo-cache').innerHTML = '';
+      },
+      render(step) {
+        if (step === 0) {
+          document.getElementById('memo-calls').textContent = '0';
+          document.getElementById('fib-memo-desc').innerHTML = 'Click Play to see how memoization avoids duplicate work';
+          document.getElementById('memo-cache').innerHTML = '';
+          return;
+        }
+        const s = fibMemoSteps[step - 1];
+        document.getElementById('memo-calls').textContent = s.calls;
+        
+        let desc = '';
+        if (s.action === 'cache_hit') {
+          desc = `✅ F(${s.n}) found in cache! Returning ${s.memo[s.n]}`;
+        } else if (s.action === 'compute') {
+          desc = `Computing F(${s.n})...`;
+        } else if (s.action === 'store') {
+          desc = `💾 Storing F(${s.n}) = ${s.value} in cache`;
+        }
+        document.getElementById('fib-memo-desc').innerHTML = desc;
+        
+        // Render cache
+        const cacheHtml = Object.entries(s.memo)
+          .map(([k, v]) => `<div class="tree-node cached">F(${k})=${v}</div>`)
+          .join('');
+        document.getElementById('memo-cache').innerHTML = cacheHtml;
+      }
+    });
+    fibMemo.init();
+
+    // Coin Change Visualization
+    const coins = [1, 5, 6];
+    const amount = 11;
+    const coinSteps = [];
+    (function buildCoinSteps() {
+      const dp = Array(amount + 1).fill(Infinity);
+      dp[0] = 0;
+      coinSteps.push({ dp: [...dp], current: -1, looking: -1, desc: 'Initialize: dp[0] = 0, rest = ∞' });
+      
+      for (let i = 1; i <= amount; i++) {
+        coinSteps.push({ dp: [...dp], current: i, looking: -1, desc: `Calculating dp[${i}]...` });
+        for (const coin of coins) {
+          if (coin <= i) {
+            coinSteps.push({ dp: [...dp], current: i, looking: i - coin, coin, 
+              desc: `Can use coin ${coin}: Check dp[${i - coin}] + 1 = ${dp[i - coin] + 1}` });
+            if (dp[i - coin] + 1 < dp[i]) {
+              dp[i] = dp[i - coin] + 1;
+              coinSteps.push({ dp: [...dp], current: i, looking: -1, 
+                desc: `Update dp[${i}] = ${dp[i]}` });
+            }
+          }
+        }
+      }
+      coinSteps.push({ dp: [...dp], current: -1, looking: -1, 
+        desc: `✅ Done! Minimum coins for ${amount} = ${dp[amount]}` });
+    })();
+
+    const coinChange = createAnimationController({
+      steps: coinSteps,
+      stepId: 'coin-step',
+      playBtnId: 'coin-play',
+      init() {
+        const table = document.getElementById('coin-table');
+        table.innerHTML = '';
+        // Header row
+        for (let i = 0; i <= amount + 1; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'dp-cell header';
+          cell.textContent = i === 0 ? 'i' : (i - 1).toString();
+          table.appendChild(cell);
+        }
+        // Value row
+        for (let i = 0; i <= amount + 1; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'dp-cell';
+          cell.id = `coin-cell-${i - 1}`;
+          cell.textContent = i === 0 ? 'dp' : '∞';
+          table.appendChild(cell);
+        }
+      },
+      render(step) {
+        if (step === 0) {
+          this.init();
+          document.getElementById('coin-desc').innerHTML = 'Click Play to start the animation';
+          return;
+        }
+        const s = coinSteps[step - 1];
+        document.getElementById('coin-desc').innerHTML = s.desc;
+        
+        for (let i = 0; i <= amount; i++) {
+          const cell = document.getElementById(`coin-cell-${i}`);
+          cell.textContent = s.dp[i] === Infinity ? '∞' : s.dp[i];
+          cell.className = 'dp-cell';
+          if (i === s.current) cell.classList.add('computing');
+          else if (i === s.looking) cell.classList.add('looking');
+          else if (s.dp[i] !== Infinity) cell.classList.add('computed');
+        }
+      }
+    });
+    coinChange.init();
+
+    // LCS Visualization
+    const s1 = 'ABCB', s2 = 'BDCAB';
+    const lcsSteps = [];
+    (function buildLcsSteps() {
+      const m = s1.length, n = s2.length;
+      const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+      
+      lcsSteps.push({ dp: dp.map(r => [...r]), i: -1, j: -1, desc: 'Initialize all cells to 0' });
+      
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          if (s1[i - 1] === s2[j - 1]) {
+            dp[i][j] = dp[i - 1][j - 1] + 1;
+            lcsSteps.push({ dp: dp.map(r => [...r]), i, j, lookI: i - 1, lookJ: j - 1,
+              desc: `'${s1[i-1]}' == '${s2[j-1]}' → dp[${i}][${j}] = dp[${i-1}][${j-1}] + 1 = ${dp[i][j]}` });
+          } else {
+            dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            lcsSteps.push({ dp: dp.map(r => [...r]), i, j, 
+              desc: `'${s1[i-1]}' != '${s2[j-1]}' → dp[${i}][${j}] = max(${dp[i-1][j]}, ${dp[i][j-1]}) = ${dp[i][j]}` });
+          }
+        }
+      }
+      lcsSteps.push({ dp: dp.map(r => [...r]), i: -1, j: -1, 
+        desc: `✅ Done! LCS length = ${dp[m][n]}` });
+    })();
+
+    const lcsViz = createAnimationController({
+      steps: lcsSteps,
+      stepId: 'lcs-step',
+      playBtnId: 'lcs-play',
+      init() {
+        const table = document.getElementById('lcs-table');
+        table.innerHTML = '';
+        const headers = ['', '', ...s2.split('')];
+        const rowHeaders = ['', ...s1.split('')];
+        
+        // Header row
+        for (let j = 0; j <= s2.length + 1; j++) {
+          const cell = document.createElement('div');
+          cell.className = 'dp-cell header';
+          cell.textContent = headers[j] || '';
+          table.appendChild(cell);
+        }
+        
+        // Data rows
+        for (let i = 0; i <= s1.length; i++) {
+          // Row header
+          const hCell = document.createElement('div');
+          hCell.className = 'dp-cell header';
+          hCell.textContent = rowHeaders[i];
+          table.appendChild(hCell);
+          
+          for (let j = 0; j <= s2.length; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'dp-cell';
+            cell.id = `lcs-cell-${i}-${j}`;
+            cell.textContent = '0';
+            table.appendChild(cell);
+          }
+        }
+      },
+      render(step) {
+        if (step === 0) {
+          this.init();
+          document.getElementById('lcs-desc').innerHTML = 'Click Play to see the DP table fill up';
+          return;
+        }
+        const s = lcsSteps[step - 1];
+        document.getElementById('lcs-desc').innerHTML = s.desc;
+        
+        for (let i = 0; i <= s1.length; i++) {
+          for (let j = 0; j <= s2.length; j++) {
+            const cell = document.getElementById(`lcs-cell-${i}-${j}`);
+            cell.textContent = s.dp[i][j];
+            cell.className = 'dp-cell';
+            if (i === s.i && j === s.j) cell.classList.add('computing');
+            else if (i === s.lookI && j === s.lookJ) cell.classList.add('looking');
+            else if (s.dp[i][j] > 0) cell.classList.add('computed');
+          }
+        }
+      }
+    });
+    lcsViz.init();
+
+    // KaTeX Auto-render
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>

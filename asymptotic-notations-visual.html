@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Big O vs Θ vs Ω Notations | CS110</title>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #FFFFFF;
+      --background-secondary: #F7F6F3;
+      --text-primary: #37352F;
+      --text-secondary: #6B6B6B;
+      --border: #E9E9E7;
+      --code-bg: #F7F6F3;
+      --highlight: #FBF3DB;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --border-radius: 8px;
+      --card-padding: 1.5rem;
+    }
+
+    [data-theme="dark"] {
+      --background: #191919;
+      --background-secondary: #252525;
+      --text-primary: #E6E6E6;
+      --text-secondary: #9B9B9B;
+      --border: #333333;
+      --code-bg: #252525;
+      --highlight: #3D3A2E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-badge {
+      display: inline-block;
+      background: var(--text-primary);
+      color: var(--background);
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+
+    /* Learning Objectives */
+    .objectives {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .objectives ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .objectives li {
+      padding: 0.5rem 0;
+      padding-left: 2rem;
+      position: relative;
+    }
+
+    .objectives li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      font-size: 1rem;
+    }
+
+    /* Notation Cards */
+    .notation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .notation-card {
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      transition: all 0.3s ease;
+    }
+
+    .notation-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+
+    .notation-card.big-o {
+      border-color: var(--text-primary);
+    }
+
+    .notation-card.theta {
+      border-color: var(--text-primary);
+    }
+
+    .notation-card.omega {
+      border-color: var(--text-primary);
+    }
+
+    .notation-symbol {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    .notation-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .notation-meaning {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+    }
+
+    /* Visualization Container */
+    .viz-container {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+      box-shadow: var(--shadow);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      height: 400px;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .viz-canvas svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: var(--code-bg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      padding: 0.5rem 1rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      font-family: var(--font-main);
+    }
+
+    .controls button:hover:not(:disabled) {
+      background: var(--text-primary);
+      color: var(--background);
+      border-color: var(--text-primary);
+    }
+
+    .controls button.active {
+      background: var(--text-primary);
+      color: var(--background);
+    }
+
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Notation Selector */
+    .notation-selector {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+    }
+
+    .notation-btn {
+      padding: 0.5rem 1rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: var(--border-radius);
+      border-left: 4px solid var(--text-primary);
+      background: var(--background-secondary);
+    }
+
+    .callout-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Definition Box */
+    .definition-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .definition-box .math-def {
+      font-family: var(--font-mono);
+      font-size: 1.125rem;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9375rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 1rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+
+    .comparison-table th {
+      background: var(--background-secondary);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:hover td {
+      background: var(--code-bg);
+    }
+
+    /* Animation Status */
+    .animation-status {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      min-height: 3rem;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      padding: 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .legend-line {
+      width: 30px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .legend-line.solid {
+      background: var(--text-primary);
+    }
+
+    .legend-line.dashed {
+      background: repeating-linear-gradient(
+        90deg,
+        var(--text-primary) 0px,
+        var(--text-primary) 6px,
+        transparent 6px,
+        transparent 10px
+      );
+    }
+
+    .legend-line.dotted {
+      background: repeating-linear-gradient(
+        90deg,
+        var(--text-primary) 0px,
+        var(--text-primary) 2px,
+        transparent 2px,
+        transparent 6px
+      );
+    }
+
+    .legend-area {
+      width: 30px;
+      height: 16px;
+      border-radius: 2px;
+      opacity: 0.3;
+      background: var(--text-primary);
+    }
+
+    /* Interactive Example */
+    .interactive-box {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+    }
+
+    .slider-container {
+      margin: 1rem 0;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .slider-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    .slider {
+      width: 100%;
+      height: 8px;
+      appearance: none;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--text-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-nav a {
+      color: var(--text-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+    }
+
+    .footer-nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+      
+      .notation-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .notation-selector {
+        margin-left: 0;
+        justify-content: center;
+      }
+    }
+
+    /* Quiz Styles */
+    .quiz-section {
+      margin: 2rem 0;
+    }
+
+    .quiz-question {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question h4 {
+      margin-bottom: 1rem;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .quiz-option {
+      padding: 1rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .quiz-option:hover {
+      border-color: var(--text-primary);
+    }
+
+    .quiz-option.selected {
+      border-color: var(--text-primary);
+      background: var(--code-bg);
+    }
+
+    .quiz-option.correct {
+      border-color: #37352F;
+      background: rgba(55, 53, 47, 0.1);
+    }
+
+    .quiz-option.incorrect {
+      border-color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    .quiz-feedback {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      display: none;
+    }
+
+    .quiz-feedback.show {
+      display: block;
+      background: var(--highlight);
+    }
+
+    /* Analogy Cards */
+    .analogy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .analogy-card {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+    }
+
+    .analogy-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .analogy-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .analogy-text {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <span class="session-badge">📊 Asymptotic Analysis</span>
+      <h1>Big O vs Θ vs Ω Notations</h1>
+      <p class="subtitle">Understanding upper, tight, and lower bounds through visual animations</p>
+    </header>
+
+    <section class="objectives">
+      <h3>🎯 Learning Objectives</h3>
+      <ul>
+        <li><strong>Distinguish</strong> between Big O, Theta, and Big Omega notations</li>
+        <li><strong>Visualize</strong> how bounds relate to a function's growth</li>
+        <li><strong>Apply</strong> the correct notation based on what you're describing</li>
+        <li><strong>Understand</strong> when to use each notation in practice</li>
+      </ul>
+    </section>
+
+    <!-- Section 1: Overview Cards -->
+    <h2>📌 The Three Notations at a Glance</h2>
+    <p>These three notations describe how an algorithm's running time relates to a bounding function. Think of them as different ways to describe "speed limits" for algorithms.</p>
+
+    <div class="notation-grid">
+      <div class="notation-card big-o">
+        <div class="notation-symbol">O</div>
+        <div class="notation-name">Big O (Upper Bound)</div>
+        <div class="notation-meaning">
+          📈 "At most this fast"<br>
+          The algorithm will <strong>never be slower</strong> than this bound for large inputs.
+        </div>
+      </div>
+      
+      <div class="notation-card theta">
+        <div class="notation-symbol">Θ</div>
+        <div class="notation-name">Theta (Tight Bound)</div>
+        <div class="notation-meaning">
+          🎯 "Exactly this fast"<br>
+          The algorithm grows at <strong>exactly this rate</strong> — bounded above and below.
+        </div>
+      </div>
+      
+      <div class="notation-card omega">
+        <div class="notation-symbol">Ω</div>
+        <div class="notation-name">Big Omega (Lower Bound)</div>
+        <div class="notation-meaning">
+          📉 "At least this fast"<br>
+          The algorithm will <strong>never be faster</strong> than this bound for large inputs.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Visual Animation -->
+    <h2>🎬 Interactive Visualization</h2>
+    <p>Watch how each notation defines boundaries around a function. The <strong>shaded region</strong> shows where the function must stay.</p>
+
+    <div class="viz-container">
+      <div class="animation-status" id="animation-status">
+        Click a notation button to see how it bounds the function f(n)
+      </div>
+      
+      <div class="viz-canvas" id="bounds-viz">
+        <svg id="bounds-svg"></svg>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-line solid"></div>
+          <span>f(n) — Your function</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line dashed"></div>
+          <span>Upper bound: c₂·g(n)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line dotted"></div>
+          <span>Lower bound: c₁·g(n)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-area"></div>
+          <span>Valid region</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="play-btn" onclick="toggleAnimation()">▶️ Play Animation</button>
+        <button id="reset-btn" onclick="resetAnimation()">🔄 Reset</button>
+        
+        <div class="notation-selector">
+          <button class="notation-btn" onclick="showNotation('bigO')">O (n²)</button>
+          <button class="notation-btn" onclick="showNotation('theta')">Θ (n²)</button>
+          <button class="notation-btn" onclick="showNotation('omega')">Ω (n²)</button>
+          <button class="notation-btn" onclick="showNotation('all')">All Three</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Formal Definitions -->
+    <h2>📐 Formal Definitions</h2>
+
+    <div class="definition-box">
+      <h3>Big O — O(g(n))</h3>
+      <div class="math-def">
+        f(n) = O(g(n)) if ∃ c > 0, n₀ > 0 such that f(n) ≤ c · g(n) for all n ≥ n₀
+      </div>
+      <p><strong>In plain English:</strong> After some point n₀, f(n) is always below c times g(n). It gives us a ceiling — the worst-case growth rate.</p>
+    </div>
+
+    <div class="definition-box">
+      <h3>Big Omega — Ω(g(n))</h3>
+      <div class="math-def">
+        f(n) = Ω(g(n)) if ∃ c > 0, n₀ > 0 such that f(n) ≥ c · g(n) for all n ≥ n₀
+      </div>
+      <p><strong>In plain English:</strong> After some point n₀, f(n) is always above c times g(n). It gives us a floor — the best-case growth rate.</p>
+    </div>
+
+    <div class="definition-box">
+      <h3>Big Theta — Θ(g(n))</h3>
+      <div class="math-def">
+        f(n) = Θ(g(n)) if ∃ c₁, c₂ > 0, n₀ > 0 such that c₁·g(n) ≤ f(n) ≤ c₂·g(n) for all n ≥ n₀
+      </div>
+      <p><strong>In plain English:</strong> f(n) is "sandwiched" between two multiples of g(n). This means f(n) grows at <strong>exactly the same rate</strong> as g(n).</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Key Insight</div>
+      <p>If f(n) = Θ(g(n)), then f(n) = O(g(n)) AND f(n) = Ω(g(n)). Theta is the intersection of Big O and Big Omega!</p>
+    </div>
+
+    <!-- Section 4: Real-World Analogies -->
+    <h2>🌍 Real-World Analogies</h2>
+
+    <div class="analogy-grid">
+      <div class="analogy-card">
+        <div class="analogy-icon">🚗</div>
+        <div class="analogy-title">Speed Limits (Big O)</div>
+        <div class="analogy-text">
+          "The speed limit is 60 mph" means you'll go <strong>at most</strong> 60. You might go slower, but never faster. That's Big O — an upper bound.
+        </div>
+      </div>
+      
+      <div class="analogy-card">
+        <div class="analogy-icon">⛽</div>
+        <div class="analogy-title">Minimum Fuel (Big Omega)</div>
+        <div class="analogy-text">
+          "You need at least 10 gallons to reach the destination." You might need more, but never less. That's Omega — a lower bound.
+        </div>
+      </div>
+      
+      <div class="analogy-card">
+        <div class="analogy-icon">📦</div>
+        <div class="analogy-title">Exact Package (Theta)</div>
+        <div class="analogy-text">
+          "This package weighs about 5 lbs, give or take 10%." It's between 4.5 and 5.5 lbs. That's Theta — a tight bound in both directions.
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: Comparison Animation -->
+    <h2>📊 Side-by-Side Comparison</h2>
+    <p>Use the slider to see how the bounds scale with input size n.</p>
+
+    <div class="interactive-box">
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>Input size (n):</span>
+          <span class="slider-value" id="n-display">50</span>
+        </div>
+        <input type="range" class="slider" id="n-slider" min="10" max="100" value="50" oninput="updateComparison()">
+      </div>
+      
+      <div class="viz-canvas" id="comparison-viz" style="height: 300px;">
+        <svg id="comparison-svg"></svg>
+      </div>
+    </div>
+
+    <!-- Section 6: Comparison Table -->
+    <h2>📋 Quick Reference Table</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Notation</th>
+          <th>Symbol</th>
+          <th>Bound Type</th>
+          <th>Meaning</th>
+          <th>Common Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Big O</strong></td>
+          <td><code>O(g(n))</code></td>
+          <td>Upper bound</td>
+          <td>f(n) ≤ c·g(n)</td>
+          <td>Worst-case analysis</td>
+        </tr>
+        <tr>
+          <td><strong>Big Omega</strong></td>
+          <td><code>Ω(g(n))</code></td>
+          <td>Lower bound</td>
+          <td>f(n) ≥ c·g(n)</td>
+          <td>Best-case analysis</td>
+        </tr>
+        <tr>
+          <td><strong>Big Theta</strong></td>
+          <td><code>Θ(g(n))</code></td>
+          <td>Tight bound</td>
+          <td>c₁·g(n) ≤ f(n) ≤ c₂·g(n)</td>
+          <td>Exact growth rate</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 7: Examples -->
+    <h2>📝 Worked Examples</h2>
+
+    <div class="definition-box">
+      <h3>Example 1: Linear Search</h3>
+      <p>For an array of size n:</p>
+      <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+        <li><strong>Best case:</strong> Element found at first position → Ω(1)</li>
+        <li><strong>Worst case:</strong> Element at end or not present → O(n)</li>
+        <li><strong>We say:</strong> Linear search is O(n) because we describe worst-case guarantees</li>
+      </ul>
+      <p><em>Note: We cannot say Θ(n) because best and worst cases differ!</em></p>
+    </div>
+
+    <div class="definition-box">
+      <h3>Example 2: Merge Sort</h3>
+      <p>For an array of size n:</p>
+      <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+        <li><strong>Best case:</strong> Θ(n log n)</li>
+        <li><strong>Worst case:</strong> Θ(n log n)</li>
+        <li><strong>We say:</strong> Merge sort is <strong>Θ(n log n)</strong> because it always takes the same time regardless of input!</li>
+      </ul>
+      <p><em>Since best = worst, we can use Theta notation.</em></p>
+    </div>
+
+    <!-- Section 8: Quiz -->
+    <h2>🧪 Test Your Understanding</h2>
+
+    <div class="quiz-section">
+      <div class="quiz-question" id="q1">
+        <h4>Q1: If an algorithm is Θ(n²), which of the following is also true?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkAnswer('q1', this, true)">
+            A) It is both O(n²) and Ω(n²)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q1', this, false)">
+            B) It is O(n²) but not Ω(n²)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q1', this, false)">
+            C) It is Ω(n²) but not O(n²)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q1', this, false)">
+            D) None of the above
+          </div>
+        </div>
+        <div class="quiz-feedback" id="q1-feedback">
+          ✅ Correct! Θ(n²) means the function is bounded both above AND below by n², so both O(n²) and Ω(n²) apply.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q2">
+        <h4>Q2: An algorithm has best-case O(1) and worst-case O(n). What is the tightest bound we can give?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkAnswer('q2', this, false)">
+            A) Θ(n)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q2', this, true)">
+            B) O(n)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q2', this, false)">
+            C) Θ(1)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q2', this, false)">
+            D) Ω(n)
+          </div>
+        </div>
+        <div class="quiz-feedback" id="q2-feedback">
+          ✅ Correct! Since best and worst cases differ, we cannot use Θ. We use O(n) to describe the worst-case upper bound.
+        </div>
+      </div>
+
+      <div class="quiz-question" id="q3">
+        <h4>Q3: If f(n) = 3n² + 10n + 5, which is the most precise statement?</h4>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkAnswer('q3', this, false)">
+            A) f(n) = O(n³)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q3', this, false)">
+            B) f(n) = O(n²) only
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q3', this, true)">
+            C) f(n) = Θ(n²)
+          </div>
+          <div class="quiz-option" onclick="checkAnswer('q3', this, false)">
+            D) f(n) = Ω(n³)
+          </div>
+        </div>
+        <div class="quiz-feedback" id="q3-feedback">
+          ✅ Correct! The dominant term is n², and since we know the exact formula, we can say Θ(n²) — it's bounded both above and below by n².
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <h2>📌 Summary</h2>
+    
+    <div class="callout">
+      <div class="callout-title">🎯 Key Takeaways</div>
+      <ul style="margin-left: 1.5rem;">
+        <li><strong>Big O (O)</strong> — Upper bound, "at most", describes worst-case</li>
+        <li><strong>Big Omega (Ω)</strong> — Lower bound, "at least", describes best-case</li>
+        <li><strong>Big Theta (Θ)</strong> — Tight bound, "exactly", when upper = lower</li>
+        <li>Use <strong>Θ</strong> when you know the exact growth rate; use <strong>O</strong> when you only have an upper bound guarantee</li>
+        <li>In practice, most people say "O(n)" even when they mean "Θ(n)" — be precise when it matters!</li>
+      </ul>
+    </div>
+
+    <nav class="footer-nav">
+      <a href="session-03-asymptotic-notation.html">← Back to Asymptotic Notation</a>
+      <a href="session-04-runtime-analysis.html">Runtime Analysis →</a>
+    </nav>
+  </div>
+
+  <script>
+    // Theme toggle
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.getElementById('theme-icon');
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        icon.textContent = '🌙';
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        icon.textContent = '☀️';
+      }
+    }
+
+    // Animation state
+    let animationId = null;
+    let isPlaying = false;
+    let currentNotation = null;
+    let animationProgress = 0;
+
+    // SVG dimensions
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    let width, height;
+
+    // Initialize visualizations
+    document.addEventListener('DOMContentLoaded', () => {
+      initBoundsViz();
+      initComparisonViz();
+      renderMath();
+    });
+
+    function renderMath() {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    }
+
+    // Initialize bounds visualization
+    function initBoundsViz() {
+      const container = document.getElementById('bounds-viz');
+      const svg = document.getElementById('bounds-svg');
+      
+      width = container.clientWidth - margin.left - margin.right;
+      height = container.clientHeight - margin.top - margin.bottom;
+      
+      svg.innerHTML = `
+        <defs>
+          <pattern id="upperPattern" patternUnits="userSpaceOnUse" width="10" height="10">
+            <line x1="0" y1="10" x2="10" y2="0" stroke="rgba(55, 53, 47, 0.2)" stroke-width="1"/>
+          </pattern>
+          <pattern id="lowerPattern" patternUnits="userSpaceOnUse" width="10" height="10">
+            <line x1="0" y1="0" x2="10" y2="10" stroke="rgba(55, 53, 47, 0.2)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <g id="main-group" transform="translate(${margin.left}, ${margin.top})">
+          <g id="axes"></g>
+          <g id="bounds-area"></g>
+          <g id="curves"></g>
+          <g id="labels"></g>
+          <g id="n0-marker"></g>
+        </g>
+      `;
+      
+      drawAxes();
+      drawInitialState();
+    }
+
+    function drawAxes() {
+      const axesGroup = document.getElementById('axes');
+      
+      // X-axis
+      axesGroup.innerHTML = `
+        <line x1="0" y1="${height}" x2="${width}" y2="${height}" stroke="var(--text-primary)" stroke-width="2"/>
+        <line x1="0" y1="0" x2="0" y2="${height}" stroke="var(--text-primary)" stroke-width="2"/>
+        
+        <!-- X-axis arrow -->
+        <polygon points="${width-10},${height-5} ${width},${height} ${width-10},${height+5}" fill="var(--text-primary)"/>
+        
+        <!-- Y-axis arrow -->
+        <polygon points="-5,10 0,0 5,10" fill="var(--text-primary)"/>
+        
+        <!-- Labels -->
+        <text x="${width/2}" y="${height + 45}" text-anchor="middle" fill="var(--text-primary)" font-size="14" font-weight="500">n (input size)</text>
+        <text x="-40" y="${height/2}" text-anchor="middle" fill="var(--text-primary)" font-size="14" font-weight="500" transform="rotate(-90, -40, ${height/2})">Time</text>
+      `;
+    }
+
+    function drawInitialState() {
+      const curvesGroup = document.getElementById('curves');
+      
+      // Draw f(n) = n² curve
+      const points = [];
+      for (let n = 0; n <= 100; n += 2) {
+        const x = (n / 100) * width;
+        const y = height - (Math.pow(n, 2) / 10000) * height * 0.8;
+        points.push(`${x},${y}`);
+      }
+      
+      curvesGroup.innerHTML = `
+        <polyline 
+          id="fn-curve"
+          points="${points.join(' ')}" 
+          fill="none" 
+          stroke="var(--text-primary)" 
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+      `;
+      
+      // Add label
+      const labelsGroup = document.getElementById('labels');
+      labelsGroup.innerHTML = `
+        <text x="${width - 20}" y="${height * 0.15}" fill="var(--text-primary)" font-size="14" font-weight="600">f(n) = n²</text>
+      `;
+    }
+
+    function showNotation(type) {
+      currentNotation = type;
+      animationProgress = 0;
+      
+      // Update button states
+      document.querySelectorAll('.notation-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update status
+      const statusMessages = {
+        'bigO': '📈 Big O: f(n) must stay BELOW the upper bound c₂·g(n)',
+        'omega': '📉 Big Omega: f(n) must stay ABOVE the lower bound c₁·g(n)',
+        'theta': '🎯 Big Theta: f(n) must stay BETWEEN both bounds',
+        'all': '📊 Showing all three notations together'
+      };
+      document.getElementById('animation-status').textContent = statusMessages[type];
+      
+      // Draw the bounds
+      drawBounds(type);
+    }
+
+    function drawBounds(type) {
+      const boundsArea = document.getElementById('bounds-area');
+      const n0Marker = document.getElementById('n0-marker');
+      const n0 = 20; // n₀ threshold
+      const n0x = (n0 / 100) * width;
+      
+      let areaHTML = '';
+      let curveHTML = '';
+      
+      // Functions
+      const fn = (n) => Math.pow(n, 2);
+      const upperBound = (n) => 2 * Math.pow(n, 2); // c₂ = 2
+      const lowerBound = (n) => 0.5 * Math.pow(n, 2); // c₁ = 0.5
+      
+      if (type === 'bigO' || type === 'all' || type === 'theta') {
+        // Upper bound shaded area (everything below upper bound)
+        const upperPoints = [];
+        for (let n = n0; n <= 100; n += 2) {
+          const x = (n / 100) * width;
+          const y = height - (upperBound(n) / 20000) * height * 0.8;
+          upperPoints.push(`${x},${Math.max(0, y)}`);
+        }
+        upperPoints.push(`${width},${height}`);
+        upperPoints.push(`${n0x},${height}`);
+        
+        if (type === 'bigO') {
+          areaHTML += `<polygon points="${upperPoints.join(' ')}" fill="rgba(55, 53, 47, 0.15)"/>`;
+        }
+        
+        // Upper bound curve
+        const upperCurve = [];
+        for (let n = n0; n <= 100; n += 2) {
+          const x = (n / 100) * width;
+          const y = height - (upperBound(n) / 20000) * height * 0.8;
+          upperCurve.push(`${x},${Math.max(0, y)}`);
+        }
+        curveHTML += `
+          <polyline 
+            points="${upperCurve.join(' ')}" 
+            fill="none" 
+            stroke="var(--text-primary)" 
+            stroke-width="2"
+            stroke-dasharray="8,4"
+            opacity="0.7"
+          />
+        `;
+      }
+      
+      if (type === 'omega' || type === 'all' || type === 'theta') {
+        // Lower bound shaded area (everything above lower bound)
+        const lowerPoints = [];
+        for (let n = n0; n <= 100; n += 2) {
+          const x = (n / 100) * width;
+          const y = height - (lowerBound(n) / 20000) * height * 0.8;
+          lowerPoints.push(`${x},${y}`);
+        }
+        lowerPoints.push(`${width},0`);
+        lowerPoints.push(`${n0x},0`);
+        
+        if (type === 'omega') {
+          areaHTML += `<polygon points="${lowerPoints.join(' ')}" fill="rgba(55, 53, 47, 0.15)"/>`;
+        }
+        
+        // Lower bound curve
+        const lowerCurve = [];
+        for (let n = n0; n <= 100; n += 2) {
+          const x = (n / 100) * width;
+          const y = height - (lowerBound(n) / 20000) * height * 0.8;
+          lowerCurve.push(`${x},${y}`);
+        }
+        curveHTML += `
+          <polyline 
+            points="${lowerCurve.join(' ')}" 
+            fill="none" 
+            stroke="var(--text-primary)" 
+            stroke-width="2"
+            stroke-dasharray="2,4"
+            opacity="0.7"
+          />
+        `;
+      }
+      
+      if (type === 'theta' || type === 'all') {
+        // Theta: shaded area between bounds
+        const thetaPoints = [];
+        for (let n = n0; n <= 100; n += 2) {
+          const x = (n / 100) * width;
+          const y = height - (upperBound(n) / 20000) * height * 0.8;
+          thetaPoints.push(`${x},${Math.max(0, y)}`);
+        }
+        for (let n = 100; n >= n0; n -= 2) {
+          const x = (n / 100) * width;
+          const y = height - (lowerBound(n) / 20000) * height * 0.8;
+          thetaPoints.push(`${x},${y}`);
+        }
+        
+        if (type === 'theta') {
+          areaHTML = `<polygon points="${thetaPoints.join(' ')}" fill="rgba(55, 53, 47, 0.2)"/>`;
+        } else if (type === 'all') {
+          areaHTML = `<polygon points="${thetaPoints.join(' ')}" fill="rgba(55, 53, 47, 0.15)"/>`;
+        }
+      }
+      
+      boundsArea.innerHTML = areaHTML + curveHTML;
+      
+      // Draw n₀ marker
+      n0Marker.innerHTML = `
+        <line x1="${n0x}" y1="0" x2="${n0x}" y2="${height}" stroke="var(--text-secondary)" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="${n0x}" y="${height + 20}" text-anchor="middle" fill="var(--text-secondary)" font-size="12">n₀</text>
+      `;
+      
+      // Redraw f(n) on top
+      drawInitialState();
+    }
+
+    function toggleAnimation() {
+      isPlaying = !isPlaying;
+      const btn = document.getElementById('play-btn');
+      
+      if (isPlaying) {
+        btn.textContent = '⏸️ Pause';
+        animate();
+      } else {
+        btn.textContent = '▶️ Play Animation';
+        if (animationId) cancelAnimationFrame(animationId);
+      }
+    }
+
+    function animate() {
+      if (!isPlaying) return;
+      
+      animationProgress += 0.5;
+      if (animationProgress > 100) {
+        animationProgress = 0;
+      }
+      
+      // Animate the n₀ threshold moving
+      const n0 = Math.max(10, animationProgress * 0.3);
+      if (currentNotation) {
+        drawBoundsAnimated(currentNotation, n0);
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    }
+
+    function drawBoundsAnimated(type, n0) {
+      // Similar to drawBounds but with animated n0
+      drawBounds(type);
+    }
+
+    function resetAnimation() {
+      isPlaying = false;
+      animationProgress = 0;
+      document.getElementById('play-btn').textContent = '▶️ Play Animation';
+      if (animationId) cancelAnimationFrame(animationId);
+      
+      // Clear bounds
+      document.getElementById('bounds-area').innerHTML = '';
+      document.getElementById('n0-marker').innerHTML = '';
+      document.querySelectorAll('.notation-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('animation-status').textContent = 'Click a notation button to see how it bounds the function f(n)';
+      
+      drawInitialState();
+    }
+
+    // Comparison visualization
+    function initComparisonViz() {
+      const container = document.getElementById('comparison-viz');
+      const svg = document.getElementById('comparison-svg');
+      
+      const w = container.clientWidth - margin.left - margin.right;
+      const h = container.clientHeight - margin.top - margin.bottom;
+      
+      svg.innerHTML = `
+        <g id="comp-main" transform="translate(${margin.left}, ${margin.top})">
+          <g id="comp-axes"></g>
+          <g id="comp-curves"></g>
+          <g id="comp-labels"></g>
+        </g>
+      `;
+      
+      updateComparison();
+    }
+
+    function updateComparison() {
+      const n = parseInt(document.getElementById('n-slider').value);
+      document.getElementById('n-display').textContent = n;
+      
+      const container = document.getElementById('comparison-viz');
+      const w = container.clientWidth - margin.left - margin.right;
+      const h = container.clientHeight - margin.top - margin.bottom;
+      
+      // Calculate values
+      const fn = n * n; // f(n) = n²
+      const upperBound = 2 * n * n; // c₂ = 2
+      const lowerBound = 0.5 * n * n; // c₁ = 0.5
+      
+      const maxVal = upperBound;
+      const scale = (h * 0.85) / maxVal;
+      
+      const curvesGroup = document.getElementById('comp-curves');
+      const labelsGroup = document.getElementById('comp-labels');
+      
+      const barWidth = 60;
+      const gap = 40;
+      const startX = (w - (3 * barWidth + 2 * gap)) / 2;
+      
+      curvesGroup.innerHTML = `
+        <!-- Lower bound bar -->
+        <rect x="${startX}" y="${h - lowerBound * scale}" width="${barWidth}" height="${lowerBound * scale}" 
+              fill="none" stroke="var(--text-primary)" stroke-width="2" stroke-dasharray="4,2"/>
+        
+        <!-- f(n) bar -->
+        <rect x="${startX + barWidth + gap}" y="${h - fn * scale}" width="${barWidth}" height="${fn * scale}" 
+              fill="var(--text-primary)"/>
+        
+        <!-- Upper bound bar -->
+        <rect x="${startX + 2*(barWidth + gap)}" y="${h - upperBound * scale}" width="${barWidth}" height="${upperBound * scale}" 
+              fill="none" stroke="var(--text-primary)" stroke-width="2" stroke-dasharray="8,4"/>
+        
+        <!-- Baseline -->
+        <line x1="0" y1="${h}" x2="${w}" y2="${h}" stroke="var(--text-primary)" stroke-width="2"/>
+      `;
+      
+      labelsGroup.innerHTML = `
+        <text x="${startX + barWidth/2}" y="${h + 25}" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="500">Ω (lower)</text>
+        <text x="${startX + barWidth/2}" y="${h + 40}" text-anchor="middle" fill="var(--text-secondary)" font-size="11">${Math.round(lowerBound)}</text>
+        
+        <text x="${startX + barWidth + gap + barWidth/2}" y="${h + 25}" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="600">f(n)</text>
+        <text x="${startX + barWidth + gap + barWidth/2}" y="${h + 40}" text-anchor="middle" fill="var(--text-secondary)" font-size="11">${fn}</text>
+        
+        <text x="${startX + 2*(barWidth + gap) + barWidth/2}" y="${h + 25}" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="500">O (upper)</text>
+        <text x="${startX + 2*(barWidth + gap) + barWidth/2}" y="${h + 40}" text-anchor="middle" fill="var(--text-secondary)" font-size="11">${upperBound}</text>
+        
+        <!-- Title -->
+        <text x="${w/2}" y="-15" text-anchor="middle" fill="var(--text-primary)" font-size="14" font-weight="600">For n = ${n}: c₁·n² ≤ n² ≤ c₂·n² → ${Math.round(lowerBound)} ≤ ${fn} ≤ ${upperBound}</text>
+      `;
+    }
+
+    // Quiz functionality
+    function checkAnswer(questionId, element, isCorrect) {
+      const question = document.getElementById(questionId);
+      const options = question.querySelectorAll('.quiz-option');
+      const feedback = document.getElementById(`${questionId}-feedback`);
+      
+      // Disable further clicks
+      options.forEach(opt => {
+        opt.style.pointerEvents = 'none';
+        if (opt === element) {
+          opt.classList.add(isCorrect ? 'correct' : 'incorrect');
+        } else if (isCorrect) {
+          opt.classList.add('incorrect');
+        }
+      });
+      
+      // Show correct answer if wrong
+      if (!isCorrect) {
+        options.forEach(opt => {
+          if (opt.onclick.toString().includes('true')) {
+            opt.classList.remove('incorrect');
+            opt.classList.add('correct');
+          }
+        });
+        feedback.innerHTML = '❌ Not quite. ' + feedback.innerHTML.replace('✅ Correct! ', '');
+      }
+      
+      feedback.classList.add('show');
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      initBoundsViz();
+      initComparisonViz();
+      if (currentNotation) {
+        drawBounds(currentNotation);
+      }
+    });
+  </script>
+</body>
+</html>

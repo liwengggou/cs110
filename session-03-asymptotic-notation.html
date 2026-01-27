@@ -946,6 +946,127 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+    /* Sorting Algorithm Buttons */
+    .sort-algo-btn {
+      padding: 0.75rem 1.25rem;
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      color: var(--text-primary);
+    }
+
+    .sort-algo-btn:hover {
+      border-color: var(--accent);
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .sort-algo-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Sort Visualization Bars */
+    .sort-bar {
+      display: inline-block;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s ease;
+      position: absolute;
+      bottom: 60px;
+    }
+
+    .sort-bar.comparing {
+      background: var(--comparing);
+      box-shadow: 0 0 10px var(--comparing);
+    }
+
+    .sort-bar.current {
+      background: var(--current-focus);
+      box-shadow: 0 0 10px var(--current-focus);
+    }
+
+    .sort-bar.minimum {
+      background: var(--swapping);
+      box-shadow: 0 0 10px var(--swapping);
+    }
+
+    .sort-bar.sorted {
+      background: var(--sorted);
+    }
+
+    .sort-bar.swapping {
+      background: var(--error);
+      box-shadow: 0 0 15px var(--error);
+      animation: swap-pulse 0.3s ease;
+    }
+
+    @keyframes swap-pulse {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.1); }
+    }
+
+    .sort-bar-label {
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: white;
+    }
+
+    .sort-stats {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      display: flex;
+      gap: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: white;
+    }
+
+    .sort-stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sort-stat-label {
+      opacity: 0.7;
+    }
+
+    .sort-stat-value {
+      font-weight: 600;
+      color: var(--current-focus);
+    }
+
+    .sort-legend {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: white;
+    }
+
+    .sort-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .sort-legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
   </style>
 </head>
 <body>
@@ -975,8 +1096,202 @@
       </ul>
     </section>
 
-    <!-- Section 1: What is Big-O? -->
-    <h2>1. What is Big-O Notation?</h2>
+    <!-- Section 1: Time and Space Complexity -->
+    <h2>1. What is Time and Space Complexity?</h2>
+    <p>Before we dive into Big-O notation, let's understand the two fundamental ways we measure algorithm efficiency: <strong>time complexity</strong> and <strong>space complexity</strong>.</p>
+
+    <div class="complexity-box">
+      <h3 style="margin-top: 0;">Time Complexity</h3>
+      <p><strong>Time complexity</strong> measures how the <em>running time</em> of an algorithm grows as the input size increases. It answers: "How many operations does my algorithm need to perform?"</p>
+
+      <p>We don't measure actual seconds because that depends on your computer's speed. Instead, we count the number of fundamental operations (comparisons, assignments, arithmetic operations).</p>
+    </div>
+
+    <div class="complexity-box">
+      <h3 style="margin-top: 0;">Space Complexity</h3>
+      <p><strong>Space complexity</strong> measures how much <em>memory</em> an algorithm uses as the input size increases. It answers: "How much extra memory does my algorithm need?"</p>
+
+      <p>This includes variables, data structures, function call stacks, and any temporary storage your algorithm creates.</p>
+    </div>
+
+    <h3>Time Complexity Examples</h3>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Example 1: Finding the first element</span>
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content">
+            <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">get_first</span>(arr):</span></div>
+            <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="keyword">return</span> arr[<span class="number">0</span>]  <span class="comment"># Only 1 operation</span></span></div>
+          </div>
+        </div>
+        <div class="key-insight">
+          <strong>Time: O(1) - Constant</strong><br>
+          No matter if the array has 10 or 10 million elements, we always do exactly one operation: access the first element.
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Example 2: Finding the maximum value</span>
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content">
+            <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">find_max</span>(arr):</span></div>
+            <div class="code-line"><span class="line-number">2</span><span class="line-content">    max_val = arr[<span class="number">0</span>]</span></div>
+            <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="keyword">for</span> num <span class="keyword">in</span> arr:  <span class="comment"># Loop runs n times</span></span></div>
+            <div class="code-line"><span class="line-number">4</span><span class="line-content">        <span class="keyword">if</span> num > max_val:</span></div>
+            <div class="code-line"><span class="line-number">5</span><span class="line-content">            max_val = num</span></div>
+            <div class="code-line"><span class="line-number">6</span><span class="line-content">    <span class="keyword">return</span> max_val</span></div>
+          </div>
+        </div>
+        <div class="key-insight">
+          <strong>Time: O(n) - Linear</strong><br>
+          We must check every element once. If the array has n elements, we do approximately n comparisons. Double the input → double the work.
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Example 3: Checking for duplicates (naive)</span>
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content">
+            <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">has_duplicates</span>(arr):</span></div>
+            <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="function">len</span>(arr)):  <span class="comment"># n iterations</span></span></div>
+            <div class="code-line"><span class="line-number">3</span><span class="line-content">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(i + <span class="number">1</span>, <span class="function">len</span>(arr)):  <span class="comment"># ~n iterations each</span></span></div>
+            <div class="code-line"><span class="line-number">4</span><span class="line-content">            <span class="keyword">if</span> arr[i] == arr[j]:</span></div>
+            <div class="code-line"><span class="line-number">5</span><span class="line-content">                <span class="keyword">return</span> <span class="keyword">True</span></span></div>
+            <div class="code-line"><span class="line-number">6</span><span class="line-content">    <span class="keyword">return</span> <span class="keyword">False</span></span></div>
+          </div>
+        </div>
+        <div class="key-insight">
+          <strong>Time: O(n²) - Quadratic</strong><br>
+          For each element (n), we compare with remaining elements (~n). Total: n × n = n² comparisons. Double the input → 4x the work!
+        </div>
+      </div>
+    </div>
+
+    <h3>Space Complexity Examples</h3>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Example 1: Sum with constant space</span>
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content">
+            <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">sum_array</span>(arr):</span></div>
+            <div class="code-line"><span class="line-number">2</span><span class="line-content">    total = <span class="number">0</span>  <span class="comment"># Just 1 variable</span></span></div>
+            <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="keyword">for</span> num <span class="keyword">in</span> arr:</span></div>
+            <div class="code-line"><span class="line-number">4</span><span class="line-content">        total += num</span></div>
+            <div class="code-line"><span class="line-number">5</span><span class="line-content">    <span class="keyword">return</span> total</span></div>
+          </div>
+        </div>
+        <div class="key-insight">
+          <strong>Space: O(1) - Constant</strong><br>
+          We only use one extra variable (<code>total</code>) regardless of input size. The array could have 10 or 10 million elements—we still use the same amount of extra memory.
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Example 2: Creating a copy</span>
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content">
+            <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">double_values</span>(arr):</span></div>
+            <div class="code-line"><span class="line-number">2</span><span class="line-content">    result = []  <span class="comment"># New array of size n</span></span></div>
+            <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="keyword">for</span> num <span class="keyword">in</span> arr:</span></div>
+            <div class="code-line"><span class="line-number">4</span><span class="line-content">        result.<span class="function">append</span>(num * <span class="number">2</span>)</span></div>
+            <div class="code-line"><span class="line-number">5</span><span class="line-content">    <span class="keyword">return</span> result</span></div>
+          </div>
+        </div>
+        <div class="key-insight">
+          <strong>Space: O(n) - Linear</strong><br>
+          We create a new array that grows with the input. If the input has n elements, we allocate space for n new elements. Double the input → double the memory.
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span>Example 3: Creating a matrix</span>
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content">
+            <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">create_multiplication_table</span>(n):</span></div>
+            <div class="code-line"><span class="line-number">2</span><span class="line-content">    table = []  <span class="comment"># Will have n × n elements</span></span></div>
+            <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, n + <span class="number">1</span>):</span></div>
+            <div class="code-line"><span class="line-number">4</span><span class="line-content">        row = []</span></div>
+            <div class="code-line"><span class="line-number">5</span><span class="line-content">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, n + <span class="number">1</span>):</span></div>
+            <div class="code-line"><span class="line-number">6</span><span class="line-content">            row.<span class="function">append</span>(i * j)</span></div>
+            <div class="code-line"><span class="line-number">7</span><span class="line-content">        table.<span class="function">append</span>(row)</span></div>
+            <div class="code-line"><span class="line-number">8</span><span class="line-content">    <span class="keyword">return</span> table</span></div>
+          </div>
+        </div>
+        <div class="key-insight">
+          <strong>Space: O(n²) - Quadratic</strong><br>
+          We create an n × n table. If n = 10, we store 100 values. If n = 100, we store 10,000 values. The memory grows with the square of the input!
+        </div>
+      </div>
+    </div>
+
+    <h3>Time vs Space Trade-offs</h3>
+    <p>Often, you can trade time for space or vice versa. Here's a classic example:</p>
+
+    <div class="complexity-box">
+      <h4 style="margin-top: 0;">Checking for duplicates: Two approaches</h4>
+
+      <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border);">
+            <th style="padding: 0.75rem; text-align: left;">Approach</th>
+            <th style="padding: 0.75rem; text-align: center;">Time</th>
+            <th style="padding: 0.75rem; text-align: center;">Space</th>
+            <th style="padding: 0.75rem; text-align: left;">How it works</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 0.75rem;"><strong>Nested loops</strong></td>
+            <td style="padding: 0.75rem; text-align: center; color: var(--color-on2);">O(n²)</td>
+            <td style="padding: 0.75rem; text-align: center; color: var(--color-o1);">O(1)</td>
+            <td style="padding: 0.75rem;">Compare every pair of elements</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.75rem;"><strong>Hash set</strong></td>
+            <td style="padding: 0.75rem; text-align: center; color: var(--color-on);">O(n)</td>
+            <td style="padding: 0.75rem; text-align: center; color: var(--color-on);">O(n)</td>
+            <td style="padding: 0.75rem;">Store seen elements, check for each</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top: 1rem; margin-bottom: 0;">The hash set approach uses more memory but is much faster. Choose based on your constraints—if memory is limited, you might prefer the slower approach!</p>
+    </div>
+
+    <div class="try-this">
+      <strong>Think About It:</strong> For an array of 1 million elements, the nested loop approach might do ~500 billion comparisons, while the hash set approach does ~1 million operations. That's a 500,000x difference in speed, at the cost of storing up to 1 million elements in memory.
+    </div>
+
+    <!-- Section 2: What is Big-O? -->
+    <h2>2. What is Big-O Notation?</h2>
     <p>Big-O notation describes how an algorithm's work <strong>scales</strong> as input size grows. It doesn't tell you <em>how long</em> something takes—it tells you <em>how the work changes</em> when you increase the input.</p>
 
     <div class="key-insight">
@@ -1097,7 +1412,7 @@
     </div>
 
     <!-- Section 2: Growth Rate Visualizer -->
-    <h2>2. Interactive Growth Rate Visualizer</h2>
+    <h2>3. Interactive Growth Rate Visualizer</h2>
     <p>Watch how different complexity classes grow as the input size <em>n</em> increases. Notice how quickly exponential growth dominates all others!</p>
 
     <div class="viz-container">
@@ -1166,7 +1481,7 @@
     </div>
 
     <!-- Section 3: Code Complexity Analyzer -->
-    <h2>3. Code Complexity Analyzer</h2>
+    <h2>4. Code Complexity Analyzer</h2>
     <p>Step through code examples and watch how operations are counted. Understanding where operations come from helps you identify the complexity of your own code.</p>
 
     <div class="viz-code-split">
@@ -1245,7 +1560,7 @@
     </div>
 
     <!-- Section 4: Drag and Drop Matching Game -->
-    <h2>4. Complexity Matching Game</h2>
+    <h2>5. Complexity Matching Game</h2>
     <p>Test your understanding! Drag each code pattern to its correct complexity class.</p>
 
     <div class="viz-container">
@@ -1301,7 +1616,7 @@
     </div>
 
     <!-- Section 5: Common Mistakes -->
-    <h2>5. Common Mistakes</h2>
+    <h2>6. Common Mistakes</h2>
 
     <div class="common-mistake">
       <strong>Confusing O(n) with O(n&sup2;):</strong> A single loop is O(n). Two <em>nested</em> loops where both depend on n give O(n&sup2;). Two <em>sequential</em> loops (one after another) are still O(n) + O(n) = O(n).
@@ -1320,7 +1635,7 @@
     </div>
 
     <!-- Section 6: Comparison Table -->
-    <h2>6. At-a-Glance Comparison</h2>
+    <h2>7. At-a-Glance Comparison</h2>
 
     <table class="comparison-table">
       <thead>
@@ -1385,8 +1700,527 @@
       </tbody>
     </table>
 
-    <!-- Section 7: Why Do We Care -->
-    <h2>7. Why Do We Care?</h2>
+    <!-- Section 8: Sorting Algorithm Complexity -->
+    <h2>8. Sorting Algorithm Complexity Analysis</h2>
+    <p>Let's apply our understanding of Big-O notation to analyze three fundamental sorting algorithms. Watch how each algorithm works and understand why they have the complexities they do.</p>
+
+    <!-- Sorting Algorithm Selector -->
+    <div class="viz-container">
+      <div class="step-description" id="sort-description">
+        Select a sorting algorithm below to see its animation and complexity analysis.
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <button class="sort-algo-btn active" data-algo="insertion" onclick="selectSortAlgo('insertion')">Insertion Sort</button>
+        <button class="sort-algo-btn" data-algo="selection" onclick="selectSortAlgo('selection')">Selection Sort</button>
+        <button class="sort-algo-btn" data-algo="bubble" onclick="selectSortAlgo('bubble')">Bubble Sort</button>
+      </div>
+
+      <div class="viz-canvas" id="sort-viz-canvas"></div>
+
+      <div class="step-controls">
+        <button id="sort-prev" onclick="sortPrev()">Previous</button>
+        <button id="sort-play" onclick="sortPlay()">Play</button>
+        <button id="sort-next" onclick="sortNext()">Next</button>
+        <button id="sort-reset" onclick="sortReset()">Reset</button>
+        <span class="step-indicator" id="sort-step-indicator">Step 0 / 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="sort-speed">
+            <option value="1500">Slow</option>
+            <option value="800" selected>Normal</option>
+            <option value="400">Fast</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container" onclick="seekSort(event)">
+        <div class="progress-bar">
+          <div class="progress-fill" id="sort-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insertion Sort Details -->
+    <div class="sort-details" id="insertion-details">
+      <h3>Insertion Sort</h3>
+      <p><strong>How it works:</strong> Build the sorted array one element at a time by repeatedly picking the next element and inserting it into its correct position among the already-sorted elements.</p>
+
+      <div class="viz-code-split">
+        <div class="viz-section">
+          <div class="complexity-box">
+            <h4 style="margin-top: 0;">Time Complexity</h4>
+            <div class="complexity-grid">
+              <div class="complexity-item">
+                <div class="complexity-label">Best Case</div>
+                <div class="complexity-value" style="color: var(--color-on);">O(n)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Already sorted</div>
+              </div>
+              <div class="complexity-item">
+                <div class="complexity-label">Average Case</div>
+                <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Random order</div>
+              </div>
+              <div class="complexity-item">
+                <div class="complexity-label">Worst Case</div>
+                <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Reverse sorted</div>
+              </div>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Space Complexity</h4>
+            <div class="complexity-grid">
+              <div class="complexity-item">
+                <div class="complexity-label">Auxiliary Space</div>
+                <div class="complexity-value" style="color: var(--color-o1);">O(1)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">In-place sorting</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="key-insight">
+            <strong>Why O(n&sup2;)?</strong> In the worst case, each element needs to be compared with all previously sorted elements. For n elements: 1 + 2 + 3 + ... + (n-1) = n(n-1)/2 = O(n&sup2;) comparisons.
+          </div>
+
+          <div class="try-this">
+            <strong>Why O(n) best case?</strong> If the array is already sorted, each element only needs one comparison to confirm it's in the right place. That's just n comparisons total!
+          </div>
+        </div>
+
+        <div class="code-section">
+          <div class="code-panel">
+            <div class="code-header">
+              <span>Insertion Sort</span>
+              <span class="language-badge">Python</span>
+            </div>
+            <div class="code-content">
+              <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">insertion_sort</span>(arr):</span></div>
+              <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="function">len</span>(arr)):</span></div>
+              <div class="code-line"><span class="line-number">3</span><span class="line-content">        key = arr[i]  <span class="comment"># Element to insert</span></span></div>
+              <div class="code-line"><span class="line-number">4</span><span class="line-content">        j = i - <span class="number">1</span></span></div>
+              <div class="code-line"><span class="line-number">5</span><span class="line-content">        <span class="comment"># Shift elements right until correct position</span></span></div>
+              <div class="code-line"><span class="line-number">6</span><span class="line-content">        <span class="keyword">while</span> j >= <span class="number">0</span> <span class="keyword">and</span> arr[j] > key:</span></div>
+              <div class="code-line"><span class="line-number">7</span><span class="line-content">            arr[j + <span class="number">1</span>] = arr[j]</span></div>
+              <div class="code-line"><span class="line-number">8</span><span class="line-content">            j -= <span class="number">1</span></span></div>
+              <div class="code-line"><span class="line-number">9</span><span class="line-content">        arr[j + <span class="number">1</span>] = key</span></div>
+              <div class="code-line"><span class="line-number">10</span><span class="line-content">    <span class="keyword">return</span> arr</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selection Sort Details -->
+    <div class="sort-details" id="selection-details" style="display: none;">
+      <h3>Selection Sort</h3>
+      <p><strong>How it works:</strong> Repeatedly find the minimum element from the unsorted portion and swap it with the first unsorted element.</p>
+
+      <div class="viz-code-split">
+        <div class="viz-section">
+          <div class="complexity-box">
+            <h4 style="margin-top: 0;">Time Complexity</h4>
+            <div class="complexity-grid">
+              <div class="complexity-item">
+                <div class="complexity-label">Best Case</div>
+                <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Always same</div>
+              </div>
+              <div class="complexity-item">
+                <div class="complexity-label">Average Case</div>
+                <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Random order</div>
+              </div>
+              <div class="complexity-item">
+                <div class="complexity-label">Worst Case</div>
+                <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Always same</div>
+              </div>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Space Complexity</h4>
+            <div class="complexity-grid">
+              <div class="complexity-item">
+                <div class="complexity-label">Auxiliary Space</div>
+                <div class="complexity-value" style="color: var(--color-o1);">O(1)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">In-place sorting</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="key-insight">
+            <strong>Why always O(n&sup2;)?</strong> Selection sort ALWAYS scans the entire unsorted portion to find the minimum, regardless of the input. It makes exactly (n-1) + (n-2) + ... + 1 = n(n-1)/2 comparisons every time.
+          </div>
+
+          <div class="common-mistake">
+            <strong>No best case advantage!</strong> Unlike insertion sort, selection sort doesn't benefit from partially sorted input. It still checks everything.
+          </div>
+        </div>
+
+        <div class="code-section">
+          <div class="code-panel">
+            <div class="code-header">
+              <span>Selection Sort</span>
+              <span class="language-badge">Python</span>
+            </div>
+            <div class="code-content">
+              <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">selection_sort</span>(arr):</span></div>
+              <div class="code-line"><span class="line-number">2</span><span class="line-content">    n = <span class="function">len</span>(arr)</span></div>
+              <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n):</span></div>
+              <div class="code-line"><span class="line-number">4</span><span class="line-content">        min_idx = i  <span class="comment"># Assume first is minimum</span></span></div>
+              <div class="code-line"><span class="line-number">5</span><span class="line-content">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(i + <span class="number">1</span>, n):</span></div>
+              <div class="code-line"><span class="line-number">6</span><span class="line-content">            <span class="keyword">if</span> arr[j] < arr[min_idx]:</span></div>
+              <div class="code-line"><span class="line-number">7</span><span class="line-content">                min_idx = j</span></div>
+              <div class="code-line"><span class="line-number">8</span><span class="line-content">        <span class="comment"># Swap minimum with first unsorted</span></span></div>
+              <div class="code-line"><span class="line-number">9</span><span class="line-content">        arr[i], arr[min_idx] = arr[min_idx], arr[i]</span></div>
+              <div class="code-line"><span class="line-number">10</span><span class="line-content">    <span class="keyword">return</span> arr</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bubble Sort Details -->
+    <div class="sort-details" id="bubble-details" style="display: none;">
+      <h3>Bubble Sort</h3>
+      <p><strong>How it works:</strong> Repeatedly step through the list from right to left, compare adjacent elements, and swap them if they're in the wrong order. Smallest elements "sink down" to the beginning.</p>
+
+      <div class="viz-code-split">
+        <div class="viz-section">
+          <div class="complexity-box">
+            <h4 style="margin-top: 0;">Time Complexity</h4>
+            <div class="complexity-grid">
+              <div class="complexity-item">
+                <div class="complexity-label">Best Case</div>
+                <div class="complexity-value" style="color: var(--color-on);">O(n)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Already sorted*</div>
+              </div>
+              <div class="complexity-item">
+                <div class="complexity-label">Average Case</div>
+                <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Random order</div>
+              </div>
+              <div class="complexity-item">
+                <div class="complexity-label">Worst Case</div>
+                <div class="complexity-value" style="color: var(--color-on2);">O(n&sup2;)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Reverse sorted</div>
+              </div>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Space Complexity</h4>
+            <div class="complexity-grid">
+              <div class="complexity-item">
+                <div class="complexity-label">Auxiliary Space</div>
+                <div class="complexity-value" style="color: var(--color-o1);">O(1)</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">In-place sorting</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="key-insight">
+            <strong>Why O(n&sup2;)?</strong> In the worst case, we need n-1 passes through the array, and each pass compares up to n-1 pairs. Total: (n-1)&sup2; &asymp; n&sup2; comparisons.
+          </div>
+
+          <div class="try-this">
+            <strong>*Optimized version:</strong> The O(n) best case only applies if we track whether any swaps occurred. If no swaps happen in a pass, the array is sorted and we can stop early!
+          </div>
+        </div>
+
+        <div class="code-section">
+          <div class="code-panel">
+            <div class="code-header">
+              <span>Bubble Sort (Optimized)</span>
+              <span class="language-badge">Python</span>
+            </div>
+            <div class="code-content">
+              <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">bubble_sort</span>(arr):</span></div>
+              <div class="code-line"><span class="line-number">2</span><span class="line-content">    n = <span class="function">len</span>(arr)</span></div>
+              <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(n - <span class="number">1</span>):</span></div>
+              <div class="code-line"><span class="line-number">4</span><span class="line-content">        swapped = <span class="keyword">False</span></span></div>
+              <div class="code-line"><span class="line-number">5</span><span class="line-content">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function">range</span>(n - <span class="number">1</span>, i, -<span class="number">1</span>):</span></div>
+              <div class="code-line"><span class="line-number">6</span><span class="line-content">            <span class="keyword">if</span> arr[j - <span class="number">1</span>] > arr[j]:</span></div>
+              <div class="code-line"><span class="line-number">7</span><span class="line-content">                arr[j - <span class="number">1</span>], arr[j] = arr[j], arr[j - <span class="number">1</span>]</span></div>
+              <div class="code-line"><span class="line-number">8</span><span class="line-content">                swapped = <span class="keyword">True</span></span></div>
+              <div class="code-line"><span class="line-number">9</span><span class="line-content">        <span class="keyword">if not</span> swapped:  <span class="comment"># Already sorted!</span></span></div>
+              <div class="code-line"><span class="line-number">10</span><span class="line-content">            <span class="keyword">break</span></span></div>
+              <div class="code-line"><span class="line-number">11</span><span class="line-content">    <span class="keyword">return</span> arr</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Summary -->
+    <h3>Sorting Algorithm Comparison</h3>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Best Time</th>
+          <th>Average Time</th>
+          <th>Worst Time</th>
+          <th>Space</th>
+          <th>Stable?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Insertion Sort</strong></td>
+          <td style="color: var(--color-on);"><code>O(n)</code></td>
+          <td style="color: var(--color-on2);"><code>O(n&sup2;)</code></td>
+          <td style="color: var(--color-on2);"><code>O(n&sup2;)</code></td>
+          <td style="color: var(--color-o1);"><code>O(1)</code></td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td><strong>Selection Sort</strong></td>
+          <td style="color: var(--color-on2);"><code>O(n&sup2;)</code></td>
+          <td style="color: var(--color-on2);"><code>O(n&sup2;)</code></td>
+          <td style="color: var(--color-on2);"><code>O(n&sup2;)</code></td>
+          <td style="color: var(--color-o1);"><code>O(1)</code></td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td><strong>Bubble Sort</strong></td>
+          <td style="color: var(--color-on);"><code>O(n)</code></td>
+          <td style="color: var(--color-on2);"><code>O(n&sup2;)</code></td>
+          <td style="color: var(--color-on2);"><code>O(n&sup2;)</code></td>
+          <td style="color: var(--color-o1);"><code>O(1)</code></td>
+          <td>Yes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-insight">
+      <strong>When to use which?</strong>
+      <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+        <li><strong>Insertion Sort:</strong> Best for small arrays or nearly-sorted data</li>
+        <li><strong>Selection Sort:</strong> When memory writes are expensive (minimizes swaps)</li>
+        <li><strong>Bubble Sort:</strong> Educational purposes only - rarely used in practice</li>
+      </ul>
+    </div>
+
+    <!-- Section 9: Stability & Adaptiveness -->
+    <h2>9. Stability & Adaptiveness</h2>
+    <p>Beyond time and space complexity, two other important properties help us choose the right sorting algorithm: <strong>stability</strong> and <strong>adaptiveness</strong>.</p>
+
+    <!-- Stability Section -->
+    <h3>What is Stability?</h3>
+    <p>A sorting algorithm is <strong>stable</strong> if it preserves the relative order of elements with equal keys. This matters when you're sorting by multiple criteria or when the original order carries meaning.</p>
+
+    <div class="viz-container">
+      <div class="step-description" id="stability-description">
+        Watch how stable vs unstable sorting handles elements with equal keys (same scores).
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <button class="sort-algo-btn active" id="stable-btn" onclick="selectStabilityDemo('stable')">Stable Sort (Insertion)</button>
+        <button class="sort-algo-btn" id="unstable-btn" onclick="selectStabilityDemo('unstable')">Unstable Sort (Selection)</button>
+      </div>
+
+      <div class="viz-canvas" id="stability-viz-canvas" style="min-height: 300px;"></div>
+
+      <div class="step-controls">
+        <button onclick="stabilityPrev()">Previous</button>
+        <button id="stability-play" onclick="stabilityPlay()">Play</button>
+        <button onclick="stabilityNext()">Next</button>
+        <button onclick="stabilityReset()">Reset</button>
+        <span class="step-indicator" id="stability-step-indicator">Step 0 / 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="stability-speed">
+            <option value="1500">Slow</option>
+            <option value="800" selected>Normal</option>
+            <option value="400">Fast</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container" onclick="seekStability(event)">
+        <div class="progress-bar">
+          <div class="progress-fill" id="stability-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Why does stability matter?</strong>
+      <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+        <li><strong>Multi-key sorting:</strong> Sort by last name, then by first name. A stable sort keeps people with the same last name in alphabetical order by first name.</li>
+        <li><strong>Database operations:</strong> Preserving previous orderings when adding new sort criteria.</li>
+        <li><strong>Predictability:</strong> Same input always produces the same output order.</li>
+      </ul>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0;">
+      <thead>
+        <tr style="background: var(--background-secondary);">
+          <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Algorithm</th>
+          <th style="padding: 0.75rem; text-align: center; border: 1px solid var(--border);">Stable?</th>
+          <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Why?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Insertion Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--success); font-weight: 600;">Yes</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Only shifts elements, never swaps equal elements past each other</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Merge Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--success); font-weight: 600;">Yes</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">When merging, left element wins ties (preserves order)</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Bubble Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--success); font-weight: 600;">Yes</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Only swaps adjacent elements when strictly greater</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Selection Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--error); font-weight: 600;">No</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Swaps minimum with current position, can jump over equal elements</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Quick Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--error); font-weight: 600;">No</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Partitioning can swap equal elements across the pivot</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Heap Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--error); font-weight: 600;">No</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Heap operations don't preserve original order</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Adaptiveness Section -->
+    <h3>What is Adaptiveness?</h3>
+    <p>An algorithm is <strong>adaptive</strong> if it runs faster when the input is already partially sorted. Non-adaptive algorithms do the same amount of work regardless of the input's initial order.</p>
+
+    <div class="viz-container">
+      <div class="step-description" id="adaptive-description">
+        Compare how an adaptive algorithm (Insertion Sort) vs non-adaptive algorithm (Selection Sort) handle nearly-sorted data.
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <button class="sort-algo-btn active" id="adaptive-btn" onclick="selectAdaptiveDemo('adaptive')">Adaptive (Insertion Sort)</button>
+        <button class="sort-algo-btn" id="nonadaptive-btn" onclick="selectAdaptiveDemo('nonadaptive')">Non-Adaptive (Selection Sort)</button>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center;">
+        <label style="font-size: 0.875rem; color: var(--text-secondary);">Input type:</label>
+        <select id="adaptive-input-type" onchange="adaptiveReset()" style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--background); color: var(--text-primary);">
+          <option value="nearly-sorted">Nearly Sorted (only 2 elements out of place)</option>
+          <option value="random">Random Order</option>
+          <option value="reversed">Reverse Sorted (worst case)</option>
+        </select>
+      </div>
+
+      <div class="viz-canvas" id="adaptive-viz-canvas" style="min-height: 300px;"></div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--code-bg); border-radius: var(--border-radius); margin-top: 1rem;">
+        <div>
+          <strong>Comparisons:</strong> <span id="adaptive-comparisons" style="font-family: var(--font-mono); color: var(--accent);">0</span>
+        </div>
+        <div>
+          <strong>Swaps/Shifts:</strong> <span id="adaptive-swaps" style="font-family: var(--font-mono); color: var(--purple);">0</span>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button onclick="adaptivePrev()">Previous</button>
+        <button id="adaptive-play" onclick="adaptivePlay()">Play</button>
+        <button onclick="adaptiveNext()">Next</button>
+        <button onclick="adaptiveReset()">Reset</button>
+        <span class="step-indicator" id="adaptive-step-indicator">Step 0 / 0</span>
+        <div class="speed-control">
+          <label>Speed:</label>
+          <select id="adaptive-speed">
+            <option value="1500">Slow</option>
+            <option value="800" selected>Normal</option>
+            <option value="400">Fast</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container" onclick="seekAdaptive(event)">
+        <div class="progress-bar">
+          <div class="progress-fill" id="adaptive-progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="try-this">
+      <strong>Try it yourself!</strong> Switch between "Nearly Sorted" and "Random" input types. Notice how Insertion Sort (adaptive) does far fewer operations on nearly-sorted data, while Selection Sort (non-adaptive) does the same amount of work regardless!
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0;">
+      <thead>
+        <tr style="background: var(--background-secondary);">
+          <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Algorithm</th>
+          <th style="padding: 0.75rem; text-align: center; border: 1px solid var(--border);">Adaptive?</th>
+          <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Best Case on Sorted Input</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Insertion Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--success); font-weight: 600;">Yes</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);"><code>O(n)</code> - just one comparison per element</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Bubble Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--success); font-weight: 600;">Yes</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);"><code>O(n)</code> - one pass with no swaps detected</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Timsort (Python default)</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--success); font-weight: 600;">Yes</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);"><code>O(n)</code> - detects and exploits existing runs</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Selection Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--error); font-weight: 600;">No</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);"><code>O(n²)</code> - always scans entire unsorted portion</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Merge Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--error); font-weight: 600;">No</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);"><code>O(n log n)</code> - always divides and merges</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);">Heap Sort</td>
+          <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border); color: var(--error); font-weight: 600;">No</td>
+          <td style="padding: 0.75rem; border: 1px solid var(--border);"><code>O(n log n)</code> - always builds and extracts from heap</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Summary Box -->
+    <div class="key-insight">
+      <strong>Summary: The Four Metrics</strong>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 0.75rem;">
+        <tr>
+          <td style="padding: 0.5rem; border: 1px solid var(--border); width: 30%;"><strong>Time Complexity</strong></td>
+          <td style="padding: 0.5rem; border: 1px solid var(--border);">How does runtime scale with input size?</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.5rem; border: 1px solid var(--border);"><strong>Space Complexity</strong></td>
+          <td style="padding: 0.5rem; border: 1px solid var(--border);">How much extra memory is needed?</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.5rem; border: 1px solid var(--border);"><strong>Stability</strong></td>
+          <td style="padding: 0.5rem; border: 1px solid var(--border);">Does it preserve order of equal elements?</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.5rem; border: 1px solid var(--border);"><strong>Adaptiveness</strong></td>
+          <td style="padding: 0.5rem; border: 1px solid var(--border);">Does it benefit from pre-sorted input?</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Section 10: Why Do We Care -->
+    <h2>10. Why Do We Care?</h2>
     <ul style="padding-left: 1.5rem;">
       <li><strong>Scalability:</strong> Will your app still work when you have 1 million users instead of 1,000?</li>
       <li><strong>Resource Efficiency:</strong> Faster algorithms mean lower server costs and better user experience</li>
@@ -1394,8 +2228,8 @@
       <li><strong>Algorithm Selection:</strong> Choose the right tool for the job (sorting small lists vs. large datasets)</li>
     </ul>
 
-    <!-- Section 8: Quiz -->
-    <h2>8. Quick Check</h2>
+    <!-- Section 11: Quiz -->
+    <h2>11. Quick Check</h2>
 
     <div class="quiz-container">
       <div class="quiz-question" id="q1">
@@ -1502,7 +2336,7 @@ for i in range(n):
     </div>
 
     <!-- Dive Deeper -->
-    <h2>9. Dive Deeper</h2>
+    <h2>12. Dive Deeper</h2>
     <ul style="padding-left: 1.5rem;">
       <li><a href="https://www.bigocheatsheet.com/" target="_blank">Big-O Cheat Sheet - Visual Reference</a></li>
       <li><a href="https://visualgo.net/en/sorting" target="_blank">VisuAlgo - Sorting Algorithm Visualizations</a></li>
@@ -2442,6 +3276,1268 @@ for i in range(n):
             {left: '$', right: '$', display: false}
           ]
         });
+      }
+    });
+
+    // ==================== Sorting Algorithm Visualizer ====================
+    let currentSortAlgo = 'insertion';
+    let sortSteps = [];
+    let sortCurrentStep = 0;
+    let sortPlaying = false;
+    let sortInterval = null;
+    const sortInitialArray = [64, 34, 25, 12, 22, 11, 90, 45];
+
+    // Generate steps for each sorting algorithm
+    function generateInsertionSortSteps(arr) {
+      const steps = [];
+      const a = [...arr];
+      const n = a.length;
+
+      steps.push({
+        array: [...a],
+        desc: 'Initial array. We\'ll build a sorted portion from left to right.',
+        comparisons: 0,
+        swaps: 0,
+        sorted: [0],
+        current: null,
+        comparing: null
+      });
+
+      let comparisons = 0;
+      let swaps = 0;
+
+      for (let i = 1; i < n; i++) {
+        const key = a[i];
+        let j = i - 1;
+
+        steps.push({
+          array: [...a],
+          desc: `Pick element ${key} at index ${i} to insert into sorted portion.`,
+          comparisons,
+          swaps,
+          sorted: Array.from({length: i}, (_, k) => k),
+          current: i,
+          comparing: null,
+          key: key
+        });
+
+        while (j >= 0 && a[j] > key) {
+          comparisons++;
+          steps.push({
+            array: [...a],
+            desc: `Compare ${a[j]} > ${key}? Yes! Shift ${a[j]} right.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i}, (_, k) => k),
+            current: i,
+            comparing: j
+          });
+
+          a[j + 1] = a[j];
+          swaps++;
+
+          steps.push({
+            array: [...a],
+            desc: `Shifted ${a[j]} to position ${j + 1}.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i}, (_, k) => k),
+            current: j + 1,
+            comparing: null,
+            shifting: j + 1
+          });
+
+          j--;
+        }
+
+        if (j >= 0) {
+          comparisons++;
+          steps.push({
+            array: [...a],
+            desc: `Compare ${a[j]} > ${key}? No! Found insertion position.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i}, (_, k) => k),
+            current: j + 1,
+            comparing: j
+          });
+        }
+
+        a[j + 1] = key;
+
+        steps.push({
+          array: [...a],
+          desc: `Insert ${key} at position ${j + 1}. Sorted portion grows!`,
+          comparisons,
+          swaps,
+          sorted: Array.from({length: i + 1}, (_, k) => k),
+          current: j + 1,
+          inserted: true
+        });
+      }
+
+      steps.push({
+        array: [...a],
+        desc: `Array is sorted! Total: ${comparisons} comparisons, ${swaps} shifts.`,
+        comparisons,
+        swaps,
+        sorted: Array.from({length: n}, (_, k) => k),
+        done: true
+      });
+
+      return steps;
+    }
+
+    function generateSelectionSortSteps(arr) {
+      const steps = [];
+      const a = [...arr];
+      const n = a.length;
+
+      steps.push({
+        array: [...a],
+        desc: 'Initial array. We\'ll find the minimum and place it at the start.',
+        comparisons: 0,
+        swaps: 0,
+        sorted: [],
+        current: null,
+        minimum: null
+      });
+
+      let comparisons = 0;
+      let swaps = 0;
+
+      for (let i = 0; i < n - 1; i++) {
+        let minIdx = i;
+
+        steps.push({
+          array: [...a],
+          desc: `Pass ${i + 1}: Find minimum in unsorted portion (index ${i} to ${n - 1}).`,
+          comparisons,
+          swaps,
+          sorted: Array.from({length: i}, (_, k) => k),
+          current: i,
+          minimum: minIdx
+        });
+
+        for (let j = i + 1; j < n; j++) {
+          comparisons++;
+
+          steps.push({
+            array: [...a],
+            desc: `Compare ${a[j]} with current minimum ${a[minIdx]}.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i}, (_, k) => k),
+            current: i,
+            minimum: minIdx,
+            comparing: j
+          });
+
+          if (a[j] < a[minIdx]) {
+            minIdx = j;
+            steps.push({
+              array: [...a],
+              desc: `${a[j]} is smaller! New minimum at index ${j}.`,
+              comparisons,
+              swaps,
+              sorted: Array.from({length: i}, (_, k) => k),
+              current: i,
+              minimum: minIdx,
+              comparing: j
+            });
+          }
+        }
+
+        if (minIdx !== i) {
+          steps.push({
+            array: [...a],
+            desc: `Swap minimum ${a[minIdx]} with ${a[i]} at position ${i}.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i}, (_, k) => k),
+            current: i,
+            minimum: minIdx,
+            swapping: [i, minIdx]
+          });
+
+          [a[i], a[minIdx]] = [a[minIdx], a[i]];
+          swaps++;
+
+          steps.push({
+            array: [...a],
+            desc: `Swapped! ${a[i]} is now in its final position.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i + 1}, (_, k) => k),
+            current: i,
+            minimum: null
+          });
+        } else {
+          steps.push({
+            array: [...a],
+            desc: `${a[i]} is already in correct position. No swap needed.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i + 1}, (_, k) => k),
+            current: i,
+            minimum: null
+          });
+        }
+      }
+
+      steps.push({
+        array: [...a],
+        desc: `Array is sorted! Total: ${comparisons} comparisons, ${swaps} swaps.`,
+        comparisons,
+        swaps,
+        sorted: Array.from({length: n}, (_, k) => k),
+        done: true
+      });
+
+      return steps;
+    }
+
+    function generateBubbleSortSteps(arr) {
+      const steps = [];
+      const a = [...arr];
+      const n = a.length;
+
+      steps.push({
+        array: [...a],
+        desc: 'Initial array. Small elements will "sink down" to the left.',
+        comparisons: 0,
+        swaps: 0,
+        sorted: [],
+        comparing: null
+      });
+
+      let comparisons = 0;
+      let swaps = 0;
+
+      for (let i = 0; i < n - 1; i++) {
+        let swapped = false;
+
+        steps.push({
+          array: [...a],
+          desc: `Pass ${i + 1}: Sink smallest unsorted element to position ${i}.`,
+          comparisons,
+          swaps,
+          sorted: Array.from({length: i}, (_, k) => k),
+          pass: i
+        });
+
+        for (let j = n - 1; j > i; j--) {
+          comparisons++;
+
+          steps.push({
+            array: [...a],
+            desc: `Compare ${a[j - 1]} and ${a[j]}.`,
+            comparisons,
+            swaps,
+            sorted: Array.from({length: i}, (_, k) => k),
+            comparing: [j - 1, j]
+          });
+
+          if (a[j - 1] > a[j]) {
+            steps.push({
+              array: [...a],
+              desc: `${a[j - 1]} > ${a[j]}? Yes! Swap them.`,
+              comparisons,
+              swaps,
+              sorted: Array.from({length: i}, (_, k) => k),
+              swapping: [j - 1, j]
+            });
+
+            [a[j - 1], a[j]] = [a[j], a[j - 1]];
+            swaps++;
+            swapped = true;
+
+            steps.push({
+              array: [...a],
+              desc: `Swapped! ${a[j - 1]} sinks down.`,
+              comparisons,
+              swaps,
+              sorted: Array.from({length: i}, (_, k) => k),
+              comparing: [j - 1, j]
+            });
+          } else {
+            steps.push({
+              array: [...a],
+              desc: `${a[j - 1]} > ${a[j]}? No, already in order.`,
+              comparisons,
+              swaps,
+              sorted: Array.from({length: i}, (_, k) => k),
+              comparing: [j - 1, j]
+            });
+          }
+        }
+
+        steps.push({
+          array: [...a],
+          desc: `${a[i]} is now in its final position!`,
+          comparisons,
+          swaps,
+          sorted: Array.from({length: i + 1}, (_, k) => k)
+        });
+
+        if (!swapped) {
+          steps.push({
+            array: [...a],
+            desc: 'No swaps in this pass - array is already sorted! (Early termination)',
+            comparisons,
+            swaps,
+            sorted: Array.from({length: n}, (_, k) => k),
+            done: true,
+            earlyTermination: true
+          });
+          return steps;
+        }
+      }
+
+      steps.push({
+        array: [...a],
+        desc: `Array is sorted! Total: ${comparisons} comparisons, ${swaps} swaps.`,
+        comparisons,
+        swaps,
+        sorted: Array.from({length: n}, (_, k) => k),
+        done: true
+      });
+
+      return steps;
+    }
+
+    function selectSortAlgo(algo) {
+      currentSortAlgo = algo;
+
+      // Update button states
+      document.querySelectorAll('.sort-algo-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.algo === algo);
+      });
+
+      // Update details sections
+      document.querySelectorAll('.sort-details').forEach(details => {
+        details.style.display = 'none';
+      });
+      document.getElementById(`${algo}-details`).style.display = 'block';
+
+      // Reset and regenerate
+      sortReset();
+    }
+
+    function initSortViz() {
+      switch (currentSortAlgo) {
+        case 'insertion':
+          sortSteps = generateInsertionSortSteps([...sortInitialArray]);
+          break;
+        case 'selection':
+          sortSteps = generateSelectionSortSteps([...sortInitialArray]);
+          break;
+        case 'bubble':
+          sortSteps = generateBubbleSortSteps([...sortInitialArray]);
+          break;
+      }
+      sortCurrentStep = 0;
+      renderSortStep();
+    }
+
+    function renderSortStep() {
+      if (sortSteps.length === 0) return;
+
+      const step = sortSteps[sortCurrentStep];
+      const canvas = document.getElementById('sort-viz-canvas');
+      const description = document.getElementById('sort-description');
+
+      canvas.innerHTML = '';
+      description.textContent = step.desc;
+
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight || 350;
+      const barCount = step.array.length;
+      const barWidth = Math.min(60, (width - 100) / barCount - 10);
+      const maxVal = Math.max(...sortInitialArray);
+      const maxHeight = height - 120;
+      const startX = (width - (barCount * (barWidth + 10))) / 2;
+
+      // Stats display
+      const stats = document.createElement('div');
+      stats.className = 'sort-stats';
+      stats.innerHTML = `
+        <div class="sort-stat-item">
+          <span class="sort-stat-label">Comparisons:</span>
+          <span class="sort-stat-value">${step.comparisons}</span>
+        </div>
+        <div class="sort-stat-item">
+          <span class="sort-stat-label">Swaps:</span>
+          <span class="sort-stat-value">${step.swaps}</span>
+        </div>
+      `;
+      canvas.appendChild(stats);
+
+      // Draw bars
+      step.array.forEach((val, i) => {
+        const bar = document.createElement('div');
+        bar.className = 'sort-bar';
+        const barHeight = (val / maxVal) * maxHeight;
+
+        bar.style.width = `${barWidth}px`;
+        bar.style.height = `${barHeight}px`;
+        bar.style.left = `${startX + i * (barWidth + 10)}px`;
+
+        // Apply states
+        if (step.done || (step.sorted && step.sorted.includes(i))) {
+          bar.classList.add('sorted');
+        }
+
+        if (step.current === i) {
+          bar.classList.add('current');
+        }
+
+        if (step.minimum === i) {
+          bar.classList.add('minimum');
+        }
+
+        if (step.comparing !== undefined) {
+          if (Array.isArray(step.comparing)) {
+            if (step.comparing.includes(i)) bar.classList.add('comparing');
+          } else if (step.comparing === i) {
+            bar.classList.add('comparing');
+          }
+        }
+
+        if (step.swapping && step.swapping.includes(i)) {
+          bar.classList.add('swapping');
+        }
+
+        // Value label
+        const label = document.createElement('div');
+        label.className = 'sort-bar-label';
+        label.textContent = val;
+        bar.appendChild(label);
+
+        canvas.appendChild(bar);
+      });
+
+      // Legend
+      const legend = document.createElement('div');
+      legend.className = 'sort-legend';
+      legend.innerHTML = `
+        <div class="sort-legend-item">
+          <div class="sort-legend-color" style="background: var(--current-focus);"></div>
+          <span>Current</span>
+        </div>
+        <div class="sort-legend-item">
+          <div class="sort-legend-color" style="background: var(--comparing);"></div>
+          <span>Comparing</span>
+        </div>
+        <div class="sort-legend-item">
+          <div class="sort-legend-color" style="background: var(--swapping);"></div>
+          <span>Min/Key</span>
+        </div>
+        <div class="sort-legend-item">
+          <div class="sort-legend-color" style="background: var(--sorted);"></div>
+          <span>Sorted</span>
+        </div>
+      `;
+      canvas.appendChild(legend);
+
+      // Update progress
+      const progress = sortSteps.length > 1 ? (sortCurrentStep / (sortSteps.length - 1)) * 100 : 0;
+      document.getElementById('sort-progress').style.width = `${progress}%`;
+      document.getElementById('sort-step-indicator').textContent = `Step ${sortCurrentStep + 1} / ${sortSteps.length}`;
+    }
+
+    function sortPlay() {
+      if (sortCurrentStep >= sortSteps.length - 1) {
+        sortCurrentStep = 0;
+      }
+      sortPlaying = true;
+      document.getElementById('sort-play').textContent = 'Pause';
+      document.getElementById('sort-play').classList.add('playing');
+
+      const speed = parseFloat(document.getElementById('sort-speed').value);
+      sortInterval = setInterval(() => {
+        if (sortCurrentStep < sortSteps.length - 1) {
+          sortCurrentStep++;
+          renderSortStep();
+        } else {
+          sortPause();
+        }
+      }, speed);
+    }
+
+    function sortPause() {
+      sortPlaying = false;
+      if (sortInterval) {
+        clearInterval(sortInterval);
+        sortInterval = null;
+      }
+      document.getElementById('sort-play').textContent = 'Play';
+      document.getElementById('sort-play').classList.remove('playing');
+    }
+
+    function sortNext() {
+      sortPause();
+      if (sortCurrentStep < sortSteps.length - 1) {
+        sortCurrentStep++;
+        renderSortStep();
+      }
+    }
+
+    function sortPrev() {
+      sortPause();
+      if (sortCurrentStep > 0) {
+        sortCurrentStep--;
+        renderSortStep();
+      }
+    }
+
+    function sortReset() {
+      sortPause();
+      initSortViz();
+    }
+
+    function seekSort(event) {
+      const container = event.currentTarget;
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const percentage = x / rect.width;
+      sortCurrentStep = Math.floor(percentage * (sortSteps.length - 1));
+      renderSortStep();
+    }
+
+    // Initialize sort visualization on page load
+    setTimeout(() => {
+      initSortViz();
+    }, 200);
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (sortSteps.length > 0) {
+        renderSortStep();
+      }
+    });
+
+    // ==================== Stability Visualization ====================
+    let stabilitySteps = [];
+    let stabilityCurrentStep = 0;
+    let stabilityInterval = null;
+    let currentStabilityDemo = 'stable';
+
+    // Data with names and scores - some have equal scores
+    const stabilityData = [
+      { name: 'Alice', score: 85, originalIndex: 0 },
+      { name: 'Bob', score: 90, originalIndex: 1 },
+      { name: 'Carol', score: 85, originalIndex: 2 },
+      { name: 'Dan', score: 78, originalIndex: 3 },
+      { name: 'Eve', score: 85, originalIndex: 4 }
+    ];
+
+    function generateStableInsertionSteps(data) {
+      const steps = [];
+      const arr = data.map(d => ({ ...d }));
+
+      steps.push({
+        array: arr.map(d => ({ ...d })),
+        description: 'Initial array: We have 3 people with score 85 (Alice, Carol, Eve). A stable sort should keep them in this order.',
+        comparing: [],
+        sorted: [0],
+        key: null
+      });
+
+      for (let i = 1; i < arr.length; i++) {
+        const key = { ...arr[i] };
+        steps.push({
+          array: arr.map(d => ({ ...d })),
+          description: `Pick ${key.name} (score: ${key.score}) to insert into sorted portion.`,
+          comparing: [i],
+          sorted: Array.from({ length: i }, (_, k) => k),
+          key: i
+        });
+
+        let j = i - 1;
+        while (j >= 0 && arr[j].score > key.score) {
+          arr[j + 1] = { ...arr[j] };
+          steps.push({
+            array: arr.map(d => ({ ...d })),
+            description: `${arr[j].name} (${arr[j].score}) > ${key.name} (${key.score}), shift right. Note: We use > not >=, so equal elements don't move!`,
+            comparing: [j, j + 1],
+            sorted: Array.from({ length: i }, (_, k) => k),
+            key: j + 1,
+            shifting: true
+          });
+          j--;
+        }
+
+        arr[j + 1] = key;
+        steps.push({
+          array: arr.map(d => ({ ...d })),
+          description: `Insert ${key.name} at position ${j + 1}. ${key.score === 85 ? 'Notice: Equal-scored elements maintain their original relative order!' : ''}`,
+          comparing: [],
+          sorted: Array.from({ length: i + 1 }, (_, k) => k),
+          key: null,
+          inserted: j + 1
+        });
+      }
+
+      steps.push({
+        array: arr.map(d => ({ ...d })),
+        description: 'Sorted! Alice, Carol, Eve all have 85 and kept their original order. This is STABLE.',
+        comparing: [],
+        sorted: Array.from({ length: arr.length }, (_, k) => k),
+        key: null,
+        final: true
+      });
+
+      return steps;
+    }
+
+    function generateUnstableSelectionSteps(data) {
+      const steps = [];
+      const arr = data.map(d => ({ ...d }));
+
+      steps.push({
+        array: arr.map(d => ({ ...d })),
+        description: 'Initial array: Alice, Carol, Eve all have score 85. Watch how Selection Sort can change their order.',
+        comparing: [],
+        sorted: [],
+        minIndex: null
+      });
+
+      for (let i = 0; i < arr.length - 1; i++) {
+        let minIdx = i;
+        steps.push({
+          array: arr.map(d => ({ ...d })),
+          description: `Looking for minimum in unsorted portion starting at index ${i}.`,
+          comparing: [i],
+          sorted: Array.from({ length: i }, (_, k) => k),
+          minIndex: i,
+          searchStart: i
+        });
+
+        for (let j = i + 1; j < arr.length; j++) {
+          steps.push({
+            array: arr.map(d => ({ ...d })),
+            description: `Compare ${arr[j].name} (${arr[j].score}) with current min ${arr[minIdx].name} (${arr[minIdx].score})`,
+            comparing: [minIdx, j],
+            sorted: Array.from({ length: i }, (_, k) => k),
+            minIndex: minIdx
+          });
+
+          if (arr[j].score < arr[minIdx].score) {
+            minIdx = j;
+            steps.push({
+              array: arr.map(d => ({ ...d })),
+              description: `Found new minimum: ${arr[minIdx].name} (${arr[minIdx].score})`,
+              comparing: [minIdx],
+              sorted: Array.from({ length: i }, (_, k) => k),
+              minIndex: minIdx
+            });
+          }
+        }
+
+        if (minIdx !== i) {
+          const temp = { ...arr[i] };
+          arr[i] = { ...arr[minIdx] };
+          arr[minIdx] = temp;
+          steps.push({
+            array: arr.map(d => ({ ...d })),
+            description: `Swap ${arr[i].name} with ${arr[minIdx].name}. This swap can disrupt the original order of equal elements!`,
+            comparing: [i, minIdx],
+            sorted: Array.from({ length: i + 1 }, (_, k) => k),
+            swapped: [i, minIdx]
+          });
+        } else {
+          steps.push({
+            array: arr.map(d => ({ ...d })),
+            description: `${arr[i].name} is already in correct position.`,
+            comparing: [],
+            sorted: Array.from({ length: i + 1 }, (_, k) => k),
+            minIndex: null
+          });
+        }
+      }
+
+      // Check if order was disrupted
+      const eighty5s = arr.filter(d => d.score === 85);
+      const originalOrder = ['Alice', 'Carol', 'Eve'];
+      const currentOrder = eighty5s.map(d => d.name);
+      const isStable = JSON.stringify(originalOrder) === JSON.stringify(currentOrder);
+
+      steps.push({
+        array: arr.map(d => ({ ...d })),
+        description: isStable
+          ? 'Sorted! In this case, order was preserved (got lucky!), but Selection Sort is NOT guaranteed to be stable.'
+          : `Sorted! Notice the 85-scorers are now in order: ${currentOrder.join(', ')}. The original order was Alice, Carol, Eve. This is UNSTABLE!`,
+        comparing: [],
+        sorted: Array.from({ length: arr.length }, (_, k) => k),
+        final: true,
+        unstable: !isStable
+      });
+
+      return steps;
+    }
+
+    function selectStabilityDemo(type) {
+      currentStabilityDemo = type;
+      document.getElementById('stable-btn').classList.toggle('active', type === 'stable');
+      document.getElementById('unstable-btn').classList.toggle('active', type === 'unstable');
+      initStabilityViz();
+    }
+
+    function initStabilityViz() {
+      stabilityPause();
+      stabilityCurrentStep = 0;
+
+      if (currentStabilityDemo === 'stable') {
+        stabilitySteps = generateStableInsertionSteps(stabilityData);
+      } else {
+        stabilitySteps = generateUnstableSelectionSteps(stabilityData);
+      }
+
+      renderStabilityStep();
+    }
+
+    function renderStabilityStep() {
+      const canvas = document.getElementById('stability-viz-canvas');
+      if (!canvas || stabilitySteps.length === 0) return;
+
+      const step = stabilitySteps[stabilityCurrentStep];
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight || 300;
+
+      d3.select('#stability-viz-canvas').selectAll('*').remove();
+      const svg = d3.select('#stability-viz-canvas')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const barWidth = Math.min(100, (width - 100) / step.array.length);
+      const startX = (width - barWidth * step.array.length) / 2;
+      const maxScore = 100;
+      const barMaxHeight = height - 120;
+
+      // Color coding for people with same score
+      const scoreColors = {
+        'Alice': '#FF6B6B',
+        'Bob': '#4ECDC4',
+        'Carol': '#FFE66D',
+        'Dan': '#95E1D3',
+        'Eve': '#DDA0DD'
+      };
+
+      step.array.forEach((item, i) => {
+        const barHeight = (item.score / maxScore) * barMaxHeight;
+        const x = startX + i * barWidth;
+        const y = height - 60 - barHeight;
+
+        let fillColor = scoreColors[item.name];
+        let strokeColor = 'transparent';
+        let strokeWidth = 0;
+
+        if (step.comparing && step.comparing.includes(i)) {
+          strokeColor = '#2EAADC';
+          strokeWidth = 3;
+        }
+        if (step.sorted && step.sorted.includes(i)) {
+          strokeColor = '#0F7B6C';
+          strokeWidth = 2;
+        }
+        if (step.key === i) {
+          strokeColor = '#F1C40F';
+          strokeWidth = 4;
+        }
+        if (step.inserted === i) {
+          strokeColor = '#9B51E0';
+          strokeWidth = 4;
+        }
+        if (step.swapped && step.swapped.includes(i)) {
+          strokeColor = '#EB5757';
+          strokeWidth = 4;
+        }
+
+        svg.append('rect')
+          .attr('x', x + 5)
+          .attr('y', y)
+          .attr('width', barWidth - 10)
+          .attr('height', barHeight)
+          .attr('fill', fillColor)
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', strokeWidth)
+          .attr('rx', 4);
+
+        // Name label
+        svg.append('text')
+          .attr('x', x + barWidth / 2)
+          .attr('y', y - 25)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#E6E6E6')
+          .attr('font-size', '12px')
+          .attr('font-weight', '500')
+          .text(item.name);
+
+        // Score inside bar
+        svg.append('text')
+          .attr('x', x + barWidth / 2)
+          .attr('y', y + barHeight / 2 + 5)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#1a1a2e')
+          .attr('font-size', '14px')
+          .attr('font-weight', '600')
+          .text(item.score);
+
+        // Index
+        svg.append('text')
+          .attr('x', x + barWidth / 2)
+          .attr('y', height - 35)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#9B9B9B')
+          .attr('font-size', '11px')
+          .text(`[${i}]`);
+      });
+
+      // Legend
+      svg.append('text')
+        .attr('x', 10)
+        .attr('y', 20)
+        .attr('fill', '#9B9B9B')
+        .attr('font-size', '11px')
+        .text('Same color = same score group');
+
+      // Update description and controls
+      document.getElementById('stability-description').textContent = step.description;
+      document.getElementById('stability-step-indicator').textContent =
+        `Step ${stabilityCurrentStep + 1} / ${stabilitySteps.length}`;
+      document.getElementById('stability-progress').style.width =
+        `${(stabilityCurrentStep / (stabilitySteps.length - 1)) * 100}%`;
+    }
+
+    function stabilityPlay() {
+      if (stabilityInterval) {
+        stabilityPause();
+      } else {
+        const speed = parseInt(document.getElementById('stability-speed').value);
+        document.getElementById('stability-play').textContent = 'Pause';
+        document.getElementById('stability-play').classList.add('playing');
+        stabilityInterval = setInterval(() => {
+          if (stabilityCurrentStep < stabilitySteps.length - 1) {
+            stabilityCurrentStep++;
+            renderStabilityStep();
+          } else {
+            stabilityPause();
+          }
+        }, speed);
+      }
+    }
+
+    function stabilityPause() {
+      if (stabilityInterval) {
+        clearInterval(stabilityInterval);
+        stabilityInterval = null;
+      }
+      document.getElementById('stability-play').textContent = 'Play';
+      document.getElementById('stability-play').classList.remove('playing');
+    }
+
+    function stabilityNext() {
+      stabilityPause();
+      if (stabilityCurrentStep < stabilitySteps.length - 1) {
+        stabilityCurrentStep++;
+        renderStabilityStep();
+      }
+    }
+
+    function stabilityPrev() {
+      stabilityPause();
+      if (stabilityCurrentStep > 0) {
+        stabilityCurrentStep--;
+        renderStabilityStep();
+      }
+    }
+
+    function stabilityReset() {
+      stabilityPause();
+      initStabilityViz();
+    }
+
+    function seekStability(event) {
+      const container = event.currentTarget;
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const percentage = x / rect.width;
+      stabilityCurrentStep = Math.floor(percentage * (stabilitySteps.length - 1));
+      renderStabilityStep();
+    }
+
+    // Initialize stability visualization
+    setTimeout(() => {
+      initStabilityViz();
+    }, 300);
+
+    // ==================== Adaptiveness Visualization ====================
+    let adaptiveSteps = [];
+    let adaptiveCurrentStep = 0;
+    let adaptiveInterval = null;
+    let currentAdaptiveDemo = 'adaptive';
+
+    function getAdaptiveInput() {
+      const type = document.getElementById('adaptive-input-type').value;
+      switch (type) {
+        case 'nearly-sorted':
+          return [1, 2, 3, 5, 4, 6, 7, 8]; // Only positions 3 and 4 are swapped
+        case 'random':
+          return [5, 2, 8, 1, 9, 3, 7, 4];
+        case 'reversed':
+          return [8, 7, 6, 5, 4, 3, 2, 1];
+        default:
+          return [1, 2, 3, 5, 4, 6, 7, 8];
+      }
+    }
+
+    function generateAdaptiveInsertionSteps(data) {
+      const steps = [];
+      const arr = [...data];
+      let comparisons = 0;
+      let shifts = 0;
+
+      steps.push({
+        array: [...arr],
+        description: 'Insertion Sort on ' + (document.getElementById('adaptive-input-type').value === 'nearly-sorted' ? 'nearly sorted' : document.getElementById('adaptive-input-type').value) + ' input.',
+        comparing: [],
+        sorted: [0],
+        key: null,
+        comparisons: 0,
+        shifts: 0
+      });
+
+      for (let i = 1; i < arr.length; i++) {
+        const key = arr[i];
+        steps.push({
+          array: [...arr],
+          description: `Pick element ${key} to insert.`,
+          comparing: [i],
+          sorted: Array.from({ length: i }, (_, k) => k),
+          key: i,
+          comparisons,
+          shifts
+        });
+
+        let j = i - 1;
+        let moved = false;
+
+        while (j >= 0 && arr[j] > key) {
+          comparisons++;
+          arr[j + 1] = arr[j];
+          shifts++;
+          moved = true;
+          steps.push({
+            array: [...arr],
+            description: `${arr[j]} > ${key}, shift right.`,
+            comparing: [j, j + 1],
+            sorted: Array.from({ length: i }, (_, k) => k),
+            key: j + 1,
+            comparisons,
+            shifts
+          });
+          j--;
+        }
+
+        if (j >= 0 || !moved) {
+          comparisons++; // Count the comparison that ended the loop
+        }
+
+        arr[j + 1] = key;
+
+        const alreadyInPlace = (j + 1 === i);
+        steps.push({
+          array: [...arr],
+          description: alreadyInPlace
+            ? `${key} is already in correct position! Only 1 comparison needed.`
+            : `Insert ${key} at position ${j + 1}.`,
+          comparing: [],
+          sorted: Array.from({ length: i + 1 }, (_, k) => k),
+          key: null,
+          inserted: j + 1,
+          comparisons,
+          shifts,
+          efficient: alreadyInPlace
+        });
+      }
+
+      steps.push({
+        array: [...arr],
+        description: `Done! Total: ${comparisons} comparisons, ${shifts} shifts. ${comparisons < 15 ? 'Very efficient on nearly-sorted data!' : ''}`,
+        comparing: [],
+        sorted: Array.from({ length: arr.length }, (_, k) => k),
+        comparisons,
+        shifts,
+        final: true
+      });
+
+      return steps;
+    }
+
+    function generateNonAdaptiveSelectionSteps(data) {
+      const steps = [];
+      const arr = [...data];
+      let comparisons = 0;
+      let swaps = 0;
+
+      steps.push({
+        array: [...arr],
+        description: 'Selection Sort always does the same number of comparisons regardless of input order.',
+        comparing: [],
+        sorted: [],
+        comparisons: 0,
+        shifts: 0
+      });
+
+      for (let i = 0; i < arr.length - 1; i++) {
+        let minIdx = i;
+
+        steps.push({
+          array: [...arr],
+          description: `Find minimum in unsorted portion [${i}...${arr.length - 1}]`,
+          comparing: [i],
+          sorted: Array.from({ length: i }, (_, k) => k),
+          minIndex: i,
+          comparisons,
+          shifts: swaps
+        });
+
+        for (let j = i + 1; j < arr.length; j++) {
+          comparisons++;
+          steps.push({
+            array: [...arr],
+            description: `Compare ${arr[j]} with current min ${arr[minIdx]}`,
+            comparing: [minIdx, j],
+            sorted: Array.from({ length: i }, (_, k) => k),
+            minIndex: minIdx,
+            comparisons,
+            shifts: swaps
+          });
+
+          if (arr[j] < arr[minIdx]) {
+            minIdx = j;
+          }
+        }
+
+        if (minIdx !== i) {
+          const temp = arr[i];
+          arr[i] = arr[minIdx];
+          arr[minIdx] = temp;
+          swaps++;
+          steps.push({
+            array: [...arr],
+            description: `Swap ${arr[i]} and ${arr[minIdx]}`,
+            comparing: [i, minIdx],
+            sorted: Array.from({ length: i + 1 }, (_, k) => k),
+            swapped: [i, minIdx],
+            comparisons,
+            shifts: swaps
+          });
+        } else {
+          steps.push({
+            array: [...arr],
+            description: `${arr[i]} already in place (no swap needed)`,
+            comparing: [],
+            sorted: Array.from({ length: i + 1 }, (_, k) => k),
+            comparisons,
+            shifts: swaps
+          });
+        }
+      }
+
+      steps.push({
+        array: [...arr],
+        description: `Done! Total: ${comparisons} comparisons, ${swaps} swaps. Always n(n-1)/2 = ${(arr.length * (arr.length - 1)) / 2} comparisons!`,
+        comparing: [],
+        sorted: Array.from({ length: arr.length }, (_, k) => k),
+        comparisons,
+        shifts: swaps,
+        final: true
+      });
+
+      return steps;
+    }
+
+    function selectAdaptiveDemo(type) {
+      currentAdaptiveDemo = type;
+      document.getElementById('adaptive-btn').classList.toggle('active', type === 'adaptive');
+      document.getElementById('nonadaptive-btn').classList.toggle('active', type === 'nonadaptive');
+      initAdaptiveViz();
+    }
+
+    function initAdaptiveViz() {
+      adaptivePause();
+      adaptiveCurrentStep = 0;
+
+      const data = getAdaptiveInput();
+      if (currentAdaptiveDemo === 'adaptive') {
+        adaptiveSteps = generateAdaptiveInsertionSteps(data);
+      } else {
+        adaptiveSteps = generateNonAdaptiveSelectionSteps(data);
+      }
+
+      renderAdaptiveStep();
+    }
+
+    function renderAdaptiveStep() {
+      const canvas = document.getElementById('adaptive-viz-canvas');
+      if (!canvas || adaptiveSteps.length === 0) return;
+
+      const step = adaptiveSteps[adaptiveCurrentStep];
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight || 300;
+
+      d3.select('#adaptive-viz-canvas').selectAll('*').remove();
+      const svg = d3.select('#adaptive-viz-canvas')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const barWidth = Math.min(60, (width - 100) / step.array.length);
+      const startX = (width - barWidth * step.array.length) / 2;
+      const maxVal = Math.max(...step.array);
+      const barMaxHeight = height - 80;
+
+      step.array.forEach((val, i) => {
+        const barHeight = (val / maxVal) * barMaxHeight;
+        const x = startX + i * barWidth;
+        const y = height - 40 - barHeight;
+
+        let fillColor = '#4ECDC4';
+        let strokeColor = 'transparent';
+        let strokeWidth = 0;
+
+        if (step.comparing && step.comparing.includes(i)) {
+          fillColor = '#2EAADC';
+          strokeColor = '#2EAADC';
+          strokeWidth = 2;
+        }
+        if (step.sorted && step.sorted.includes(i)) {
+          fillColor = '#0F7B6C';
+        }
+        if (step.key === i) {
+          fillColor = '#F1C40F';
+          strokeColor = '#F1C40F';
+          strokeWidth = 3;
+        }
+        if (step.inserted === i) {
+          fillColor = step.efficient ? '#2ECC71' : '#9B51E0';
+          strokeColor = step.efficient ? '#2ECC71' : '#9B51E0';
+          strokeWidth = 3;
+        }
+        if (step.swapped && step.swapped.includes(i)) {
+          fillColor = '#EB5757';
+          strokeColor = '#EB5757';
+          strokeWidth = 3;
+        }
+        if (step.minIndex === i) {
+          strokeColor = '#FF6B6B';
+          strokeWidth = 3;
+        }
+
+        svg.append('rect')
+          .attr('x', x + 5)
+          .attr('y', y)
+          .attr('width', barWidth - 10)
+          .attr('height', barHeight)
+          .attr('fill', fillColor)
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', strokeWidth)
+          .attr('rx', 4);
+
+        svg.append('text')
+          .attr('x', x + barWidth / 2)
+          .attr('y', y - 8)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#E6E6E6')
+          .attr('font-size', '14px')
+          .attr('font-weight', '600')
+          .text(val);
+      });
+
+      // Update counters
+      document.getElementById('adaptive-comparisons').textContent = step.comparisons || 0;
+      document.getElementById('adaptive-swaps').textContent = step.shifts || 0;
+
+      // Update description and controls
+      document.getElementById('adaptive-description').textContent = step.description;
+      document.getElementById('adaptive-step-indicator').textContent =
+        `Step ${adaptiveCurrentStep + 1} / ${adaptiveSteps.length}`;
+      document.getElementById('adaptive-progress').style.width =
+        `${(adaptiveCurrentStep / (adaptiveSteps.length - 1)) * 100}%`;
+    }
+
+    function adaptivePlay() {
+      if (adaptiveInterval) {
+        adaptivePause();
+      } else {
+        const speed = parseInt(document.getElementById('adaptive-speed').value);
+        document.getElementById('adaptive-play').textContent = 'Pause';
+        document.getElementById('adaptive-play').classList.add('playing');
+        adaptiveInterval = setInterval(() => {
+          if (adaptiveCurrentStep < adaptiveSteps.length - 1) {
+            adaptiveCurrentStep++;
+            renderAdaptiveStep();
+          } else {
+            adaptivePause();
+          }
+        }, speed);
+      }
+    }
+
+    function adaptivePause() {
+      if (adaptiveInterval) {
+        clearInterval(adaptiveInterval);
+        adaptiveInterval = null;
+      }
+      document.getElementById('adaptive-play').textContent = 'Play';
+      document.getElementById('adaptive-play').classList.remove('playing');
+    }
+
+    function adaptiveNext() {
+      adaptivePause();
+      if (adaptiveCurrentStep < adaptiveSteps.length - 1) {
+        adaptiveCurrentStep++;
+        renderAdaptiveStep();
+      }
+    }
+
+    function adaptivePrev() {
+      adaptivePause();
+      if (adaptiveCurrentStep > 0) {
+        adaptiveCurrentStep--;
+        renderAdaptiveStep();
+      }
+    }
+
+    function adaptiveReset() {
+      adaptivePause();
+      initAdaptiveViz();
+    }
+
+    function seekAdaptive(event) {
+      const container = event.currentTarget;
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const percentage = x / rect.width;
+      adaptiveCurrentStep = Math.floor(percentage * (adaptiveSteps.length - 1));
+      renderAdaptiveStep();
+    }
+
+    // Initialize adaptive visualization
+    setTimeout(() => {
+      initAdaptiveViz();
+    }, 400);
+
+    // Handle window resize for new visualizations
+    window.addEventListener('resize', () => {
+      if (stabilitySteps.length > 0) {
+        renderStabilityStep();
+      }
+      if (adaptiveSteps.length > 0) {
+        renderAdaptiveStep();
       }
     });
 

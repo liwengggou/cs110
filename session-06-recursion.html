@@ -1070,8 +1070,9 @@
       <ul>
         <li><strong>Trace</strong> recursive function execution through the call stack</li>
         <li><strong>Identify</strong> base cases and recursive cases in function definitions</li>
+        <li><strong>Define</strong> recurrence relations that describe recursive algorithms mathematically</li>
+        <li><strong>Apply</strong> the recursion tree method to analyze time complexity visually</li>
         <li><strong>Visualize</strong> recursion trees to understand problem decomposition</li>
-        <li><strong>Analyze</strong> time complexity of recursive algorithms</li>
         <li><strong>Apply</strong> memoization to optimize recursive solutions</li>
       </ul>
     </section>
@@ -1222,9 +1223,87 @@
       </div>
     </div>
 
-    <!-- Section 3: Fibonacci with Recursion Tree -->
-    <h2>3. Fibonacci: Visualizing the Recursion Tree</h2>
-    <p>The Fibonacci sequence is defined as: $F(n) = F(n-1) + F(n-2)$ with $F(0) = 0$ and $F(1) = 1$. This creates a tree of recursive calls that we can visualize.</p>
+    <!-- Section 3: Recurrence Relations -->
+    <h2>3. Recurrence Relations</h2>
+    <p>A <strong>recurrence relation</strong> is a mathematical equation that defines a sequence where each term is expressed as a function of one or more previous terms. In other words, it's a way of describing a recursive pattern mathematically.</p>
+
+    <div class="key-insight">
+      <strong>What Makes It a "Recurrence"?</strong> The key idea is that the value at position $n$ "recurs" back to (depends on) values at earlier positions. You can't compute $f(n)$ without first knowing the values that came before it.
+    </div>
+
+    <h3>Anatomy of a Recurrence Relation</h3>
+    <p>Every recurrence relation has two essential parts:</p>
+
+    <div class="viz-container" style="padding: 1.5rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div style="background: rgba(39, 174, 96, 0.1); border: 2px solid var(--base-case); border-radius: var(--border-radius); padding: 1.25rem;">
+          <h4 style="color: var(--base-case); margin: 0 0 0.75rem 0;">1. Base Case(s)</h4>
+          <p style="margin: 0 0 0.75rem 0;">The <strong>starting values</strong> that don't depend on other terms. These are explicitly defined.</p>
+          <div style="font-family: var(--font-mono); background: var(--code-bg); padding: 0.75rem; border-radius: 4px;">
+            $F(0) = 0$<br>
+            $F(1) = 1$
+          </div>
+          <p style="margin: 0.75rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">Without base cases, the recursion would never end!</p>
+        </div>
+        <div style="background: rgba(46, 170, 220, 0.1); border: 2px solid var(--accent); border-radius: var(--border-radius); padding: 1.25rem;">
+          <h4 style="color: var(--accent); margin: 0 0 0.75rem 0;">2. Recursive Formula</h4>
+          <p style="margin: 0 0 0.75rem 0;">The <strong>rule</strong> that expresses each term using previous terms.</p>
+          <div style="font-family: var(--font-mono); background: var(--code-bg); padding: 0.75rem; border-radius: 4px;">
+            $F(n) = F(n-1) + F(n-2)$<br>
+            <span style="color: var(--text-secondary);">for $n \geq 2$</span>
+          </div>
+          <p style="margin: 0.75rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">This tells us how to "build up" from the base cases.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Common Examples of Recurrence Relations</h3>
+    <div class="viz-container">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+        <thead>
+          <tr style="background: var(--background-secondary);">
+            <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Problem</th>
+            <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Recurrence Relation</th>
+            <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border);">Base Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 0.75rem; border: 1px solid var(--border);"><strong>Factorial</strong></td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$n! = n \times (n-1)!$</td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$0! = 1$</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.75rem; border: 1px solid var(--border);"><strong>Fibonacci</strong></td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$F(n) = F(n-1) + F(n-2)$</td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$F(0)=0, F(1)=1$</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.75rem; border: 1px solid var(--border);"><strong>Sum 1 to n</strong></td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$S(n) = n + S(n-1)$</td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$S(0) = 0$</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.75rem; border: 1px solid var(--border);"><strong>Binary Search</strong></td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$T(n) = T(n/2) + O(1)$</td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$T(1) = O(1)$</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.75rem; border: 1px solid var(--border);"><strong>Merge Sort</strong></td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$T(n) = 2T(n/2) + O(n)$</td>
+            <td style="padding: 0.75rem; border: 1px solid var(--border); font-family: var(--font-mono);">$T(1) = O(1)$</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="key-insight">
+      <strong>From Math to Code:</strong> A recurrence relation translates directly into a recursive function! The base case(s) become your <code>if</code> condition that returns immediately, and the recursive formula becomes your <code>return</code> statement with recursive calls.
+    </div>
+
+    <!-- Section 4: Fibonacci with Recursion Tree -->
+    <h2>4. Fibonacci: Visualizing the Recursion Tree</h2>
+    <p>The Fibonacci sequence is defined by this recurrence relation: $F(n) = F(n-1) + F(n-2)$ with base cases $F(0) = 0$ and $F(1) = 1$. This creates a tree of recursive calls that we can visualize.</p>
 
     <div class="viz-container">
       <h3>Fibonacci Recursion Tree</h3>
@@ -1282,8 +1361,223 @@
       <strong>Key Insight:</strong> Notice how many times fib(2), fib(1), and fib(0) are computed repeatedly! This redundancy is why naive Fibonacci has exponential time complexity: $O(2^n)$.
     </div>
 
-    <!-- Section 4: Memoization -->
-    <h2>4. Memoization: Optimizing Recursion</h2>
+    <!-- Section 5: Recursion Tree Method -->
+    <h2>5. The Recursion Tree Method</h2>
+    <p>The <strong>recursion tree method</strong> is a visual technique for analyzing the time complexity of recursive algorithms. By drawing out all the recursive calls as a tree, we can see the total work being done and derive the Big-O complexity.</p>
+
+    <h3>How the Recursion Tree Method Works</h3>
+    <div class="viz-container">
+      <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+
+        <div style="background: var(--background-secondary); border-radius: var(--border-radius); padding: 1.25rem;">
+          <h4 style="margin: 0 0 1rem 0; color: var(--accent);">Step-by-Step Process</h4>
+          <ol style="padding-left: 1.5rem; margin: 0;">
+            <li style="margin-bottom: 0.75rem;"><strong>Draw the tree:</strong> Each node represents one function call. The root is your initial call, and children are the recursive calls it makes.</li>
+            <li style="margin-bottom: 0.75rem;"><strong>Label each node:</strong> Write the work done at that call (excluding recursive calls). This is usually $O(1)$ or $O(n)$ depending on the function.</li>
+            <li style="margin-bottom: 0.75rem;"><strong>Count levels:</strong> Determine the height of the tree (how many levels from root to deepest leaf).</li>
+            <li style="margin-bottom: 0.75rem;"><strong>Sum the work:</strong> Add up the work at each level, then sum across all levels to get total work.</li>
+          </ol>
+        </div>
+
+        <div style="background: var(--canvas-bg); border-radius: var(--border-radius); padding: 1.5rem;">
+          <h4 style="margin: 0 0 1rem 0; color: white; text-align: center;">Recursion Tree for fib(4)</h4>
+          <svg width="100%" height="320" viewBox="0 0 500 320" style="display: block; margin: 0 auto;">
+            <!-- Level labels -->
+            <text x="10" y="45" fill="#9B9B9B" font-size="12" font-family="var(--font-mono)">Level 0</text>
+            <text x="10" y="115" fill="#9B9B9B" font-size="12" font-family="var(--font-mono)">Level 1</text>
+            <text x="10" y="185" fill="#9B9B9B" font-size="12" font-family="var(--font-mono)">Level 2</text>
+            <text x="10" y="255" fill="#9B9B9B" font-size="12" font-family="var(--font-mono)">Level 3</text>
+
+            <!-- Work at each level -->
+            <text x="450" y="45" fill="#F1C40F" font-size="12" font-family="var(--font-mono)" text-anchor="end">1 call</text>
+            <text x="450" y="115" fill="#F1C40F" font-size="12" font-family="var(--font-mono)" text-anchor="end">2 calls</text>
+            <text x="450" y="185" fill="#F1C40F" font-size="12" font-family="var(--font-mono)" text-anchor="end">4 calls</text>
+            <text x="450" y="255" fill="#F1C40F" font-size="12" font-family="var(--font-mono)" text-anchor="end">~8 calls</text>
+
+            <!-- Edges -->
+            <line x1="250" y1="55" x2="150" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="250" y1="55" x2="350" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+
+            <line x1="150" y1="125" x2="100" y2="165" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="150" y1="125" x2="200" y2="165" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="350" y1="125" x2="300" y2="165" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="350" y1="125" x2="400" y2="165" stroke="#6B6B6B" stroke-width="2"/>
+
+            <line x1="100" y1="195" x2="75" y2="235" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="100" y1="195" x2="125" y2="235" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="300" y1="195" x2="275" y2="235" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="300" y1="195" x2="325" y2="235" stroke="#6B6B6B" stroke-width="2"/>
+
+            <!-- Level 0: fib(4) -->
+            <circle cx="250" cy="40" r="22" fill="#2EAADC" stroke="#2EAADC" stroke-width="2"/>
+            <text x="250" y="45" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(4)</text>
+
+            <!-- Level 1: fib(3), fib(2) -->
+            <circle cx="150" cy="110" r="22" fill="#2EAADC" stroke="#2EAADC" stroke-width="2"/>
+            <text x="150" y="115" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(3)</text>
+            <circle cx="350" cy="110" r="22" fill="#2EAADC" stroke="#2EAADC" stroke-width="2"/>
+            <text x="350" y="115" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(2)</text>
+
+            <!-- Level 2 -->
+            <circle cx="100" cy="180" r="22" fill="#2EAADC" stroke="#2EAADC" stroke-width="2"/>
+            <text x="100" y="185" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(2)</text>
+            <circle cx="200" cy="180" r="22" fill="#27AE60" stroke="#27AE60" stroke-width="2"/>
+            <text x="200" y="185" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(1)</text>
+            <circle cx="300" cy="180" r="22" fill="#27AE60" stroke="#27AE60" stroke-width="2"/>
+            <text x="300" y="185" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(1)</text>
+            <circle cx="400" cy="180" r="22" fill="#27AE60" stroke="#27AE60" stroke-width="2"/>
+            <text x="400" y="185" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(0)</text>
+
+            <!-- Level 3 -->
+            <circle cx="75" cy="250" r="22" fill="#27AE60" stroke="#27AE60" stroke-width="2"/>
+            <text x="75" y="255" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(1)</text>
+            <circle cx="125" cy="250" r="22" fill="#27AE60" stroke="#27AE60" stroke-width="2"/>
+            <text x="125" y="255" fill="white" font-size="13" font-family="var(--font-mono)" text-anchor="middle">f(0)</text>
+
+            <!-- Legend -->
+            <circle cx="80" cy="300" r="10" fill="#2EAADC"/>
+            <text x="95" y="305" fill="#9B9B9B" font-size="11">Recursive call</text>
+            <circle cx="200" cy="300" r="10" fill="#27AE60"/>
+            <text x="215" y="305" fill="#9B9B9B" font-size="11">Base case</text>
+          </svg>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div style="background: rgba(241, 196, 15, 0.1); border: 2px solid #F1C40F; border-radius: var(--border-radius); padding: 1.25rem;">
+            <h4 style="color: #F1C40F; margin: 0 0 0.75rem 0;">Analyzing the Tree</h4>
+            <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem;">
+              <li><strong>Height:</strong> n levels (from f(n) down to base cases)</li>
+              <li><strong>Branching factor:</strong> 2 (each call makes 2 recursive calls)</li>
+              <li><strong>Work per node:</strong> O(1) (just addition)</li>
+              <li><strong>Nodes per level:</strong> roughly doubles each level</li>
+            </ul>
+          </div>
+          <div style="background: rgba(235, 87, 87, 0.1); border: 2px solid var(--error); border-radius: var(--border-radius); padding: 1.25rem;">
+            <h4 style="color: var(--error); margin: 0 0 0.75rem 0;">Total Work Calculation</h4>
+            <div style="font-family: var(--font-mono); font-size: 0.9rem;">
+              <div>Level 0: $2^0 = 1$ node</div>
+              <div>Level 1: $2^1 = 2$ nodes</div>
+              <div>Level 2: $2^2 = 4$ nodes</div>
+              <div>...</div>
+              <div>Level n: $2^n$ nodes</div>
+              <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--error);">
+                <strong>Total: $\sum_{i=0}^{n} 2^i = O(2^n)$</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Using the Recursion Tree for Different Algorithms</h3>
+    <div class="viz-container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+
+        <div style="background: var(--background-secondary); border-radius: var(--border-radius); padding: 1.25rem;">
+          <h4 style="margin: 0 0 0.5rem 0;">Factorial: $T(n) = T(n-1) + O(1)$</h4>
+          <svg width="100%" height="160" viewBox="0 0 250 160">
+            <!-- Single chain of calls -->
+            <line x1="125" y1="35" x2="125" y2="55" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="125" y1="75" x2="125" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="125" y1="115" x2="125" y2="135" stroke="#6B6B6B" stroke-width="2"/>
+
+            <circle cx="125" cy="25" r="18" fill="#2EAADC"/>
+            <text x="125" y="30" fill="white" font-size="11" text-anchor="middle">n</text>
+            <circle cx="125" cy="65" r="18" fill="#2EAADC"/>
+            <text x="125" y="70" fill="white" font-size="11" text-anchor="middle">n-1</text>
+            <circle cx="125" cy="105" r="18" fill="#2EAADC"/>
+            <text x="125" y="110" fill="white" font-size="11" text-anchor="middle">...</text>
+            <circle cx="125" cy="145" r="18" fill="#27AE60"/>
+            <text x="125" y="150" fill="white" font-size="11" text-anchor="middle">1</text>
+
+            <text x="180" y="30" fill="var(--text-secondary)" font-size="10">O(1)</text>
+            <text x="180" y="70" fill="var(--text-secondary)" font-size="10">O(1)</text>
+            <text x="180" y="110" fill="var(--text-secondary)" font-size="10">O(1)</text>
+            <text x="180" y="150" fill="var(--text-secondary)" font-size="10">O(1)</text>
+          </svg>
+          <div style="text-align: center; font-family: var(--font-mono); color: var(--success); font-weight: 600;">
+            n levels × O(1) = O(n)
+          </div>
+        </div>
+
+        <div style="background: var(--background-secondary); border-radius: var(--border-radius); padding: 1.25rem;">
+          <h4 style="margin: 0 0 0.5rem 0;">Binary Search: $T(n) = T(n/2) + O(1)$</h4>
+          <svg width="100%" height="160" viewBox="0 0 250 160">
+            <!-- Single chain, halving each time -->
+            <line x1="125" y1="35" x2="125" y2="55" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="125" y1="75" x2="125" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="125" y1="115" x2="125" y2="135" stroke="#6B6B6B" stroke-width="2"/>
+
+            <circle cx="125" cy="25" r="18" fill="#2EAADC"/>
+            <text x="125" y="30" fill="white" font-size="11" text-anchor="middle">n</text>
+            <circle cx="125" cy="65" r="18" fill="#2EAADC"/>
+            <text x="125" y="70" fill="white" font-size="11" text-anchor="middle">n/2</text>
+            <circle cx="125" cy="105" r="18" fill="#2EAADC"/>
+            <text x="125" y="110" fill="white" font-size="11" text-anchor="middle">n/4</text>
+            <circle cx="125" cy="145" r="18" fill="#27AE60"/>
+            <text x="125" y="150" fill="white" font-size="11" text-anchor="middle">1</text>
+
+            <text x="180" y="30" fill="var(--text-secondary)" font-size="10">O(1)</text>
+            <text x="180" y="70" fill="var(--text-secondary)" font-size="10">O(1)</text>
+            <text x="180" y="110" fill="var(--text-secondary)" font-size="10">O(1)</text>
+            <text x="180" y="150" fill="var(--text-secondary)" font-size="10">O(1)</text>
+          </svg>
+          <div style="text-align: center; font-family: var(--font-mono); color: var(--success); font-weight: 600;">
+            log(n) levels × O(1) = O(log n)
+          </div>
+        </div>
+
+        <div style="background: var(--background-secondary); border-radius: var(--border-radius); padding: 1.25rem;">
+          <h4 style="margin: 0 0 0.5rem 0;">Merge Sort: $T(n) = 2T(n/2) + O(n)$</h4>
+          <svg width="100%" height="160" viewBox="0 0 250 160">
+            <!-- Branching tree -->
+            <line x1="125" y1="35" x2="75" y2="55" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="125" y1="35" x2="175" y2="55" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="75" y1="75" x2="50" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="75" y1="75" x2="100" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="175" y1="75" x2="150" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+            <line x1="175" y1="75" x2="200" y2="95" stroke="#6B6B6B" stroke-width="2"/>
+
+            <circle cx="125" cy="25" r="16" fill="#2EAADC"/>
+            <text x="125" y="30" fill="white" font-size="10" text-anchor="middle">n</text>
+            <circle cx="75" cy="65" r="16" fill="#2EAADC"/>
+            <text x="75" y="70" fill="white" font-size="10" text-anchor="middle">n/2</text>
+            <circle cx="175" cy="65" r="16" fill="#2EAADC"/>
+            <text x="175" y="70" fill="white" font-size="10" text-anchor="middle">n/2</text>
+            <circle cx="50" cy="105" r="14" fill="#2EAADC"/>
+            <text x="50" y="110" fill="white" font-size="9" text-anchor="middle">n/4</text>
+            <circle cx="100" cy="105" r="14" fill="#2EAADC"/>
+            <text x="100" y="110" fill="white" font-size="9" text-anchor="middle">n/4</text>
+            <circle cx="150" cy="105" r="14" fill="#2EAADC"/>
+            <text x="150" y="110" fill="white" font-size="9" text-anchor="middle">n/4</text>
+            <circle cx="200" cy="105" r="14" fill="#2EAADC"/>
+            <text x="200" y="110" fill="white" font-size="9" text-anchor="middle">n/4</text>
+
+            <text x="230" y="30" fill="var(--text-secondary)" font-size="10">O(n)</text>
+            <text x="230" y="70" fill="var(--text-secondary)" font-size="10">O(n)</text>
+            <text x="230" y="110" fill="var(--text-secondary)" font-size="10">O(n)</text>
+
+            <text x="125" y="145" fill="var(--text-secondary)" font-size="10" text-anchor="middle">... log(n) levels ...</text>
+          </svg>
+          <div style="text-align: center; font-family: var(--font-mono); color: var(--success); font-weight: 600;">
+            log(n) levels × O(n) = O(n log n)
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>The Pattern:</strong> To find complexity using the recursion tree method:
+      <ol style="margin: 0.5rem 0 0 1.5rem;">
+        <li><strong>Height of tree</strong> = how many times can we apply the recurrence until reaching base case?</li>
+        <li><strong>Work per level</strong> = (number of nodes at that level) × (work per node)</li>
+        <li><strong>Total complexity</strong> = sum of work across all levels</li>
+      </ol>
+    </div>
+
+    <!-- Section 6: Memoization -->
+    <h2>6. Memoization: Optimizing Recursion</h2>
     <p>Memoization stores the results of expensive function calls and returns the cached result when the same inputs occur again. Compare the difference!</p>
 
     <div class="comparison-container">
@@ -1460,8 +1754,8 @@
       </div>
     </div>
 
-    <!-- Section 5: Common Mistakes -->
-    <h2>5. Common Mistakes</h2>
+    <!-- Section 7: Common Mistakes -->
+    <h2>7. Common Mistakes</h2>
 
     <div class="common-mistake">
       <strong>Missing Base Case:</strong> Without a base case, your function will recurse forever until it crashes with a stack overflow error.
@@ -1543,8 +1837,8 @@ def sum_list(lst):
       </div>
     </div>
 
-    <!-- Section 6: Why Do We Care -->
-    <h2>6. Why Do We Care?</h2>
+    <!-- Section 8: Why Do We Care -->
+    <h2>8. Why Do We Care?</h2>
     <ul style="padding-left: 1.5rem;">
       <li><strong>Divide and Conquer Algorithms:</strong> Merge sort, quicksort, and binary search all use recursion to break problems into smaller subproblems</li>
       <li><strong>Tree and Graph Traversal:</strong> DFS, tree operations, and many graph algorithms are naturally recursive</li>
@@ -1552,8 +1846,8 @@ def sum_list(lst):
       <li><strong>Mathematical Functions:</strong> Factorial, Fibonacci, GCD, and many mathematical concepts are defined recursively</li>
     </ul>
 
-    <!-- Section 7: Quiz -->
-    <h2>7. Quick Check</h2>
+    <!-- Section 9: Quiz -->
+    <h2>9. Quick Check</h2>
 
     <div class="quiz-container">
       <div class="quiz-question">
@@ -1634,8 +1928,8 @@ def sum_list(lst):
       </div>
     </div>
 
-    <!-- Section 8: Dive Deeper -->
-    <h2>8. Dive Deeper</h2>
+    <!-- Section 10: Dive Deeper -->
+    <h2>10. Dive Deeper</h2>
     <ul style="padding-left: 1.5rem;">
       <li><a href="https://visualgo.net/en/recursion" target="_blank">VisuAlgo - Recursion Visualization</a></li>
       <li><a href="https://docs.python.org/3/library/functools.html#functools.lru_cache" target="_blank">Python functools.lru_cache - Built-in Memoization</a></li>

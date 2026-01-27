@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Session 5: Quadratic Sorting Algorithms | CS110</title>
+  <title>Session 5: Sorting Algorithms | CS110</title>
 
   <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -528,6 +528,51 @@
     .variable { color: #e06c75; }
     .operator { color: #56b6c2; }
 
+    /* Code Walkthrough Line Explanations */
+    .code-walkthrough {
+      margin: 1.5rem 0;
+    }
+
+    .code-walkthrough .code-content {
+      max-height: none;
+    }
+
+    .line-explanations {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .line-explanation {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      border-left: 3px solid var(--accent);
+    }
+
+    .line-ref {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 80px;
+      flex-shrink: 0;
+    }
+
+    .line-desc {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .line-desc code {
+      background: var(--code-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
     /* Variable Panel */
     .variable-panel {
       background: var(--code-bg);
@@ -982,6 +1027,1854 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+    /* ==================== MERGE SORT STYLES ==================== */
+
+    /* Merge Tree Visualization */
+    .merge-tree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding: 1rem 0;
+    }
+
+    .merge-level {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .merge-node {
+      display: flex;
+      gap: 2px;
+      padding: 0.5rem;
+      background: rgba(46, 170, 220, 0.2);
+      border-radius: 6px;
+      border: 2px solid var(--accent);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .merge-node.active {
+      border-color: var(--current-focus);
+      box-shadow: 0 0 15px var(--current-focus);
+      background: rgba(241, 196, 15, 0.2);
+    }
+
+    .merge-node.merging {
+      border-color: var(--purple);
+      box-shadow: 0 0 15px var(--purple);
+      background: rgba(155, 81, 224, 0.2);
+    }
+
+    .merge-node.sorted {
+      border-color: var(--success);
+      background: rgba(15, 123, 108, 0.2);
+    }
+
+    .merge-node.splitting {
+      border-color: var(--warning);
+      animation: split-pulse 0.5s ease;
+    }
+
+    @keyframes split-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .merge-node-element {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .merge-node-element.comparing {
+      background: var(--comparing);
+      box-shadow: 0 0 10px var(--comparing);
+    }
+
+    .merge-node-element.selected {
+      background: var(--success);
+      transform: scale(1.1);
+    }
+
+    .merge-level-label {
+      position: absolute;
+      left: -60px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .merge-arrow {
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      margin: 0.25rem 0;
+    }
+
+    .merge-arrow.down { color: var(--warning); }
+    .merge-arrow.up { color: var(--success); }
+
+    /* Merge Demo Styles */
+    .merge-demo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+
+    .merge-demo-arrays {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .merge-demo-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    .merge-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .merge-array {
+      display: flex;
+      gap: 4px;
+      padding: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      min-height: 50px;
+      min-width: 100px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .merge-array-element {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .merge-array-element.comparing {
+      background: var(--comparing);
+      box-shadow: 0 0 12px var(--comparing);
+      transform: scale(1.1);
+    }
+
+    .merge-array-element.used {
+      opacity: 0.3;
+    }
+
+    .merge-array-element.winner {
+      background: var(--success);
+      animation: winner-pop 0.3s ease;
+    }
+
+    @keyframes winner-pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .merge-result {
+      background: rgba(15, 123, 108, 0.2);
+      border: 2px solid var(--success);
+      min-width: 200px;
+    }
+
+    .merge-result .merge-array-element {
+      background: var(--success);
+    }
+
+    .merge-pointer {
+      position: absolute;
+      bottom: -25px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--accent);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .merge-demo-result-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Merge Phases Diagram */
+    .merge-phases-diagram {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .phases-container {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .phase-box {
+      text-align: center;
+      padding: 1rem 1.5rem;
+      border-radius: var(--border-radius);
+      min-width: 200px;
+    }
+
+    .divide-phase {
+      background: rgba(245, 158, 11, 0.15);
+      border: 2px solid var(--warning);
+    }
+
+    .conquer-phase {
+      background: rgba(15, 123, 108, 0.15);
+      border: 2px solid var(--success);
+    }
+
+    .phase-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .divide-phase .phase-title { color: var(--warning); }
+    .conquer-phase .phase-title { color: var(--success); }
+
+    .phase-arrow {
+      font-size: 2rem;
+      margin: 0.25rem 0;
+    }
+
+    .divide-phase .phase-arrow { color: var(--warning); }
+    .conquer-phase .phase-arrow { color: var(--success); }
+
+    .phase-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* Complexity Breakdown */
+    .complexity-breakdown {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .complexity-breakdown h4 {
+      margin: 0 0 1rem 0;
+      text-align: center;
+    }
+
+    .breakdown-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .breakdown-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+    }
+
+    .breakdown-formula {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 150px;
+      text-align: center;
+    }
+
+    .breakdown-explanation {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    /* Properties Grid */
+    .properties-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .property-card {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      text-align: center;
+      border: 2px solid var(--border);
+    }
+
+    .property-card.stable, .property-card.consistent, .property-card.parallelizable {
+      border-color: var(--success);
+    }
+
+    .property-card.not-in-place {
+      border-color: var(--warning);
+    }
+
+    .property-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .property-card.stable .property-icon,
+    .property-card.consistent .property-icon,
+    .property-card.parallelizable .property-icon {
+      color: var(--success);
+    }
+
+    .property-card.not-in-place .property-icon {
+      color: var(--warning);
+    }
+
+    .property-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .property-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .merge-node-element {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+      }
+
+      .merge-demo-arrays {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .phases-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .breakdown-item {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .breakdown-formula {
+        min-width: auto;
+      }
+    }
+
+    /* ==================== DIVIDE AND CONQUER VISUAL STYLES ==================== */
+
+    /* D&C Steps Visualization */
+    .dc-steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      margin: 1.5rem 0;
+    }
+
+    .dc-step {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      padding: 1.5rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+      border-left: 5px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .dc-step.active {
+      border-left-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(46, 170, 220, 0.15);
+    }
+
+    .dc-step-number {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--code-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .dc-step.active .dc-step-number {
+      background: var(--accent);
+      color: white;
+    }
+
+    .dc-step.divide-step { border-left-color: var(--warning); }
+    .dc-step.divide-step.active .dc-step-number { background: var(--warning); }
+
+    .dc-step.conquer-step { border-left-color: var(--success); }
+    .dc-step.conquer-step.active .dc-step-number { background: var(--success); }
+
+    .dc-step.combine-step { border-left-color: var(--purple); }
+    .dc-step.combine-step.active .dc-step-number { background: var(--purple); }
+
+    .dc-step-content {
+      flex: 1;
+    }
+
+    .dc-step-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .divide-step .dc-step-title { color: var(--warning); }
+    .conquer-step .dc-step-title { color: var(--success); }
+    .combine-step .dc-step-title { color: var(--purple); }
+
+    .dc-step-desc {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .dc-step-visual {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .dc-array-box {
+      display: flex;
+      gap: 3px;
+      padding: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      transition: all 0.5s ease;
+    }
+
+    .dc-array-box.highlight-divide {
+      border: 2px dashed var(--warning);
+    }
+
+    .dc-array-box.highlight-conquer {
+      border: 2px solid var(--success);
+    }
+
+    .dc-array-box.highlight-combine {
+      border: 2px solid var(--purple);
+      background: rgba(155, 81, 224, 0.2);
+    }
+
+    .dc-array-elem {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .dc-array-elem.sorted {
+      background: var(--success);
+    }
+
+    .dc-arrow {
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+    }
+
+    /* Interactive D&C Demo */
+    .dc-interactive-demo {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+    }
+
+    .dc-demo-canvas {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .dc-demo-level {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .dc-demo-node {
+      display: flex;
+      gap: 2px;
+      padding: 0.5rem;
+      background: rgba(46, 170, 220, 0.2);
+      border-radius: 6px;
+      border: 2px solid var(--accent);
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .dc-demo-node.dividing {
+      border-color: var(--warning);
+      animation: dc-divide-pulse 0.6s ease;
+    }
+
+    .dc-demo-node.conquering {
+      border-color: var(--success);
+    }
+
+    .dc-demo-node.combining {
+      border-color: var(--purple);
+      animation: dc-combine-pulse 0.6s ease;
+    }
+
+    @keyframes dc-divide-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); border-color: var(--warning); }
+    }
+
+    @keyframes dc-combine-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .dc-demo-elem {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .dc-demo-elem.base-case {
+      background: var(--success);
+    }
+
+    .dc-level-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+      font-family: var(--font-mono);
+      text-align: center;
+      margin-top: 0.25rem;
+    }
+
+    .dc-phase-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .dc-phase-badge {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      opacity: 0.4;
+      transition: all 0.3s ease;
+    }
+
+    .dc-phase-badge.active {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .dc-phase-badge.divide { background: var(--warning); color: #000; }
+    .dc-phase-badge.conquer { background: var(--success); color: white; }
+    .dc-phase-badge.combine { background: var(--purple); color: white; }
+
+    /* Why D&C Comparison */
+    .dc-comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .dc-comparison-panel {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      border: 2px solid var(--border);
+    }
+
+    .dc-comparison-panel.brute-force {
+      border-color: var(--error);
+    }
+
+    .dc-comparison-panel.divide-conquer {
+      border-color: var(--success);
+    }
+
+    .dc-comparison-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .dc-comparison-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .brute-force .dc-comparison-icon {
+      background: rgba(235, 87, 87, 0.2);
+      color: var(--error);
+    }
+
+    .divide-conquer .dc-comparison-icon {
+      background: rgba(15, 123, 108, 0.2);
+      color: var(--success);
+    }
+
+    .dc-comparison-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .dc-comparison-visual {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      min-height: 150px;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .dc-work-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    .dc-work-bar {
+      height: 12px;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .brute-force .dc-work-bar { background: var(--error); }
+    .divide-conquer .dc-work-bar { background: var(--success); }
+
+    .dc-complexity-badge {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      margin-top: 0.5rem;
+    }
+
+    .brute-force .dc-complexity-badge {
+      background: rgba(235, 87, 87, 0.2);
+      color: var(--error);
+    }
+
+    .divide-conquer .dc-complexity-badge {
+      background: rgba(15, 123, 108, 0.2);
+      color: var(--success);
+    }
+
+    .dc-comparison-points {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .dc-comparison-points li {
+      padding: 0.5rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      font-size: 0.9rem;
+    }
+
+    .dc-comparison-points li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+
+    .brute-force .dc-comparison-points li::before { color: var(--error); }
+    .divide-conquer .dc-comparison-points li::before { color: var(--success); }
+
+    /* Recursion Tree Builder */
+    .recursion-tree-builder {
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      margin: 1.5rem 0;
+      background: var(--background);
+    }
+
+    .rtb-canvas {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      min-height: 350px;
+      overflow-x: auto;
+    }
+
+    .rtb-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: fit-content;
+    }
+
+    .rtb-level {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    .rtb-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      background: rgba(46, 170, 220, 0.15);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      min-width: 60px;
+    }
+
+    .rtb-node:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(46, 170, 220, 0.3);
+    }
+
+    .rtb-node.active {
+      border-color: var(--current-focus);
+      box-shadow: 0 0 15px var(--current-focus);
+    }
+
+    .rtb-node.base-case {
+      background: rgba(15, 123, 108, 0.2);
+      border-color: var(--success);
+    }
+
+    .rtb-call {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .rtb-array {
+      display: flex;
+      gap: 2px;
+    }
+
+    .rtb-elem {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .rtb-node.base-case .rtb-elem {
+      background: var(--success);
+    }
+
+    .rtb-work {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.6);
+      font-family: var(--font-mono);
+    }
+
+    .rtb-connector {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin: 0.25rem 0;
+    }
+
+    .rtb-level-annotation {
+      position: absolute;
+      left: -80px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* Recurrence Equation Display */
+    .recurrence-display {
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .recurrence-equation {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .recurrence-main {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      color: var(--accent);
+      background: var(--background);
+      padding: 1rem 2rem;
+      border-radius: var(--border-radius);
+      border: 2px solid var(--accent);
+    }
+
+    .recurrence-breakdown {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .recurrence-part {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: var(--border-radius);
+      min-width: 150px;
+    }
+
+    .recurrence-part-formula {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .recurrence-part.calls .recurrence-part-formula { color: var(--warning); }
+    .recurrence-part.subproblem .recurrence-part-formula { color: var(--purple); }
+    .recurrence-part.work .recurrence-part-formula { color: var(--success); }
+
+    .recurrence-part-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .recurrence-visual-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+    }
+
+    .recurrence-level-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+    }
+
+    .recurrence-level-label {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+      min-width: 80px;
+    }
+
+    .recurrence-level-nodes {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .recurrence-mini-node {
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+    }
+
+    .recurrence-level-work {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--success);
+      min-width: 80px;
+      text-align: right;
+    }
+
+    .recurrence-total {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--highlight);
+      border-radius: var(--border-radius);
+      margin-top: 1rem;
+    }
+
+    .recurrence-total-formula {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .dc-comparison-container {
+        grid-template-columns: 1fr;
+      }
+
+      .dc-step {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .rtb-level-annotation {
+        display: none;
+      }
+
+      .recurrence-main {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .recurrence-part {
+        min-width: 120px;
+      }
+    }
+
+    /* ==================== ENHANCED RECURSION TREE ANIMATIONS ==================== */
+
+    /* Animated Recursion Tree Builder */
+    .animated-tree-builder {
+      border: 2px solid var(--accent);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      background: linear-gradient(135deg, var(--background) 0%, var(--background-secondary) 100%);
+    }
+
+    .atb-header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .atb-header h4 {
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .atb-description {
+      background: var(--highlight);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .atb-canvas {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      min-height: 400px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .atb-tree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .atb-level {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.5s ease;
+      position: relative;
+      width: 100%;
+    }
+
+    .atb-level.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .atb-level-info {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .atb-level-work {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--success);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .atb-level-work.visible {
+      opacity: 1;
+    }
+
+    .atb-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(46, 170, 220, 0.15);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      transition: all 0.4s ease;
+      opacity: 0;
+      transform: scale(0.5);
+    }
+
+    .atb-node.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .atb-node.active {
+      border-color: var(--current-focus);
+      box-shadow: 0 0 20px var(--current-focus);
+      transform: scale(1.1);
+    }
+
+    .atb-node.processing {
+      animation: pulse-node 0.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse-node {
+      0%, 100% { box-shadow: 0 0 5px var(--accent); }
+      50% { box-shadow: 0 0 25px var(--current-focus); }
+    }
+
+    .atb-node.completed {
+      background: rgba(15, 123, 108, 0.2);
+      border-color: var(--success);
+    }
+
+    .atb-node-call {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .atb-node.completed .atb-node-call {
+      color: var(--success);
+    }
+
+    .atb-node-array {
+      display: flex;
+      gap: 3px;
+    }
+
+    .atb-node-elem {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .atb-node.completed .atb-node-elem {
+      background: var(--success);
+    }
+
+    .atb-connectors {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .atb-connectors.visible {
+      opacity: 1;
+    }
+
+    .atb-connector-line {
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+    }
+
+    .atb-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .atb-controls button {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .atb-controls button:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .atb-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .atb-progress {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .atb-progress-bar {
+      width: 150px;
+      height: 8px;
+      background: var(--background-secondary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .atb-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Code-to-Recurrence Mapper */
+    .code-recurrence-mapper {
+      border: 2px solid var(--purple);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      background: linear-gradient(135deg, var(--background) 0%, rgba(136, 84, 208, 0.05) 100%);
+    }
+
+    .crm-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .crm-header h4 {
+      color: var(--purple);
+      margin-bottom: 0.5rem;
+    }
+
+    .crm-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .crm-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .crm-code-section {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+    }
+
+    .crm-code-title {
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--accent);
+    }
+
+    .crm-code {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+
+    .crm-code-line {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: block;
+    }
+
+    .crm-code-line:hover {
+      background: rgba(46, 170, 220, 0.1);
+    }
+
+    .crm-code-line.highlight-calls {
+      background: rgba(255, 178, 56, 0.2);
+      border-left: 3px solid var(--warning);
+    }
+
+    .crm-code-line.highlight-subproblem {
+      background: rgba(136, 84, 208, 0.2);
+      border-left: 3px solid var(--purple);
+    }
+
+    .crm-code-line.highlight-work {
+      background: rgba(15, 123, 108, 0.2);
+      border-left: 3px solid var(--success);
+    }
+
+    .crm-code-line.highlight-base {
+      background: rgba(46, 170, 220, 0.2);
+      border-left: 3px solid var(--accent);
+    }
+
+    .crm-equation-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .crm-equation-main {
+      background: var(--canvas-bg);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
+
+    .crm-equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .crm-equation-parts {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .crm-part {
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+      transition: all 0.3s ease;
+      opacity: 0.4;
+      min-width: 100px;
+    }
+
+    .crm-part.active {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .crm-part.calls {
+      background: rgba(255, 178, 56, 0.15);
+      border: 2px solid var(--warning);
+    }
+
+    .crm-part.subproblem {
+      background: rgba(136, 84, 208, 0.15);
+      border: 2px solid var(--purple);
+    }
+
+    .crm-part.work {
+      background: rgba(15, 123, 108, 0.15);
+      border: 2px solid var(--success);
+    }
+
+    .crm-part.base {
+      background: rgba(46, 170, 220, 0.15);
+      border: 2px solid var(--accent);
+    }
+
+    .crm-part-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .crm-part.calls .crm-part-value { color: var(--warning); }
+    .crm-part.subproblem .crm-part-value { color: var(--purple); }
+    .crm-part.work .crm-part-value { color: var(--success); }
+    .crm-part.base .crm-part-value { color: var(--accent); }
+
+    .crm-part-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .crm-explanation {
+      background: var(--highlight);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .crm-controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .crm-controls button {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--purple);
+      background: transparent;
+      color: var(--purple);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .crm-controls button:hover,
+    .crm-controls button.active {
+      background: var(--purple);
+      color: white;
+    }
+
+    /* Work Summation Animation */
+    .work-summation-animator {
+      border: 2px solid var(--success);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      background: linear-gradient(135deg, var(--background) 0%, rgba(15, 123, 108, 0.05) 100%);
+    }
+
+    .wsa-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .wsa-header h4 {
+      color: var(--success);
+      margin-bottom: 0.5rem;
+    }
+
+    .wsa-container {
+      display: flex;
+      gap: 2rem;
+      align-items: stretch;
+    }
+
+    @media (max-width: 900px) {
+      .wsa-container {
+        flex-direction: column;
+      }
+    }
+
+    .wsa-tree-visual {
+      flex: 1;
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      min-height: 300px;
+    }
+
+    .wsa-level-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: var(--border-radius);
+      transition: all 0.4s ease;
+      background: transparent;
+    }
+
+    .wsa-level-row.highlight {
+      background: rgba(15, 123, 108, 0.15);
+      transform: scale(1.02);
+    }
+
+    .wsa-level-row.counted {
+      background: rgba(15, 123, 108, 0.1);
+    }
+
+    .wsa-level-label {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      min-width: 70px;
+    }
+
+    .wsa-nodes {
+      display: flex;
+      gap: 0.5rem;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+
+    .wsa-node {
+      padding: 0.3rem 0.6rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .wsa-level-row.highlight .wsa-node {
+      background: var(--success);
+      transform: scale(1.1);
+    }
+
+    .wsa-work-calc {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--success);
+      min-width: 150px;
+      text-align: right;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .wsa-work-calc.visible {
+      opacity: 1;
+    }
+
+    .wsa-summation {
+      flex: 0 0 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .wsa-running-total {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .wsa-running-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .wsa-running-value {
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .wsa-formula-build {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .wsa-formula-line {
+      padding: 0.25rem 0;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .wsa-formula-line.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .wsa-formula-line.result {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--success);
+      border-top: 1px solid var(--border);
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+    }
+
+    .wsa-final-result {
+      background: linear-gradient(135deg, var(--success), var(--accent));
+      color: white;
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: all 0.5s ease;
+    }
+
+    .wsa-final-result.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .wsa-final-formula {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .wsa-final-explanation {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      opacity: 0.9;
+    }
+
+    .wsa-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .wsa-controls button {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--success);
+      background: transparent;
+      color: var(--success);
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .wsa-controls button:hover {
+      background: var(--success);
+      color: white;
+    }
+
+    /* Recurrence Examples Carousel */
+    .recurrence-examples {
+      border: 2px solid var(--warning);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      background: linear-gradient(135deg, var(--background) 0%, rgba(255, 178, 56, 0.05) 100%);
+    }
+
+    .rex-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .rex-header h4 {
+      color: var(--warning);
+      margin-bottom: 0.5rem;
+    }
+
+    .rex-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .rex-tab {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--border);
+      background: transparent;
+      color: var(--text-primary);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .rex-tab:hover {
+      border-color: var(--warning);
+      color: var(--warning);
+    }
+
+    .rex-tab.active {
+      background: var(--warning);
+      border-color: var(--warning);
+      color: var(--canvas-bg);
+    }
+
+    .rex-content {
+      display: none;
+    }
+
+    .rex-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .rex-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 800px) {
+      .rex-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .rex-tree-mini {
+      background: var(--canvas-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .rex-mini-level {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .rex-mini-node {
+      width: 35px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+    }
+
+    .rex-mini-connector {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    .rex-analysis {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .rex-equation {
+      background: var(--highlight);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      color: var(--warning);
+    }
+
+    .rex-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .rex-breakdown-item {
+      text-align: center;
+      padding: 0.5rem;
+      background: var(--background-secondary);
+      border-radius: var(--border-radius);
+    }
+
+    .rex-breakdown-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .rex-breakdown-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+
+    .rex-result {
+      background: var(--success);
+      color: white;
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
+
+    .rex-result-formula {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .rex-result-name {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -992,10 +2885,10 @@
   <div class="container">
     <header>
       <span class="session-badge">Session 5</span>
-      <h1>Quadratic Sorting Algorithms</h1>
-      <p class="subtitle">Master Selection Sort and Insertion Sort through interactive step-by-step visualization</p>
+      <h1>Sorting Algorithms</h1>
+      <p class="subtitle">Master Selection Sort, Insertion Sort, and Merge Sort through interactive step-by-step visualization</p>
       <div class="meta">
-        <span>Time: ~30 minutes</span>
+        <span>Time: ~45 minutes</span>
         <span>Prerequisites: Session 1-4 (Python basics, asymptotic analysis)</span>
       </div>
     </header>
@@ -1003,11 +2896,12 @@
     <section class="objectives">
       <h3>Learning Objectives</h3>
       <ul>
-        <li><strong>Trace</strong> selection sort and insertion sort step by step</li>
-        <li><strong>Analyze</strong> why both algorithms have O(n^2) time complexity</li>
-        <li><strong>Compare</strong> the behavior, stability, and use cases of each algorithm</li>
-        <li><strong>Identify</strong> when insertion sort outperforms selection sort</li>
-        <li><strong>Implement</strong> both algorithms correctly in Python</li>
+        <li><strong>Trace</strong> selection sort, insertion sort, and merge sort step by step</li>
+        <li><strong>Analyze</strong> time complexity: O(n²) for quadratic sorts vs O(n log n) for merge sort</li>
+        <li><strong>Understand</strong> merge sort's divide-and-conquer strategy and recursive structure</li>
+        <li><strong>Compare</strong> the behavior, stability, space complexity, and use cases of each algorithm</li>
+        <li><strong>Identify</strong> when to use each sorting algorithm based on data characteristics</li>
+        <li><strong>Implement</strong> all three algorithms correctly in Python</li>
       </ul>
     </section>
 
@@ -1294,9 +3188,1108 @@
       </p>
     </div>
 
-    <!-- Section 3: Side-by-Side Comparison -->
-    <h2>3. Side-by-Side Comparison</h2>
-    <p>Watch both algorithms sort the same array simultaneously. Notice the differences in how they approach the problem.</p>
+    <!-- Section 3: Merge Sort (Divide and Conquer) -->
+    <h2>3. Merge Sort: Divide and Conquer</h2>
+    <p>Merge sort is a fundamentally different approach. Instead of iteratively finding elements to place, it uses <strong>divide and conquer</strong>: recursively split the array in half until you have single elements, then merge the sorted halves back together.</p>
+
+    <div class="key-insight">
+      <strong>Key Insight:</strong> Merge sort guarantees O(n log n) time in <em>all</em> cases—best, average, and worst. The tradeoff is O(n) extra space for the temporary arrays during merging.
+    </div>
+
+    <h3>3.1 How Merge Sort Works</h3>
+    <p>The algorithm consists of two phases:</p>
+    <ol style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Divide:</strong> Recursively split the array into halves until each subarray has one element (which is trivially sorted)</li>
+      <li><strong>Conquer:</strong> Merge adjacent sorted subarrays by comparing elements and building a new sorted array</li>
+    </ol>
+
+    <div class="viz-code-split">
+      <div class="viz-section">
+        <div class="viz-container">
+          <h3>Merge Sort Animator</h3>
+          <div class="step-description" id="merge-description">
+            Press Play to watch merge sort in action
+          </div>
+
+          <div class="viz-canvas" id="merge-viz" style="min-height: 400px;">
+            <div class="merge-tree-container" id="merge-tree"></div>
+          </div>
+
+          <div class="step-controls">
+            <button id="merge-reset" title="Reset">|&lt;</button>
+            <button id="merge-back" title="Step Back">&lt;&lt;</button>
+            <button id="merge-play" title="Play/Pause">Play</button>
+            <button id="merge-forward" title="Step Forward">&gt;&gt;</button>
+            <span class="step-indicator" id="merge-step-indicator">Step 0 of 0</span>
+            <div class="speed-control">
+              <label>Speed:</label>
+              <select id="merge-speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="merge-progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-section">
+        <div class="code-panel">
+          <div class="code-header">
+            <span class="language-badge">Python</span>
+          </div>
+          <div class="code-content" id="merge-code">
+            <div class="code-line" data-line="1">
+              <span class="line-number">1</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">merge_sort</span>(arr):</span>
+            </div>
+            <div class="code-line" data-line="2">
+              <span class="line-number">2</span>
+              <span class="line-content">    <span class="keyword">if</span> <span class="function">len</span>(arr) <= <span class="number">1</span>:</span>
+            </div>
+            <div class="code-line" data-line="3">
+              <span class="line-number">3</span>
+              <span class="line-content">        <span class="keyword">return</span> arr</span>
+            </div>
+            <div class="code-line" data-line="4">
+              <span class="line-number">4</span>
+              <span class="line-content">    </span>
+            </div>
+            <div class="code-line" data-line="5">
+              <span class="line-number">5</span>
+              <span class="line-content">    mid = <span class="function">len</span>(arr) // <span class="number">2</span></span>
+            </div>
+            <div class="code-line" data-line="6">
+              <span class="line-number">6</span>
+              <span class="line-content">    left = merge_sort(arr[:mid])</span>
+            </div>
+            <div class="code-line" data-line="7">
+              <span class="line-number">7</span>
+              <span class="line-content">    right = merge_sort(arr[mid:])</span>
+            </div>
+            <div class="code-line" data-line="8">
+              <span class="line-number">8</span>
+              <span class="line-content">    </span>
+            </div>
+            <div class="code-line" data-line="9">
+              <span class="line-number">9</span>
+              <span class="line-content">    <span class="keyword">return</span> merge(left, right)</span>
+            </div>
+            <div class="code-line" data-line="10">
+              <span class="line-number">10</span>
+              <span class="line-content"></span>
+            </div>
+            <div class="code-line" data-line="11">
+              <span class="line-number">11</span>
+              <span class="line-content"><span class="keyword">def</span> <span class="function">merge</span>(left, right):</span>
+            </div>
+            <div class="code-line" data-line="12">
+              <span class="line-number">12</span>
+              <span class="line-content">    result = []</span>
+            </div>
+            <div class="code-line" data-line="13">
+              <span class="line-number">13</span>
+              <span class="line-content">    i = j = <span class="number">0</span></span>
+            </div>
+            <div class="code-line" data-line="14">
+              <span class="line-number">14</span>
+              <span class="line-content">    </span>
+            </div>
+            <div class="code-line" data-line="15">
+              <span class="line-number">15</span>
+              <span class="line-content">    <span class="keyword">while</span> i < <span class="function">len</span>(left) <span class="keyword">and</span> j < <span class="function">len</span>(right):</span>
+            </div>
+            <div class="code-line" data-line="16">
+              <span class="line-number">16</span>
+              <span class="line-content">        <span class="keyword">if</span> left[i] <= right[j]:</span>
+            </div>
+            <div class="code-line" data-line="17">
+              <span class="line-number">17</span>
+              <span class="line-content">            result.append(left[i])</span>
+            </div>
+            <div class="code-line" data-line="18">
+              <span class="line-number">18</span>
+              <span class="line-content">            i += <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="19">
+              <span class="line-number">19</span>
+              <span class="line-content">        <span class="keyword">else</span>:</span>
+            </div>
+            <div class="code-line" data-line="20">
+              <span class="line-number">20</span>
+              <span class="line-content">            result.append(right[j])</span>
+            </div>
+            <div class="code-line" data-line="21">
+              <span class="line-number">21</span>
+              <span class="line-content">            j += <span class="number">1</span></span>
+            </div>
+            <div class="code-line" data-line="22">
+              <span class="line-number">22</span>
+              <span class="line-content">    </span>
+            </div>
+            <div class="code-line" data-line="23">
+              <span class="line-number">23</span>
+              <span class="line-content">    result.extend(left[i:])</span>
+            </div>
+            <div class="code-line" data-line="24">
+              <span class="line-number">24</span>
+              <span class="line-content">    result.extend(right[j:])</span>
+            </div>
+            <div class="code-line" data-line="25">
+              <span class="line-number">25</span>
+              <span class="line-content">    <span class="keyword">return</span> result</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="variable-panel">
+          <h4>Current State</h4>
+          <div class="variable-list" id="merge-variables">
+            <div class="variable-item">
+              <span class="variable-name">depth</span>
+              <span class="variable-value" id="merge-var-depth">0</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">phase</span>
+              <span class="variable-value" id="merge-var-phase">-</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">comparisons</span>
+              <span class="variable-value" id="merge-var-comp">0</span>
+            </div>
+            <div class="variable-item">
+              <span class="variable-name">merges</span>
+              <span class="variable-value" id="merge-var-merges">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>3.2 Code Walkthrough: Line by Line</h3>
+    <p>Let's break down the <code>merge_sort</code> function line by line to understand exactly what each part does:</p>
+
+    <div class="code-walkthrough">
+      <div class="code-panel" style="margin-bottom: 1.5rem;">
+        <div class="code-header">
+          <span class="language-badge">Python</span>
+        </div>
+        <div class="code-content">
+          <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">def</span> <span class="function">merge_sort</span>(nums):</span></div>
+          <div class="code-line"><span class="line-number">2</span><span class="line-content">    <span class="comment"># Base case</span></span></div>
+          <div class="code-line"><span class="line-number">3</span><span class="line-content">    <span class="keyword">if</span> <span class="function">len</span>(nums) == <span class="number">1</span>:</span></div>
+          <div class="code-line"><span class="line-number">4</span><span class="line-content">        <span class="keyword">return</span> nums</span></div>
+          <div class="code-line"><span class="line-number">5</span><span class="line-content"></span></div>
+          <div class="code-line"><span class="line-number">6</span><span class="line-content">    <span class="comment"># General case - splitting the array into two arrays</span></span></div>
+          <div class="code-line"><span class="line-number">7</span><span class="line-content">    middle_idx = <span class="function">len</span>(nums)//<span class="number">2</span></span></div>
+          <div class="code-line"><span class="line-number">8</span><span class="line-content">    left_array = nums[:middle_idx]</span></div>
+          <div class="code-line"><span class="line-number">9</span><span class="line-content">    right_array = nums[middle_idx:]</span></div>
+          <div class="code-line"><span class="line-number">10</span><span class="line-content"></span></div>
+          <div class="code-line"><span class="line-number">11</span><span class="line-content">    <span class="comment"># Recursively call merge_sort on smaller arrays</span></span></div>
+          <div class="code-line"><span class="line-number">12</span><span class="line-content">    left_array = merge_sort(left_array)</span></div>
+          <div class="code-line"><span class="line-number">13</span><span class="line-content">    right_array = merge_sort(right_array)</span></div>
+          <div class="code-line"><span class="line-number">14</span><span class="line-content">    merged_array = merge(left_array, right_array)</span></div>
+          <div class="code-line"><span class="line-number">15</span><span class="line-content">    <span class="keyword">return</span> merged_array</span></div>
+        </div>
+      </div>
+
+      <div class="line-explanations">
+        <div class="line-explanation">
+          <div class="line-ref">Line 1</div>
+          <div class="line-desc"><code>def merge_sort(nums):</code> — Define the function that takes a list <code>nums</code> as input. This list will be sorted.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Lines 2-4</div>
+          <div class="line-desc"><strong>Base case:</strong> If the list has only 1 element, it's already sorted! Return it immediately. This stops the recursion.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Line 7</div>
+          <div class="line-desc"><code>middle_idx = len(nums)//2</code> — Calculate the middle index using integer division. For a list of 8 elements, this gives 4.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Line 8</div>
+          <div class="line-desc"><code>left_array = nums[:middle_idx]</code> — Slice the list from the beginning up to (but not including) the middle. Gets the left half.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Line 9</div>
+          <div class="line-desc"><code>right_array = nums[middle_idx:]</code> — Slice the list from the middle to the end. Gets the right half.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Line 12</div>
+          <div class="line-desc"><code>left_array = merge_sort(left_array)</code> — <strong>Recursively sort</strong> the left half. This call will keep splitting until it hits base cases.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Line 13</div>
+          <div class="line-desc"><code>right_array = merge_sort(right_array)</code> — <strong>Recursively sort</strong> the right half. Same process as the left.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Line 14</div>
+          <div class="line-desc"><code>merged_array = merge(left_array, right_array)</code> — <strong>Merge</strong> the two sorted halves into one sorted array using the helper function.</div>
+        </div>
+        <div class="line-explanation">
+          <div class="line-ref">Line 15</div>
+          <div class="line-desc"><code>return merged_array</code> — Return the fully sorted and merged array to the caller.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>The Pattern:</strong> Every recursive call follows the same pattern: (1) check base case, (2) split in half, (3) recursively sort each half, (4) merge the sorted halves. The magic happens because by the time we merge, both halves are <em>guaranteed</em> to be sorted.
+    </div>
+
+    <!-- NEW SECTION: The Three Steps of Divide and Conquer -->
+    <h3>3.2.1 The Three Steps of Divide and Conquer</h3>
+    <p>Divide and conquer is a powerful algorithmic paradigm that breaks down problems into smaller, more manageable pieces. Every divide and conquer algorithm follows the same three-step pattern:</p>
+
+    <div class="dc-steps-container">
+      <div class="dc-step divide-step" id="dc-step-1">
+        <div class="dc-step-number">1</div>
+        <div class="dc-step-content">
+          <div class="dc-step-title">DIVIDE</div>
+          <div class="dc-step-desc">Break the problem into smaller subproblems of the same type. In merge sort, we split the array in half.</div>
+          <div class="dc-step-visual" id="dc-visual-1">
+            <div class="dc-array-box highlight-divide" id="dc-divide-original">
+              <div class="dc-array-elem">38</div>
+              <div class="dc-array-elem">27</div>
+              <div class="dc-array-elem">43</div>
+              <div class="dc-array-elem">3</div>
+              <div class="dc-array-elem">9</div>
+              <div class="dc-array-elem">82</div>
+              <div class="dc-array-elem">10</div>
+            </div>
+            <div class="dc-arrow">→</div>
+            <div class="dc-array-box">
+              <div class="dc-array-elem">38</div>
+              <div class="dc-array-elem">27</div>
+              <div class="dc-array-elem">43</div>
+            </div>
+            <div class="dc-array-box">
+              <div class="dc-array-elem">3</div>
+              <div class="dc-array-elem">9</div>
+              <div class="dc-array-elem">82</div>
+              <div class="dc-array-elem">10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dc-step conquer-step" id="dc-step-2">
+        <div class="dc-step-number">2</div>
+        <div class="dc-step-content">
+          <div class="dc-step-title">CONQUER</div>
+          <div class="dc-step-desc">Solve each subproblem recursively. Keep dividing until you reach the base case (single elements), which are trivially sorted.</div>
+          <div class="dc-step-visual" id="dc-visual-2">
+            <div class="dc-array-box highlight-conquer">
+              <div class="dc-array-elem sorted">27</div>
+            </div>
+            <div class="dc-array-box highlight-conquer">
+              <div class="dc-array-elem sorted">38</div>
+            </div>
+            <div class="dc-array-box highlight-conquer">
+              <div class="dc-array-elem sorted">43</div>
+            </div>
+            <div class="dc-array-box highlight-conquer">
+              <div class="dc-array-elem sorted">3</div>
+            </div>
+            <div class="dc-array-box highlight-conquer">
+              <div class="dc-array-elem sorted">9</div>
+            </div>
+            <div class="dc-array-box highlight-conquer">
+              <div class="dc-array-elem sorted">82</div>
+            </div>
+            <div class="dc-array-box highlight-conquer">
+              <div class="dc-array-elem sorted">10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dc-step combine-step" id="dc-step-3">
+        <div class="dc-step-number">3</div>
+        <div class="dc-step-content">
+          <div class="dc-step-title">COMBINE</div>
+          <div class="dc-step-desc">Merge the solutions of subproblems to form the solution to the original problem. The merge operation combines two sorted arrays into one sorted array.</div>
+          <div class="dc-step-visual" id="dc-visual-3">
+            <div class="dc-array-box">
+              <div class="dc-array-elem sorted">27</div>
+              <div class="dc-array-elem sorted">38</div>
+              <div class="dc-array-elem sorted">43</div>
+            </div>
+            <div class="dc-arrow">+</div>
+            <div class="dc-array-box">
+              <div class="dc-array-elem sorted">3</div>
+              <div class="dc-array-elem sorted">9</div>
+              <div class="dc-array-elem sorted">10</div>
+              <div class="dc-array-elem sorted">82</div>
+            </div>
+            <div class="dc-arrow">→</div>
+            <div class="dc-array-box highlight-combine">
+              <div class="dc-array-elem sorted">3</div>
+              <div class="dc-array-elem sorted">9</div>
+              <div class="dc-array-elem sorted">10</div>
+              <div class="dc-array-elem sorted">27</div>
+              <div class="dc-array-elem sorted">38</div>
+              <div class="dc-array-elem sorted">43</div>
+              <div class="dc-array-elem sorted">82</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive D&C Demo -->
+    <div class="dc-interactive-demo">
+      <h4>Interactive Divide and Conquer Demo</h4>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">Watch all three phases in action. Notice how the problem is broken down, solved at the base case, and combined back up.</p>
+
+      <div class="dc-phase-indicator">
+        <span class="dc-phase-badge divide" id="dc-phase-divide">1. DIVIDE</span>
+        <span class="dc-phase-badge conquer" id="dc-phase-conquer">2. CONQUER</span>
+        <span class="dc-phase-badge combine" id="dc-phase-combine">3. COMBINE</span>
+      </div>
+
+      <div class="dc-demo-canvas" id="dc-demo-canvas">
+        <div class="dc-demo-level" id="dc-level-0">
+          <div class="dc-demo-node" id="dc-node-0">
+            <div class="dc-demo-elem">38</div>
+            <div class="dc-demo-elem">27</div>
+            <div class="dc-demo-elem">43</div>
+            <div class="dc-demo-elem">3</div>
+          </div>
+        </div>
+        <div class="dc-level-label">Click Play to start</div>
+      </div>
+
+      <div class="step-controls">
+        <button id="dc-demo-reset">|&lt; Reset</button>
+        <button id="dc-demo-back">&lt;&lt;</button>
+        <button id="dc-demo-play">Play</button>
+        <button id="dc-demo-forward">&gt;&gt;</button>
+        <span class="step-indicator" id="dc-demo-step-indicator">Step 0 of 0</span>
+      </div>
+
+      <div class="step-description" id="dc-demo-description" style="margin-top: 1rem;">
+        Press Play to see divide and conquer in action
+      </div>
+    </div>
+
+    <!-- NEW SECTION: Why Divide and Conquer -->
+    <h3>3.2.2 Why Divide and Conquer Instead of Solving All at Once?</h3>
+    <p>Why bother splitting the problem? Why not just solve it directly? The key insight is that <strong>smaller problems are easier to solve</strong>, and the overhead of dividing and combining is worth it when it reduces the total work.</p>
+
+    <div class="dc-comparison-container">
+      <div class="dc-comparison-panel brute-force">
+        <div class="dc-comparison-header">
+          <div class="dc-comparison-icon">✗</div>
+          <div class="dc-comparison-title">Solve All at Once (Brute Force)</div>
+        </div>
+        <div class="dc-comparison-visual">
+          <div class="dc-work-bars" id="brute-force-bars">
+            <div class="dc-work-bar" style="width: 100%"></div>
+            <div class="dc-work-bar" style="width: 95%"></div>
+            <div class="dc-work-bar" style="width: 90%"></div>
+            <div class="dc-work-bar" style="width: 85%"></div>
+            <div class="dc-work-bar" style="width: 80%"></div>
+            <div class="dc-work-bar" style="width: 75%"></div>
+            <div class="dc-work-bar" style="width: 70%"></div>
+          </div>
+          <div class="dc-complexity-badge">O(n²)</div>
+        </div>
+        <ul class="dc-comparison-points">
+          <li>Compare every element with every other element</li>
+          <li>Work grows quadratically with input size</li>
+          <li>For 1000 elements: ~1,000,000 operations</li>
+          <li>Simple but inefficient for large inputs</li>
+        </ul>
+      </div>
+
+      <div class="dc-comparison-panel divide-conquer">
+        <div class="dc-comparison-header">
+          <div class="dc-comparison-icon">✓</div>
+          <div class="dc-comparison-title">Divide and Conquer</div>
+        </div>
+        <div class="dc-comparison-visual">
+          <div class="dc-work-bars" id="dc-bars">
+            <div class="dc-work-bar" style="width: 100%"></div>
+            <div class="dc-work-bar" style="width: 100%"></div>
+            <div class="dc-work-bar" style="width: 100%"></div>
+            <div class="dc-work-bar" style="width: 100%"></div>
+          </div>
+          <div class="dc-complexity-badge">O(n log n)</div>
+        </div>
+        <ul class="dc-comparison-points">
+          <li>Split problem, solve smaller parts, combine results</li>
+          <li>Work at each level is O(n), with log n levels</li>
+          <li>For 1000 elements: ~10,000 operations</li>
+          <li>Much faster for large inputs (100x faster here!)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>The Magic of D&C:</strong> By splitting the problem in half at each step, we reduce the depth of recursion to log₂(n). Even though we do O(n) work at each level (merging), the total work is only O(n × log n) instead of O(n²). For n = 1,000,000: that's ~20 million operations vs ~1 trillion operations!
+    </div>
+
+    <div class="try-this">
+      <strong>Think About It:</strong> When does divide and conquer NOT help?
+      <button class="hint-btn" onclick="toggleHint(this)" style="display: block; margin-top: 0.5rem;">Show Answer</button>
+      <div class="hint-text">
+        <ul style="padding-left: 1.5rem; margin: 0;">
+          <li><strong>When dividing is expensive:</strong> If splitting the problem costs O(n) and you can't reduce total work</li>
+          <li><strong>When combining is expensive:</strong> If merging solutions takes O(n²), you don't gain anything</li>
+          <li><strong>When the problem doesn't shrink:</strong> Some problems can't be meaningfully divided</li>
+          <li><strong>For small inputs:</strong> The overhead of recursion makes it slower than simple O(n²) algorithms</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- NEW SECTION: Recursion Trees and Recurrence Equations -->
+    <h3>3.2.3 Drawing Recursion Trees and Identifying Recurrence Equations</h3>
+    <p>A <strong>recursion tree</strong> visualizes how recursive calls branch out. Each node represents a function call, and we can use it to derive the <strong>recurrence equation</strong> that describes the algorithm's complexity.</p>
+
+    <!-- ANIMATED RECURSION TREE BUILDER -->
+    <div class="animated-tree-builder">
+      <div class="atb-header">
+        <h4>Animated Recursion Tree Builder</h4>
+        <p style="color: var(--text-secondary);">Watch how merge sort builds its recursion tree step by step. Each node shows a recursive call, and work is done when merging back up.</p>
+      </div>
+
+      <div class="atb-description" id="atb-description">
+        Click <strong>Play</strong> to watch the recursion tree unfold, or use <strong>Step</strong> to advance manually.
+      </div>
+
+      <div class="atb-canvas">
+        <div class="atb-tree-container" id="atb-tree-container">
+          <!-- Level 0 -->
+          <div class="atb-level" id="atb-level-0">
+            <div class="atb-level-info">Level 0</div>
+            <div class="atb-node" id="atb-node-0-0" data-level="0" data-index="0">
+              <div class="atb-node-call">T(8)</div>
+              <div class="atb-node-array">
+                <div class="atb-node-elem">38</div>
+                <div class="atb-node-elem">27</div>
+                <div class="atb-node-elem">43</div>
+                <div class="atb-node-elem">3</div>
+                <div class="atb-node-elem">9</div>
+                <div class="atb-node-elem">82</div>
+                <div class="atb-node-elem">10</div>
+                <div class="atb-node-elem">1</div>
+              </div>
+            </div>
+            <div class="atb-level-work" id="atb-work-0">8 ops</div>
+          </div>
+
+          <div class="atb-connectors" id="atb-conn-0">
+            <span class="atb-connector-line">↙</span>
+            <span class="atb-connector-line">↘</span>
+          </div>
+
+          <!-- Level 1 -->
+          <div class="atb-level" id="atb-level-1">
+            <div class="atb-level-info">Level 1</div>
+            <div class="atb-node" id="atb-node-1-0" data-level="1" data-index="0">
+              <div class="atb-node-call">T(4)</div>
+              <div class="atb-node-array">
+                <div class="atb-node-elem">38</div>
+                <div class="atb-node-elem">27</div>
+                <div class="atb-node-elem">43</div>
+                <div class="atb-node-elem">3</div>
+              </div>
+            </div>
+            <div class="atb-node" id="atb-node-1-1" data-level="1" data-index="1">
+              <div class="atb-node-call">T(4)</div>
+              <div class="atb-node-array">
+                <div class="atb-node-elem">9</div>
+                <div class="atb-node-elem">82</div>
+                <div class="atb-node-elem">10</div>
+                <div class="atb-node-elem">1</div>
+              </div>
+            </div>
+            <div class="atb-level-work" id="atb-work-1">4+4 = 8 ops</div>
+          </div>
+
+          <div class="atb-connectors" id="atb-conn-1">
+            <span class="atb-connector-line">↙↘</span>
+            <span class="atb-connector-line">↙↘</span>
+          </div>
+
+          <!-- Level 2 -->
+          <div class="atb-level" id="atb-level-2">
+            <div class="atb-level-info">Level 2</div>
+            <div class="atb-node" id="atb-node-2-0" data-level="2" data-index="0">
+              <div class="atb-node-call">T(2)</div>
+              <div class="atb-node-array">
+                <div class="atb-node-elem">38</div>
+                <div class="atb-node-elem">27</div>
+              </div>
+            </div>
+            <div class="atb-node" id="atb-node-2-1" data-level="2" data-index="1">
+              <div class="atb-node-call">T(2)</div>
+              <div class="atb-node-array">
+                <div class="atb-node-elem">43</div>
+                <div class="atb-node-elem">3</div>
+              </div>
+            </div>
+            <div class="atb-node" id="atb-node-2-2" data-level="2" data-index="2">
+              <div class="atb-node-call">T(2)</div>
+              <div class="atb-node-array">
+                <div class="atb-node-elem">9</div>
+                <div class="atb-node-elem">82</div>
+              </div>
+            </div>
+            <div class="atb-node" id="atb-node-2-3" data-level="2" data-index="3">
+              <div class="atb-node-call">T(2)</div>
+              <div class="atb-node-array">
+                <div class="atb-node-elem">10</div>
+                <div class="atb-node-elem">1</div>
+              </div>
+            </div>
+            <div class="atb-level-work" id="atb-work-2">2+2+2+2 = 8 ops</div>
+          </div>
+
+          <div class="atb-connectors" id="atb-conn-2">
+            <span class="atb-connector-line">↓↓</span>
+            <span class="atb-connector-line">↓↓</span>
+            <span class="atb-connector-line">↓↓</span>
+            <span class="atb-connector-line">↓↓</span>
+          </div>
+
+          <!-- Level 3 (Base cases) -->
+          <div class="atb-level" id="atb-level-3">
+            <div class="atb-level-info">Level 3 (Base)</div>
+            <div class="atb-node completed" id="atb-node-3-0" data-level="3" data-index="0">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">38</div></div>
+            </div>
+            <div class="atb-node completed" id="atb-node-3-1" data-level="3" data-index="1">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">27</div></div>
+            </div>
+            <div class="atb-node completed" id="atb-node-3-2" data-level="3" data-index="2">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">43</div></div>
+            </div>
+            <div class="atb-node completed" id="atb-node-3-3" data-level="3" data-index="3">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">3</div></div>
+            </div>
+            <div class="atb-node completed" id="atb-node-3-4" data-level="3" data-index="4">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">9</div></div>
+            </div>
+            <div class="atb-node completed" id="atb-node-3-5" data-level="3" data-index="5">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">82</div></div>
+            </div>
+            <div class="atb-node completed" id="atb-node-3-6" data-level="3" data-index="6">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">10</div></div>
+            </div>
+            <div class="atb-node completed" id="atb-node-3-7" data-level="3" data-index="7">
+              <div class="atb-node-call">T(1)</div>
+              <div class="atb-node-array"><div class="atb-node-elem">1</div></div>
+            </div>
+            <div class="atb-level-work" id="atb-work-3">O(1) each</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="atb-controls">
+        <button id="atb-reset">Reset</button>
+        <button id="atb-step-back">← Back</button>
+        <button id="atb-play">▶ Play</button>
+        <button id="atb-step-forward">Step →</button>
+        <div class="atb-progress">
+          <div class="atb-progress-bar">
+            <div class="atb-progress-fill" id="atb-progress-fill"></div>
+          </div>
+          <span id="atb-step-count">0 / 12</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODE-TO-RECURRENCE MAPPER -->
+    <div class="code-recurrence-mapper">
+      <div class="crm-header">
+        <h4>Interactive: Code → Recurrence Equation</h4>
+        <p style="color: var(--text-secondary);">Hover over code lines to see how each part maps to the recurrence equation. Click the buttons to highlight specific mappings.</p>
+      </div>
+
+      <div class="crm-container">
+        <div class="crm-code-section">
+          <div class="crm-code-title">Merge Sort Code</div>
+          <div class="crm-code">
+            <span class="crm-code-line" data-map="none">def merge_sort(arr):</span>
+            <span class="crm-code-line highlight-base" data-map="base">    if len(arr) <= 1:        # Base case</span>
+            <span class="crm-code-line highlight-base" data-map="base">        return arr            # T(1) = O(1)</span>
+            <span class="crm-code-line" data-map="none">    </span>
+            <span class="crm-code-line highlight-subproblem" data-map="subproblem">    mid = len(arr) // 2     # Split point: n/2</span>
+            <span class="crm-code-line highlight-calls" data-map="calls">    left = merge_sort(arr[:mid])   # 1st call</span>
+            <span class="crm-code-line highlight-calls" data-map="calls">    right = merge_sort(arr[mid:])  # 2nd call</span>
+            <span class="crm-code-line" data-map="none">    </span>
+            <span class="crm-code-line highlight-work" data-map="work">    return merge(left, right)  # O(n) work</span>
+          </div>
+        </div>
+
+        <div class="crm-equation-section">
+          <div class="crm-equation-main">
+            <div class="crm-equation-formula">T(n) = 2T(n/2) + O(n)</div>
+            <div class="crm-equation-parts">
+              <div class="crm-part calls" id="crm-part-calls">
+                <div class="crm-part-value">2</div>
+                <div class="crm-part-label">recursive calls</div>
+              </div>
+              <div class="crm-part subproblem" id="crm-part-subproblem">
+                <div class="crm-part-value">T(n/2)</div>
+                <div class="crm-part-label">subproblem size</div>
+              </div>
+              <div class="crm-part work" id="crm-part-work">
+                <div class="crm-part-value">O(n)</div>
+                <div class="crm-part-label">merge work</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="crm-explanation" id="crm-explanation">
+            <span>Hover over code lines or click buttons below to see how each part contributes to the recurrence equation.</span>
+          </div>
+
+          <div class="crm-controls">
+            <button class="crm-btn" data-target="base">Base Case</button>
+            <button class="crm-btn" data-target="calls">Recursive Calls</button>
+            <button class="crm-btn" data-target="subproblem">Subproblem Size</button>
+            <button class="crm-btn" data-target="work">Merge Work</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORK SUMMATION ANIMATION -->
+    <div class="work-summation-animator">
+      <div class="wsa-header">
+        <h4>Work Summation: From Tree to O(n log n)</h4>
+        <p style="color: var(--text-secondary);">Watch how we sum up work at each level to derive the total complexity.</p>
+      </div>
+
+      <div class="wsa-container">
+        <div class="wsa-tree-visual">
+          <div class="wsa-level-row" id="wsa-level-0">
+            <div class="wsa-level-label">Level 0:</div>
+            <div class="wsa-nodes">
+              <div class="wsa-node">n</div>
+            </div>
+            <div class="wsa-work-calc" id="wsa-calc-0">1 × n = n</div>
+          </div>
+          <div class="wsa-level-row" id="wsa-level-1">
+            <div class="wsa-level-label">Level 1:</div>
+            <div class="wsa-nodes">
+              <div class="wsa-node">n/2</div>
+              <div class="wsa-node">n/2</div>
+            </div>
+            <div class="wsa-work-calc" id="wsa-calc-1">2 × n/2 = n</div>
+          </div>
+          <div class="wsa-level-row" id="wsa-level-2">
+            <div class="wsa-level-label">Level 2:</div>
+            <div class="wsa-nodes">
+              <div class="wsa-node">n/4</div>
+              <div class="wsa-node">n/4</div>
+              <div class="wsa-node">n/4</div>
+              <div class="wsa-node">n/4</div>
+            </div>
+            <div class="wsa-work-calc" id="wsa-calc-2">4 × n/4 = n</div>
+          </div>
+          <div class="wsa-level-row" id="wsa-level-3">
+            <div class="wsa-level-label">Level k:</div>
+            <div class="wsa-nodes">
+              <div class="wsa-node" style="font-size: 0.65rem;">n/2ᵏ</div>
+              <span style="color: var(--text-secondary);">... 2ᵏ nodes ...</span>
+              <div class="wsa-node" style="font-size: 0.65rem;">n/2ᵏ</div>
+            </div>
+            <div class="wsa-work-calc" id="wsa-calc-3">2ᵏ × n/2ᵏ = n</div>
+          </div>
+          <div class="wsa-level-row" id="wsa-level-4">
+            <div class="wsa-level-label">Level log n:</div>
+            <div class="wsa-nodes">
+              <div class="wsa-node">1</div>
+              <div class="wsa-node">1</div>
+              <span style="color: var(--text-secondary);">... n nodes ...</span>
+              <div class="wsa-node">1</div>
+            </div>
+            <div class="wsa-work-calc" id="wsa-calc-4">n × 1 = n</div>
+          </div>
+        </div>
+
+        <div class="wsa-summation">
+          <div class="wsa-running-total">
+            <div class="wsa-running-label">Levels Counted</div>
+            <div class="wsa-running-value" id="wsa-running-value">0</div>
+          </div>
+
+          <div class="wsa-formula-build" id="wsa-formula-build">
+            <div class="wsa-formula-line" id="wsa-formula-0">Level 0: n work</div>
+            <div class="wsa-formula-line" id="wsa-formula-1">Level 1: n work</div>
+            <div class="wsa-formula-line" id="wsa-formula-2">Level 2: n work</div>
+            <div class="wsa-formula-line" id="wsa-formula-3">...</div>
+            <div class="wsa-formula-line" id="wsa-formula-4">Level log n: n work</div>
+            <div class="wsa-formula-line result" id="wsa-formula-result">Total: n × log n levels</div>
+          </div>
+
+          <div class="wsa-final-result" id="wsa-final-result">
+            <div class="wsa-final-formula">T(n) = O(n log n)</div>
+            <div class="wsa-final-explanation">Each of the log n levels does n work!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wsa-controls">
+        <button id="wsa-reset">Reset</button>
+        <button id="wsa-play">▶ Animate Sum</button>
+        <button id="wsa-skip">Show Result</button>
+      </div>
+    </div>
+
+    <!-- RECURRENCE EXAMPLES CAROUSEL -->
+    <div class="recurrence-examples">
+      <div class="rex-header">
+        <h4>Common Recurrence Patterns</h4>
+        <p style="color: var(--text-secondary);">Compare different algorithms and their recurrence equations. Click each tab to see how tree structure affects complexity.</p>
+      </div>
+
+      <div class="rex-tabs">
+        <button class="rex-tab active" data-tab="merge">Merge Sort</button>
+        <button class="rex-tab" data-tab="binary">Binary Search</button>
+        <button class="rex-tab" data-tab="linear">Linear Recursion</button>
+        <button class="rex-tab" data-tab="quadratic">Naive Multiply</button>
+      </div>
+
+      <!-- Merge Sort -->
+      <div class="rex-content active" id="rex-merge">
+        <div class="rex-card">
+          <div class="rex-tree-mini">
+            <div class="rex-mini-level"><div class="rex-mini-node">n</div></div>
+            <div class="rex-mini-connector">↙ ↘</div>
+            <div class="rex-mini-level">
+              <div class="rex-mini-node">n/2</div>
+              <div class="rex-mini-node">n/2</div>
+            </div>
+            <div class="rex-mini-connector">↙↘ ↙↘</div>
+            <div class="rex-mini-level">
+              <div class="rex-mini-node">n/4</div>
+              <div class="rex-mini-node">n/4</div>
+              <div class="rex-mini-node">n/4</div>
+              <div class="rex-mini-node">n/4</div>
+            </div>
+          </div>
+          <div class="rex-analysis">
+            <div class="rex-equation">T(n) = 2T(n/2) + O(n)</div>
+            <div class="rex-breakdown">
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">2</div>
+                <div class="rex-breakdown-label">calls</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">n/2</div>
+                <div class="rex-breakdown-label">size</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">O(n)</div>
+                <div class="rex-breakdown-label">work</div>
+              </div>
+            </div>
+            <div class="rex-result">
+              <div class="rex-result-formula">O(n log n)</div>
+              <div class="rex-result-name">log n levels × n work each</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Binary Search -->
+      <div class="rex-content" id="rex-binary">
+        <div class="rex-card">
+          <div class="rex-tree-mini">
+            <div class="rex-mini-level"><div class="rex-mini-node">n</div></div>
+            <div class="rex-mini-connector">↓</div>
+            <div class="rex-mini-level"><div class="rex-mini-node">n/2</div></div>
+            <div class="rex-mini-connector">↓</div>
+            <div class="rex-mini-level"><div class="rex-mini-node">n/4</div></div>
+            <div class="rex-mini-connector">↓</div>
+            <div class="rex-mini-level"><div class="rex-mini-node">...</div></div>
+          </div>
+          <div class="rex-analysis">
+            <div class="rex-equation">T(n) = T(n/2) + O(1)</div>
+            <div class="rex-breakdown">
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">1</div>
+                <div class="rex-breakdown-label">call</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">n/2</div>
+                <div class="rex-breakdown-label">size</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">O(1)</div>
+                <div class="rex-breakdown-label">work</div>
+              </div>
+            </div>
+            <div class="rex-result">
+              <div class="rex-result-formula">O(log n)</div>
+              <div class="rex-result-name">log n levels × O(1) work each</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linear Recursion -->
+      <div class="rex-content" id="rex-linear">
+        <div class="rex-card">
+          <div class="rex-tree-mini">
+            <div class="rex-mini-level"><div class="rex-mini-node">n</div></div>
+            <div class="rex-mini-connector">↓</div>
+            <div class="rex-mini-level"><div class="rex-mini-node">n-1</div></div>
+            <div class="rex-mini-connector">↓</div>
+            <div class="rex-mini-level"><div class="rex-mini-node">n-2</div></div>
+            <div class="rex-mini-connector">↓</div>
+            <div class="rex-mini-level"><div class="rex-mini-node">...</div></div>
+          </div>
+          <div class="rex-analysis">
+            <div class="rex-equation">T(n) = T(n-1) + O(1)</div>
+            <div class="rex-breakdown">
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">1</div>
+                <div class="rex-breakdown-label">call</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">n-1</div>
+                <div class="rex-breakdown-label">size</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">O(1)</div>
+                <div class="rex-breakdown-label">work</div>
+              </div>
+            </div>
+            <div class="rex-result">
+              <div class="rex-result-formula">O(n)</div>
+              <div class="rex-result-name">n levels × O(1) work each</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Naive Multiply -->
+      <div class="rex-content" id="rex-quadratic">
+        <div class="rex-card">
+          <div class="rex-tree-mini">
+            <div class="rex-mini-level"><div class="rex-mini-node">n</div></div>
+            <div class="rex-mini-connector">↙ ↘</div>
+            <div class="rex-mini-level">
+              <div class="rex-mini-node">n-1</div>
+              <div class="rex-mini-node">n-1</div>
+            </div>
+            <div class="rex-mini-connector" style="font-size: 0.6rem;">↙↘ ↙↘</div>
+            <div class="rex-mini-level" style="font-size: 0.55rem;">
+              <div class="rex-mini-node">n-2</div>
+              <div class="rex-mini-node">n-2</div>
+              <div class="rex-mini-node">n-2</div>
+              <div class="rex-mini-node">n-2</div>
+            </div>
+          </div>
+          <div class="rex-analysis">
+            <div class="rex-equation">T(n) = 2T(n-1) + O(1)</div>
+            <div class="rex-breakdown">
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">2</div>
+                <div class="rex-breakdown-label">calls</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">n-1</div>
+                <div class="rex-breakdown-label">size</div>
+              </div>
+              <div class="rex-breakdown-item">
+                <div class="rex-breakdown-value">O(1)</div>
+                <div class="rex-breakdown-label">work</div>
+              </div>
+            </div>
+            <div class="rex-result" style="background: var(--error);">
+              <div class="rex-result-formula">O(2ⁿ)</div>
+              <div class="rex-result-name">Exponential! Tree doubles at each level</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Reading Recurrences from Code:</strong> To identify a recurrence equation, ask these questions:
+      <ol style="margin: 0.5rem 0 0 1.5rem;">
+        <li><strong>How many recursive calls?</strong> → This is the coefficient (2 in merge sort)</li>
+        <li><strong>What size is each subproblem?</strong> → This is T(n/?) (n/2 in merge sort)</li>
+        <li><strong>What work is done outside recursion?</strong> → This is the + term (O(n) for merging)</li>
+      </ol>
+    </div>
+
+    <h3>3.3 Understanding the Recursion Tree</h3>
+    <p>The visualization above shows merge sort's recursive structure. Each level represents a recursive depth:</p>
+    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+      <li><strong>Top level:</strong> The full array</li>
+      <li><strong>Middle levels:</strong> Subarrays being split (divide phase)</li>
+      <li><strong>Bottom level:</strong> Single elements (base case)</li>
+      <li><strong>Going back up:</strong> Sorted subarrays being merged (conquer phase)</li>
+    </ul>
+
+    <div class="merge-phases-diagram">
+      <h4 style="text-align: center; margin-bottom: 1rem;">Merge Sort Phases</h4>
+      <div class="phases-container">
+        <div class="phase-box divide-phase">
+          <div class="phase-title">DIVIDE</div>
+          <div class="phase-arrow">↓</div>
+          <div class="phase-desc">Split array in half recursively until single elements</div>
+        </div>
+        <div class="phase-box conquer-phase">
+          <div class="phase-title">CONQUER</div>
+          <div class="phase-arrow">↑</div>
+          <div class="phase-desc">Merge sorted halves back together</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>3.4 The Merge Operation (Key Step)</h3>
+    <p>The <code>merge</code> function combines two sorted arrays into one sorted array. This is where the actual sorting happens:</p>
+
+    <div class="viz-container">
+      <h4>Interactive Merge Demo</h4>
+      <div class="step-description" id="merge-demo-description">
+        Watch how two sorted arrays are merged into one
+      </div>
+
+      <div class="merge-demo-container">
+        <div class="merge-demo-arrays">
+          <div class="merge-demo-section">
+            <div class="merge-label">Left Array</div>
+            <div class="merge-array" id="merge-demo-left"></div>
+            <div class="merge-pointer" id="merge-demo-i-pointer">i</div>
+          </div>
+          <div class="merge-demo-section">
+            <div class="merge-label">Right Array</div>
+            <div class="merge-array" id="merge-demo-right"></div>
+            <div class="merge-pointer" id="merge-demo-j-pointer">j</div>
+          </div>
+        </div>
+        <div class="merge-demo-result-section">
+          <div class="merge-label">Result Array</div>
+          <div class="merge-array merge-result" id="merge-demo-result"></div>
+        </div>
+      </div>
+
+      <div class="step-controls">
+        <button id="merge-demo-reset">|&lt; Reset</button>
+        <button id="merge-demo-back">&lt;&lt;</button>
+        <button id="merge-demo-play">Play</button>
+        <button id="merge-demo-forward">&gt;&gt;</button>
+        <span class="step-indicator" id="merge-demo-step-indicator">Step 0 of 0</span>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <strong>Why Merge is O(n):</strong> Each element from both arrays is looked at exactly once and placed into the result. If the left array has k elements and the right has m elements, the merge takes exactly k + m steps.
+    </div>
+
+    <h3>3.5 Complexity Analysis</h3>
+
+    <div class="complexity-box">
+      <h4>Time & Space Complexity</h4>
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-label">Best Case</div>
+          <div class="complexity-value">O(n log n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Average Case</div>
+          <div class="complexity-value">O(n log n)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-label">Worst Case</div>
+          <div class="complexity-value">O(n log n)</div>
+        </div>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+        <strong>Space Complexity:</strong> O(n) - Merge sort requires additional space proportional to the input size for the temporary arrays during merging.
+      </p>
+    </div>
+
+    <div class="complexity-breakdown">
+      <h4>Why O(n log n)?</h4>
+      <div class="breakdown-visual">
+        <div class="breakdown-item">
+          <div class="breakdown-formula">log n levels</div>
+          <div class="breakdown-explanation">Array is halved at each level of recursion. Halving n until you reach 1 takes log₂(n) steps.</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-formula">× n work per level</div>
+          <div class="breakdown-explanation">At each level, all n elements are processed during the merge operations.</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-formula">= n log n total</div>
+          <div class="breakdown-explanation">Combining both factors gives the total time complexity.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>3.6 Merge Sort Properties</h3>
+    <div class="properties-grid">
+      <div class="property-card stable">
+        <div class="property-icon">✓</div>
+        <div class="property-name">Stable</div>
+        <div class="property-desc">Equal elements maintain their relative order (using ≤ in merge)</div>
+      </div>
+      <div class="property-card not-in-place">
+        <div class="property-icon">✗</div>
+        <div class="property-name">Not In-Place</div>
+        <div class="property-desc">Requires O(n) auxiliary space for merging</div>
+      </div>
+      <div class="property-card consistent">
+        <div class="property-icon">✓</div>
+        <div class="property-name">Consistent</div>
+        <div class="property-desc">Same performance regardless of input order</div>
+      </div>
+      <div class="property-card parallelizable">
+        <div class="property-icon">✓</div>
+        <div class="property-name">Parallelizable</div>
+        <div class="property-desc">Independent subproblems can run in parallel</div>
+      </div>
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake - Forgetting Base Case:</strong> Without <code>if len(arr) <= 1: return arr</code>, the recursion never stops and causes a stack overflow.
+    </div>
+
+    <div class="common-mistake">
+      <strong>Common Mistake - Not Copying Remaining Elements:</strong> After the main merge loop, one array may still have elements. Don't forget <code>result.extend(left[i:])</code> and <code>result.extend(right[j:])</code>.
+    </div>
+
+    <div class="try-this">
+      <strong>Think About It:</strong> If merge sort is O(n log n) while selection/insertion sort are O(n²), why don't we always use merge sort?
+      <button class="hint-btn" onclick="toggleHint(this)" style="display: block; margin-top: 0.5rem;">Show Answer</button>
+      <div class="hint-text">
+        <ul style="padding-left: 1.5rem; margin: 0;">
+          <li><strong>Space:</strong> Merge sort needs O(n) extra memory; quadratic sorts use O(1)</li>
+          <li><strong>Overhead:</strong> For small arrays (n < 10-20), the recursion overhead makes merge sort slower</li>
+          <li><strong>Cache performance:</strong> Quadratic sorts have better cache locality for small arrays</li>
+          <li><strong>Simplicity:</strong> Insertion sort is simpler to implement correctly</li>
+        </ul>
+        Many real-world implementations (like Python's Timsort) use merge sort for large arrays but switch to insertion sort for small subarrays.
+      </div>
+    </div>
+
+    <!-- Section 4: Side-by-Side Comparison -->
+    <h2>4. Algorithm Comparison</h2>
+    <p>Watch selection sort and insertion sort race side by side on the same array. Notice the differences in how they approach the problem.</p>
 
     <div class="viz-container">
       <div class="step-controls" style="margin-bottom: 1rem; margin-top: 0;">
@@ -1342,8 +4335,8 @@
       </div>
     </div>
 
-    <!-- Section 4: Stability Demonstration -->
-    <h2>4. Stable vs Unstable Sorting</h2>
+    <!-- Section 5: Stability Demonstration -->
+    <h2>5. Stable vs Unstable Sorting</h2>
     <p>A sorting algorithm is <strong>stable</strong> if it preserves the relative order of equal elements. Let's see how selection sort (unstable) and insertion sort (stable) handle duplicate values.</p>
 
     <div class="stability-legend">
@@ -1391,8 +4384,8 @@
       <strong>Key Insight:</strong> Selection sort can move equal elements past each other during swaps, making it unstable. Insertion sort only shifts elements, never moving an element past an equal one, preserving stability.
     </div>
 
-    <!-- Section 5: Custom Input -->
-    <h2>5. Try Your Own Array</h2>
+    <!-- Section 6: Custom Input -->
+    <h2>6. Try Your Own Array</h2>
     <div class="try-this">
       <strong>Try This:</strong> Enter your own array to see how these algorithms work on different inputs. Try sorted, reverse-sorted, and arrays with duplicates!
       <div class="try-this-input">
@@ -1404,6 +4397,7 @@
     <div class="mode-tabs">
       <button class="mode-tab active" onclick="setCustomMode('selection')">Selection Sort</button>
       <button class="mode-tab" onclick="setCustomMode('insertion')">Insertion Sort</button>
+      <button class="mode-tab" onclick="setCustomMode('merge')">Merge Sort</button>
     </div>
 
     <div class="viz-container">
@@ -1438,8 +4432,8 @@
       </div>
     </div>
 
-    <!-- Section 6: Common Mistakes -->
-    <h2>6. Common Mistakes</h2>
+    <!-- Section 7: Common Mistakes -->
+    <h2>7. Common Mistakes</h2>
 
     <div class="common-mistake">
       <strong>Off-by-one in outer loop:</strong> In selection sort, the outer loop should go to <code>n-1</code>, not <code>n</code>. When only one element remains, it's already in the correct position.
@@ -1457,8 +4451,8 @@
       <strong>Confusing swaps with shifts:</strong> Selection sort swaps two elements directly. Insertion sort shifts elements one position right and then places the key - there's no swap involved.
     </div>
 
-    <!-- Section 7: Why Do We Care -->
-    <h2>7. Why Do We Care?</h2>
+    <!-- Section 8: Why Do We Care -->
+    <h2>8. Why Do We Care?</h2>
     <ul style="padding-left: 1.5rem;">
       <li><strong>Small datasets:</strong> For arrays with fewer than 10-20 elements, quadratic sorts can outperform complex algorithms due to lower overhead</li>
       <li><strong>Nearly-sorted data:</strong> Insertion sort runs in O(n) time when data is almost sorted - perfect for maintaining sorted lists</li>
@@ -1466,8 +4460,8 @@
       <li><strong>Building blocks:</strong> Understanding these simple algorithms helps you appreciate and analyze more complex sorts like Merge Sort and Quicksort</li>
     </ul>
 
-    <!-- Section 8: Quiz -->
-    <h2>8. Quick Check</h2>
+    <!-- Section 9: Quiz -->
+    <h2>9. Quick Check</h2>
 
     <div class="quiz-container">
       <div class="quiz-question">
@@ -1544,10 +4538,55 @@
           <strong>Correct!</strong> A reverse-sorted array is worst for insertion sort. Each new element must be compared with and shifted past all previous elements, resulting in 1+2+3+...+(n-1) = O(n^2) comparisons and shifts.
         </div>
       </div>
+
+      <div class="quiz-question">
+        <h4>Question 6: What is the space complexity of merge sort?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">O(1)</div>
+          <div class="quiz-option" data-index="1">O(n)</div>
+          <div class="quiz-option" data-index="2">O(log n)</div>
+          <div class="quiz-option" data-index="3">O(n log n)</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Think about what happens during the merge step - where do the merged elements go before being placed back?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Merge sort requires O(n) auxiliary space. During the merge phase, we need temporary arrays to hold the merged elements before copying them back. This is why merge sort is not an in-place algorithm.
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 7: Why does merge sort have O(n log n) time complexity?</h4>
+        <div class="quiz-options" data-correct="2">
+          <div class="quiz-option" data-index="0">Each element is compared n times</div>
+          <div class="quiz-option" data-index="1">The array is split n times</div>
+          <div class="quiz-option" data-index="2">There are log n levels, each doing O(n) work</div>
+          <div class="quiz-option" data-index="3">Each merge takes O(n log n) time</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">How many times can you halve n before reaching 1? And how much total work is done at each level of the recursion tree?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> The array is divided in half log₂(n) times (giving log n levels). At each level, all n elements participate in merge operations, giving O(n) work per level. Total: log n levels × n work = O(n log n).
+        </div>
+      </div>
+
+      <div class="quiz-question">
+        <h4>Question 8: Which sorting algorithm should you use for a nearly-sorted array of 1 million elements?</h4>
+        <div class="quiz-options" data-correct="1">
+          <div class="quiz-option" data-index="0">Selection Sort</div>
+          <div class="quiz-option" data-index="1">Insertion Sort</div>
+          <div class="quiz-option" data-index="2">Merge Sort</div>
+          <div class="quiz-option" data-index="3">It doesn't matter</div>
+        </div>
+        <button class="hint-btn" onclick="toggleHint(this)">Show Hint</button>
+        <div class="hint-text">Which algorithm's best case benefits from sorted data?</div>
+        <div class="quiz-explanation">
+          <strong>Correct!</strong> Insertion sort runs in O(n) time on nearly-sorted data because each element only needs a few comparisons. While merge sort is O(n log n) regardless of input order, insertion sort's adaptive nature makes it faster for nearly-sorted data.
+        </div>
+      </div>
     </div>
 
-    <!-- Section 9: Dive Deeper -->
-    <h2>9. Dive Deeper</h2>
+    <!-- Section 10: Dive Deeper -->
+    <h2>10. Dive Deeper</h2>
     <ul style="padding-left: 1.5rem;">
       <li><a href="https://visualgo.net/en/sorting" target="_blank">VisuAlgo - Sorting Algorithm Visualizations</a></li>
       <li><a href="https://www.cs.usfca.edu/~galles/visualization/ComparisonSort.html" target="_blank">USFCA - Comparison Sort Visualization</a></li>
@@ -2296,6 +5335,100 @@
     let customMode = 'selection';
     let customAnimator = null;
 
+    // Custom Merge Sort Animator for array view (simpler than tree view)
+    class CustomMergeSortAnimator extends SortingAnimator {
+      generateSteps() {
+        this.steps = [];
+        const arr = [...this.originalArray];
+        let comparisons = 0;
+
+        // Initial state
+        this.steps.push({
+          array: [...arr],
+          codeLine: 1,
+          description: 'Starting merge sort',
+          highlights: {},
+          variables: { i: '-', j: '-', key: '-', comp: 0, shifts: 0 }
+        });
+
+        // Iterative bottom-up merge sort for clearer visualization
+        const n = arr.length;
+
+        for (let size = 1; size < n; size *= 2) {
+          for (let leftStart = 0; leftStart < n - 1; leftStart += 2 * size) {
+            const mid = Math.min(leftStart + size - 1, n - 1);
+            const rightEnd = Math.min(leftStart + 2 * size - 1, n - 1);
+
+            if (mid < rightEnd) {
+              // Show subarrays being merged
+              const leftIndices = [];
+              const rightIndices = [];
+              for (let k = leftStart; k <= mid; k++) leftIndices.push(k);
+              for (let k = mid + 1; k <= rightEnd; k++) rightIndices.push(k);
+
+              this.steps.push({
+                array: [...arr],
+                codeLine: 11,
+                description: `Merging [${leftIndices.map(i => arr[i]).join(', ')}] and [${rightIndices.map(i => arr[i]).join(', ')}]`,
+                highlights: { comparing: leftIndices, shifting: rightIndices },
+                variables: { i: leftStart, j: mid + 1, key: '-', comp: comparisons, shifts: 0 }
+              });
+
+              // Perform merge
+              const left = arr.slice(leftStart, mid + 1);
+              const right = arr.slice(mid + 1, rightEnd + 1);
+              let i = 0, j = 0, k = leftStart;
+
+              while (i < left.length && j < right.length) {
+                comparisons++;
+                if (left[i] <= right[j]) {
+                  arr[k] = left[i];
+                  i++;
+                } else {
+                  arr[k] = right[j];
+                  j++;
+                }
+                k++;
+              }
+
+              while (i < left.length) {
+                arr[k] = left[i];
+                i++;
+                k++;
+              }
+
+              while (j < right.length) {
+                arr[k] = right[j];
+                j++;
+                k++;
+              }
+
+              // Show merged result
+              const mergedIndices = [];
+              for (let k = leftStart; k <= rightEnd; k++) mergedIndices.push(k);
+
+              this.steps.push({
+                array: [...arr],
+                codeLine: 25,
+                description: `Merged: [${mergedIndices.map(i => arr[i]).join(', ')}]`,
+                highlights: { sorted: mergedIndices },
+                variables: { i: '-', j: '-', key: '-', comp: comparisons, shifts: 0 }
+              });
+            }
+          }
+        }
+
+        // Complete
+        this.steps.push({
+          array: [...arr],
+          codeLine: 25,
+          description: `Sorting complete! ${comparisons} comparisons`,
+          highlights: { sorted: Array.from({length: n}, (_, k) => k) },
+          variables: { i: '-', j: '-', key: '-', comp: comparisons, shifts: 0 }
+        });
+      }
+    }
+
     function setCustomMode(mode) {
       customMode = mode;
       document.querySelectorAll('.mode-tab').forEach(tab => {
@@ -2321,7 +5454,14 @@
         return;
       }
 
-      const AnimatorClass = customMode === 'selection' ? SelectionSortAnimator : InsertionSortAnimator;
+      let AnimatorClass;
+      if (customMode === 'selection') {
+        AnimatorClass = SelectionSortAnimator;
+      } else if (customMode === 'insertion') {
+        AnimatorClass = InsertionSortAnimator;
+      } else {
+        AnimatorClass = CustomMergeSortAnimator;
+      }
 
       customAnimator = new AnimatorClass({
         containerId: 'custom-array',
@@ -2415,6 +5555,1281 @@
         });
       });
     });
+
+    // ==================== MERGE SORT ANIMATOR ====================
+    class MergeSortAnimator {
+      constructor(config) {
+        this.treeContainer = document.getElementById(config.treeContainerId);
+        this.codePanel = document.getElementById(config.codeId);
+        this.progressBar = document.getElementById(config.progressId);
+        this.stepIndicator = document.getElementById(config.stepIndicatorId);
+        this.description = document.getElementById(config.descriptionId);
+        this.playBtnId = config.playBtnId;
+        this.variableIds = config.variableIds || {};
+
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.speed = 1;
+        this.intervalId = null;
+        this.originalArray = config.array ? [...config.array] : [38, 27, 43, 3, 9, 82, 10];
+      }
+
+      generateSteps() {
+        this.steps = [];
+        let comparisons = 0;
+        let merges = 0;
+
+        // Build the recursion tree structure
+        const buildTree = (arr, depth, position) => {
+          const node = { arr: [...arr], depth, position, sorted: false };
+
+          if (arr.length <= 1) {
+            node.sorted = true;
+            return node;
+          }
+
+          const mid = Math.floor(arr.length / 2);
+          node.left = buildTree(arr.slice(0, mid), depth + 1, position * 2);
+          node.right = buildTree(arr.slice(mid), depth + 1, position * 2 + 1);
+
+          return node;
+        };
+
+        const tree = buildTree(this.originalArray, 0, 0);
+
+        // Initial state
+        this.steps.push({
+          description: 'Starting merge sort with array: [' + this.originalArray.join(', ') + ']',
+          codeLine: 1,
+          treeState: this.cloneTree(tree),
+          activeNode: { depth: 0, position: 0 },
+          phase: 'start',
+          variables: { depth: 0, phase: 'Start', comp: 0, merges: 0 }
+        });
+
+        // Generate divide steps
+        const generateDivideSteps = (node, tree) => {
+          if (node.arr.length <= 1) {
+            this.steps.push({
+              description: `Base case: [${node.arr.join(', ')}] has ${node.arr.length} element(s), already sorted`,
+              codeLine: 3,
+              treeState: this.cloneTree(tree),
+              activeNode: { depth: node.depth, position: node.position },
+              phase: 'base',
+              variables: { depth: node.depth, phase: 'Base case', comp: comparisons, merges }
+            });
+            return;
+          }
+
+          const mid = Math.floor(node.arr.length / 2);
+
+          // Split step
+          this.steps.push({
+            description: `Split [${node.arr.join(', ')}] at mid=${mid} into [${node.arr.slice(0, mid).join(', ')}] and [${node.arr.slice(mid).join(', ')}]`,
+            codeLine: 5,
+            treeState: this.cloneTree(tree),
+            activeNode: { depth: node.depth, position: node.position },
+            phase: 'split',
+            variables: { depth: node.depth, phase: 'Divide', comp: comparisons, merges }
+          });
+
+          // Recurse left
+          this.steps.push({
+            description: `Recursing into left half: [${node.left.arr.join(', ')}]`,
+            codeLine: 6,
+            treeState: this.cloneTree(tree),
+            activeNode: { depth: node.left.depth, position: node.left.position },
+            phase: 'recurse-left',
+            variables: { depth: node.left.depth, phase: 'Recurse left', comp: comparisons, merges }
+          });
+
+          generateDivideSteps(node.left, tree);
+
+          // Recurse right
+          this.steps.push({
+            description: `Recursing into right half: [${node.right.arr.join(', ')}]`,
+            codeLine: 7,
+            treeState: this.cloneTree(tree),
+            activeNode: { depth: node.right.depth, position: node.right.position },
+            phase: 'recurse-right',
+            variables: { depth: node.right.depth, phase: 'Recurse right', comp: comparisons, merges }
+          });
+
+          generateDivideSteps(node.right, tree);
+
+          // Merge step
+          const leftArr = this.getSortedArray(node.left);
+          const rightArr = this.getSortedArray(node.right);
+
+          this.steps.push({
+            description: `Merging [${leftArr.join(', ')}] and [${rightArr.join(', ')}]`,
+            codeLine: 9,
+            treeState: this.cloneTree(tree),
+            activeNode: { depth: node.depth, position: node.position },
+            phase: 'merge-start',
+            mergeState: { left: leftArr, right: rightArr, result: [], i: 0, j: 0 },
+            variables: { depth: node.depth, phase: 'Merge', comp: comparisons, merges }
+          });
+
+          // Detailed merge steps
+          const result = [];
+          let i = 0, j = 0;
+
+          while (i < leftArr.length && j < rightArr.length) {
+            comparisons++;
+
+            this.steps.push({
+              description: `Compare left[${i}]=${leftArr[i]} with right[${j}]=${rightArr[j]}`,
+              codeLine: 16,
+              treeState: this.cloneTree(tree),
+              activeNode: { depth: node.depth, position: node.position },
+              phase: 'merge-compare',
+              mergeState: { left: leftArr, right: rightArr, result: [...result], i, j, comparing: true },
+              variables: { depth: node.depth, phase: 'Compare', comp: comparisons, merges }
+            });
+
+            if (leftArr[i] <= rightArr[j]) {
+              result.push(leftArr[i]);
+              this.steps.push({
+                description: `${leftArr[i]} <= ${rightArr[j]}, take ${leftArr[i]} from left`,
+                codeLine: 17,
+                treeState: this.cloneTree(tree),
+                activeNode: { depth: node.depth, position: node.position },
+                phase: 'merge-take-left',
+                mergeState: { left: leftArr, right: rightArr, result: [...result], i, j, takenFrom: 'left' },
+                variables: { depth: node.depth, phase: 'Take left', comp: comparisons, merges }
+              });
+              i++;
+            } else {
+              result.push(rightArr[j]);
+              this.steps.push({
+                description: `${leftArr[i]} > ${rightArr[j]}, take ${rightArr[j]} from right`,
+                codeLine: 20,
+                treeState: this.cloneTree(tree),
+                activeNode: { depth: node.depth, position: node.position },
+                phase: 'merge-take-right',
+                mergeState: { left: leftArr, right: rightArr, result: [...result], i, j, takenFrom: 'right' },
+                variables: { depth: node.depth, phase: 'Take right', comp: comparisons, merges }
+              });
+              j++;
+            }
+          }
+
+          // Remaining elements
+          while (i < leftArr.length) {
+            result.push(leftArr[i]);
+            i++;
+          }
+          while (j < rightArr.length) {
+            result.push(rightArr[j]);
+            j++;
+          }
+
+          if (i < leftArr.length || j < rightArr.length) {
+            this.steps.push({
+              description: `Append remaining elements`,
+              codeLine: 23,
+              treeState: this.cloneTree(tree),
+              activeNode: { depth: node.depth, position: node.position },
+              phase: 'merge-remaining',
+              mergeState: { left: leftArr, right: rightArr, result: [...result], i: leftArr.length, j: rightArr.length },
+              variables: { depth: node.depth, phase: 'Append rest', comp: comparisons, merges }
+            });
+          }
+
+          // Mark node as sorted
+          node.arr = result;
+          node.sorted = true;
+          merges++;
+
+          this.steps.push({
+            description: `Merge complete: [${result.join(', ')}]`,
+            codeLine: 25,
+            treeState: this.cloneTree(tree),
+            activeNode: { depth: node.depth, position: node.position },
+            phase: 'merge-complete',
+            mergeState: { left: leftArr, right: rightArr, result: [...result], i: leftArr.length, j: rightArr.length, complete: true },
+            variables: { depth: node.depth, phase: 'Merged', comp: comparisons, merges }
+          });
+        };
+
+        generateDivideSteps(tree, tree);
+
+        // Final state
+        this.steps.push({
+          description: `Sorting complete! Total: ${comparisons} comparisons, ${merges} merges`,
+          codeLine: 25,
+          treeState: this.cloneTree(tree),
+          activeNode: null,
+          phase: 'complete',
+          variables: { depth: 0, phase: 'Complete', comp: comparisons, merges }
+        });
+      }
+
+      cloneTree(node) {
+        if (!node) return null;
+        return {
+          arr: [...node.arr],
+          depth: node.depth,
+          position: node.position,
+          sorted: node.sorted,
+          left: this.cloneTree(node.left),
+          right: this.cloneTree(node.right)
+        };
+      }
+
+      getSortedArray(node) {
+        if (node.arr.length <= 1) return node.arr;
+        const left = this.getSortedArray(node.left);
+        const right = this.getSortedArray(node.right);
+        return this.mergeArrays(left, right);
+      }
+
+      mergeArrays(left, right) {
+        const result = [];
+        let i = 0, j = 0;
+        while (i < left.length && j < right.length) {
+          if (left[i] <= right[j]) {
+            result.push(left[i++]);
+          } else {
+            result.push(right[j++]);
+          }
+        }
+        return result.concat(left.slice(i)).concat(right.slice(j));
+      }
+
+      renderTree(treeState, activeNode) {
+        this.treeContainer.innerHTML = '';
+
+        // Collect nodes by level
+        const levels = [];
+        const collectLevels = (node, depth) => {
+          if (!node) return;
+          if (!levels[depth]) levels[depth] = [];
+          levels[depth].push(node);
+          collectLevels(node.left, depth + 1);
+          collectLevels(node.right, depth + 1);
+        };
+        collectLevels(treeState, 0);
+
+        levels.forEach((levelNodes, depth) => {
+          if (depth > 0) {
+            const arrow = document.createElement('div');
+            arrow.className = 'merge-arrow';
+            arrow.textContent = depth <= Math.floor(levels.length / 2) ? '↓' : '↑';
+            arrow.classList.add(depth <= Math.floor(levels.length / 2) ? 'down' : 'up');
+            this.treeContainer.appendChild(arrow);
+          }
+
+          const levelDiv = document.createElement('div');
+          levelDiv.className = 'merge-level';
+
+          levelNodes.forEach(node => {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'merge-node';
+
+            if (node.sorted) nodeDiv.classList.add('sorted');
+            if (activeNode && activeNode.depth === node.depth && activeNode.position === node.position) {
+              nodeDiv.classList.add('active');
+            }
+
+            node.arr.forEach(val => {
+              const elem = document.createElement('div');
+              elem.className = 'merge-node-element';
+              elem.textContent = val;
+              nodeDiv.appendChild(elem);
+            });
+
+            levelDiv.appendChild(nodeDiv);
+          });
+
+          this.treeContainer.appendChild(levelDiv);
+        });
+      }
+
+      highlightCode(lineNum) {
+        if (!this.codePanel) return;
+        this.codePanel.querySelectorAll('.code-line').forEach(line => {
+          line.classList.remove('highlighted', 'executed');
+          const ln = parseInt(line.dataset.line);
+          if (ln === lineNum) {
+            line.classList.add('highlighted');
+          }
+        });
+      }
+
+      updateVariables(vars) {
+        Object.keys(vars).forEach(key => {
+          const el = document.getElementById(this.variableIds[key]);
+          if (el) {
+            const newVal = vars[key];
+            if (el.textContent !== String(newVal)) {
+              el.textContent = newVal;
+              el.classList.add('changed');
+              setTimeout(() => el.classList.remove('changed'), 400);
+            }
+          }
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        this.renderTree(step.treeState, step.activeNode);
+        this.highlightCode(step.codeLine);
+
+        if (this.description) {
+          this.description.textContent = step.description;
+        }
+
+        if (step.variables) {
+          this.updateVariables(step.variables);
+        }
+
+        const progress = this.steps.length > 1 ? (this.currentStep / (this.steps.length - 1)) * 100 : 0;
+        if (this.progressBar) {
+          this.progressBar.style.width = `${progress}%`;
+        }
+        if (this.stepIndicator) {
+          this.stepIndicator.textContent = `Step ${this.currentStep + 1} of ${this.steps.length}`;
+        }
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        const btn = document.getElementById(this.playBtnId);
+        if (btn) {
+          btn.textContent = 'Pause';
+          btn.classList.add('playing');
+        }
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.stepForward();
+          } else {
+            this.pause();
+          }
+        }, 1000 / this.speed);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        const btn = document.getElementById(this.playBtnId);
+        if (btn) {
+          btn.textContent = 'Play';
+          btn.classList.remove('playing');
+        }
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      setSpeed(speed) {
+        this.speed = speed;
+        if (this.isPlaying) {
+          this.pause();
+          this.play();
+        }
+      }
+    }
+
+    // Initialize Merge Sort Animator
+    const mergeAnimator = new MergeSortAnimator({
+      treeContainerId: 'merge-tree',
+      codeId: 'merge-code',
+      progressId: 'merge-progress',
+      stepIndicatorId: 'merge-step-indicator',
+      descriptionId: 'merge-description',
+      playBtnId: 'merge-play',
+      array: [38, 27, 43, 3, 9, 82, 10],
+      variableIds: {
+        depth: 'merge-var-depth',
+        phase: 'merge-var-phase',
+        comp: 'merge-var-comp',
+        merges: 'merge-var-merges'
+      }
+    });
+    mergeAnimator.generateSteps();
+    mergeAnimator.render();
+
+    // Bind Merge Sort Controls
+    document.getElementById('merge-play').addEventListener('click', () => {
+      mergeAnimator.isPlaying ? mergeAnimator.pause() : mergeAnimator.play();
+    });
+    document.getElementById('merge-reset').addEventListener('click', () => mergeAnimator.reset());
+    document.getElementById('merge-back').addEventListener('click', () => mergeAnimator.stepBackward());
+    document.getElementById('merge-forward').addEventListener('click', () => mergeAnimator.stepForward());
+    document.getElementById('merge-speed').addEventListener('change', (e) => {
+      mergeAnimator.setSpeed(parseFloat(e.target.value));
+    });
+
+    // ==================== MERGE DEMO (Interactive Merge Operation) ====================
+    class MergeDemo {
+      constructor() {
+        this.leftArray = [3, 27, 38, 43];
+        this.rightArray = [9, 10, 82];
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.intervalId = null;
+
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        this.steps = [];
+        const left = [...this.leftArray];
+        const right = [...this.rightArray];
+        const result = [];
+        let i = 0, j = 0;
+
+        // Initial state
+        this.steps.push({
+          left: [...left],
+          right: [...right],
+          result: [],
+          i: 0,
+          j: 0,
+          description: 'Start merging two sorted arrays',
+          phase: 'start'
+        });
+
+        while (i < left.length && j < right.length) {
+          // Compare step
+          this.steps.push({
+            left: [...left],
+            right: [...right],
+            result: [...result],
+            i, j,
+            description: `Compare left[${i}]=${left[i]} with right[${j}]=${right[j]}`,
+            phase: 'compare',
+            comparing: [i, j]
+          });
+
+          if (left[i] <= right[j]) {
+            result.push(left[i]);
+            this.steps.push({
+              left: [...left],
+              right: [...right],
+              result: [...result],
+              i, j,
+              description: `${left[i]} <= ${right[j]}, take ${left[i]} from left`,
+              phase: 'take-left',
+              usedLeft: i
+            });
+            i++;
+          } else {
+            result.push(right[j]);
+            this.steps.push({
+              left: [...left],
+              right: [...right],
+              result: [...result],
+              i, j,
+              description: `${left[i]} > ${right[j]}, take ${right[j]} from right`,
+              phase: 'take-right',
+              usedRight: j
+            });
+            j++;
+          }
+        }
+
+        // Remaining elements
+        while (i < left.length) {
+          result.push(left[i]);
+          i++;
+        }
+        while (j < right.length) {
+          result.push(right[j]);
+          j++;
+        }
+
+        this.steps.push({
+          left: [...left],
+          right: [...right],
+          result: [...result],
+          i: left.length,
+          j: right.length,
+          description: 'Merge complete! All elements combined into sorted array',
+          phase: 'complete'
+        });
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+        if (!step) return;
+
+        // Render left array
+        const leftContainer = document.getElementById('merge-demo-left');
+        leftContainer.innerHTML = '';
+        step.left.forEach((val, idx) => {
+          const elem = document.createElement('div');
+          elem.className = 'merge-array-element';
+          elem.textContent = val;
+          if (idx < step.i) elem.classList.add('used');
+          if (step.comparing && step.comparing[0] === idx) elem.classList.add('comparing');
+          if (step.usedLeft === idx) elem.classList.add('winner');
+          leftContainer.appendChild(elem);
+        });
+
+        // Render right array
+        const rightContainer = document.getElementById('merge-demo-right');
+        rightContainer.innerHTML = '';
+        step.right.forEach((val, idx) => {
+          const elem = document.createElement('div');
+          elem.className = 'merge-array-element';
+          elem.textContent = val;
+          if (idx < step.j) elem.classList.add('used');
+          if (step.comparing && step.comparing[1] === idx) elem.classList.add('comparing');
+          if (step.usedRight === idx) elem.classList.add('winner');
+          rightContainer.appendChild(elem);
+        });
+
+        // Render result array
+        const resultContainer = document.getElementById('merge-demo-result');
+        resultContainer.innerHTML = '';
+        step.result.forEach(val => {
+          const elem = document.createElement('div');
+          elem.className = 'merge-array-element';
+          elem.textContent = val;
+          resultContainer.appendChild(elem);
+        });
+
+        // Update description
+        document.getElementById('merge-demo-description').textContent = step.description;
+        document.getElementById('merge-demo-step-indicator').textContent =
+          `Step ${this.currentStep + 1} of ${this.steps.length}`;
+
+        // Update pointer positions
+        const iPointer = document.getElementById('merge-demo-i-pointer');
+        const jPointer = document.getElementById('merge-demo-j-pointer');
+        iPointer.style.left = `${step.i * 44 + 20}px`;
+        jPointer.style.left = `${step.j * 44 + 20}px`;
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) this.reset();
+        this.isPlaying = true;
+        document.getElementById('merge-demo-play').textContent = 'Pause';
+        document.getElementById('merge-demo-play').classList.add('playing');
+
+        this.intervalId = setInterval(() => {
+          if (this.currentStep < this.steps.length - 1) {
+            this.currentStep++;
+            this.render();
+          } else {
+            this.pause();
+          }
+        }, 800);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        clearInterval(this.intervalId);
+        document.getElementById('merge-demo-play').textContent = 'Play';
+        document.getElementById('merge-demo-play').classList.remove('playing');
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+    }
+
+    // Initialize Merge Demo
+    const mergeDemo = new MergeDemo();
+
+    document.getElementById('merge-demo-play').addEventListener('click', () => {
+      mergeDemo.isPlaying ? mergeDemo.pause() : mergeDemo.play();
+    });
+    document.getElementById('merge-demo-reset').addEventListener('click', () => mergeDemo.reset());
+    document.getElementById('merge-demo-back').addEventListener('click', () => mergeDemo.stepBackward());
+    document.getElementById('merge-demo-forward').addEventListener('click', () => mergeDemo.stepForward());
+
+    // ==================== DIVIDE AND CONQUER DEMO ====================
+    class DivideConquerDemo {
+      constructor() {
+        this.canvas = document.getElementById('dc-demo-canvas');
+        this.description = document.getElementById('dc-demo-description');
+        this.stepIndicator = document.getElementById('dc-demo-step-indicator');
+        this.playBtn = document.getElementById('dc-demo-play');
+
+        this.originalArray = [38, 27, 43, 3];
+        this.steps = [];
+        this.currentStep = 0;
+        this.isPlaying = false;
+        this.intervalId = null;
+
+        this.generateSteps();
+        this.render();
+      }
+
+      generateSteps() {
+        this.steps = [
+          {
+            phase: 'start',
+            description: 'Starting with array [38, 27, 43, 3]. We will divide, conquer, and combine.',
+            tree: [[{ arr: [38, 27, 43, 3], state: 'initial' }]]
+          },
+          {
+            phase: 'divide',
+            description: 'DIVIDE: Split [38, 27, 43, 3] into two halves: [38, 27] and [43, 3]',
+            tree: [
+              [{ arr: [38, 27, 43, 3], state: 'dividing' }],
+              [{ arr: [38, 27], state: 'new' }, { arr: [43, 3], state: 'new' }]
+            ]
+          },
+          {
+            phase: 'divide',
+            description: 'DIVIDE: Split [38, 27] into [38] and [27]',
+            tree: [
+              [{ arr: [38, 27, 43, 3], state: 'done' }],
+              [{ arr: [38, 27], state: 'dividing' }, { arr: [43, 3], state: 'waiting' }],
+              [{ arr: [38], state: 'new' }, { arr: [27], state: 'new' }]
+            ]
+          },
+          {
+            phase: 'conquer',
+            description: 'CONQUER: Base case reached! Single elements [38] and [27] are trivially sorted.',
+            tree: [
+              [{ arr: [38, 27, 43, 3], state: 'done' }],
+              [{ arr: [38, 27], state: 'done' }, { arr: [43, 3], state: 'waiting' }],
+              [{ arr: [38], state: 'base' }, { arr: [27], state: 'base' }]
+            ]
+          },
+          {
+            phase: 'combine',
+            description: 'COMBINE: Merge [27] and [38] into sorted [27, 38]',
+            tree: [
+              [{ arr: [38, 27, 43, 3], state: 'done' }],
+              [{ arr: [27, 38], state: 'combining' }, { arr: [43, 3], state: 'waiting' }],
+              [{ arr: [38], state: 'used' }, { arr: [27], state: 'used' }]
+            ]
+          },
+          {
+            phase: 'divide',
+            description: 'DIVIDE: Now split [43, 3] into [43] and [3]',
+            tree: [
+              [{ arr: [38, 27, 43, 3], state: 'done' }],
+              [{ arr: [27, 38], state: 'sorted' }, { arr: [43, 3], state: 'dividing' }],
+              [{ arr: [38], state: 'used' }, { arr: [27], state: 'used' }, { arr: [43], state: 'new' }, { arr: [3], state: 'new' }]
+            ]
+          },
+          {
+            phase: 'conquer',
+            description: 'CONQUER: Base case! Single elements [43] and [3] are trivially sorted.',
+            tree: [
+              [{ arr: [38, 27, 43, 3], state: 'done' }],
+              [{ arr: [27, 38], state: 'sorted' }, { arr: [43, 3], state: 'done' }],
+              [{ arr: [38], state: 'used' }, { arr: [27], state: 'used' }, { arr: [43], state: 'base' }, { arr: [3], state: 'base' }]
+            ]
+          },
+          {
+            phase: 'combine',
+            description: 'COMBINE: Merge [3] and [43] into sorted [3, 43]',
+            tree: [
+              [{ arr: [38, 27, 43, 3], state: 'done' }],
+              [{ arr: [27, 38], state: 'sorted' }, { arr: [3, 43], state: 'combining' }],
+              [{ arr: [38], state: 'used' }, { arr: [27], state: 'used' }, { arr: [43], state: 'used' }, { arr: [3], state: 'used' }]
+            ]
+          },
+          {
+            phase: 'combine',
+            description: 'COMBINE: Final merge! Combine [27, 38] and [3, 43] into [3, 27, 38, 43]',
+            tree: [
+              [{ arr: [3, 27, 38, 43], state: 'combining' }],
+              [{ arr: [27, 38], state: 'used' }, { arr: [3, 43], state: 'used' }]
+            ]
+          },
+          {
+            phase: 'complete',
+            description: 'Done! Array is sorted: [3, 27, 38, 43]. Divide and conquer succeeded!',
+            tree: [
+              [{ arr: [3, 27, 38, 43], state: 'sorted' }]
+            ]
+          }
+        ];
+      }
+
+      render() {
+        const step = this.steps[this.currentStep];
+
+        // Update phase indicators
+        document.querySelectorAll('.dc-phase-badge').forEach(badge => badge.classList.remove('active'));
+        if (step.phase === 'divide') {
+          document.getElementById('dc-phase-divide').classList.add('active');
+        } else if (step.phase === 'conquer') {
+          document.getElementById('dc-phase-conquer').classList.add('active');
+        } else if (step.phase === 'combine' || step.phase === 'complete') {
+          document.getElementById('dc-phase-combine').classList.add('active');
+        }
+
+        // Render tree
+        this.canvas.innerHTML = '';
+        step.tree.forEach((level, levelIdx) => {
+          const levelDiv = document.createElement('div');
+          levelDiv.className = 'dc-demo-level';
+
+          level.forEach(node => {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'dc-demo-node';
+
+            if (node.state === 'dividing') nodeDiv.classList.add('dividing');
+            if (node.state === 'base') nodeDiv.classList.add('conquering');
+            if (node.state === 'combining' || node.state === 'sorted') nodeDiv.classList.add('combining');
+            if (node.state === 'used') nodeDiv.style.opacity = '0.4';
+
+            node.arr.forEach(val => {
+              const elem = document.createElement('div');
+              elem.className = 'dc-demo-elem';
+              if (node.state === 'base' || node.state === 'sorted') elem.classList.add('base-case');
+              elem.textContent = val;
+              nodeDiv.appendChild(elem);
+            });
+
+            levelDiv.appendChild(nodeDiv);
+          });
+
+          if (levelIdx > 0) {
+            const connector = document.createElement('div');
+            connector.className = 'dc-level-label';
+            connector.textContent = '↓';
+            connector.style.color = 'rgba(255,255,255,0.3)';
+            this.canvas.appendChild(connector);
+          }
+
+          this.canvas.appendChild(levelDiv);
+        });
+
+        // Update description and step indicator
+        this.description.textContent = step.description;
+        this.stepIndicator.textContent = `Step ${this.currentStep} of ${this.steps.length - 1}`;
+
+        // Update play button
+        this.playBtn.textContent = this.isPlaying ? 'Pause' : 'Play';
+        this.playBtn.classList.toggle('playing', this.isPlaying);
+      }
+
+      stepForward() {
+        if (this.currentStep < this.steps.length - 1) {
+          this.currentStep++;
+          this.render();
+        } else {
+          this.pause();
+        }
+      }
+
+      stepBackward() {
+        if (this.currentStep > 0) {
+          this.currentStep--;
+          this.render();
+        }
+      }
+
+      reset() {
+        this.pause();
+        this.currentStep = 0;
+        this.render();
+      }
+
+      play() {
+        if (this.currentStep >= this.steps.length - 1) {
+          this.reset();
+        }
+        this.isPlaying = true;
+        this.render();
+        this.intervalId = setInterval(() => {
+          this.stepForward();
+          if (this.currentStep >= this.steps.length - 1) {
+            this.pause();
+          }
+        }, 1500);
+      }
+
+      pause() {
+        this.isPlaying = false;
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+          this.intervalId = null;
+        }
+        this.render();
+      }
+
+      togglePlay() {
+        if (this.isPlaying) {
+          this.pause();
+        } else {
+          this.play();
+        }
+      }
+    }
+
+    // Initialize D&C Demo
+    const dcDemo = new DivideConquerDemo();
+
+    // Bind D&C Demo Controls
+    document.getElementById('dc-demo-play').addEventListener('click', () => dcDemo.togglePlay());
+    document.getElementById('dc-demo-reset').addEventListener('click', () => dcDemo.reset());
+    document.getElementById('dc-demo-back').addEventListener('click', () => dcDemo.stepBackward());
+    document.getElementById('dc-demo-forward').addEventListener('click', () => dcDemo.stepForward());
+
+    // Highlight active D&C step on scroll
+    const dcSteps = document.querySelectorAll('.dc-step');
+    const dcObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          dcSteps.forEach(s => s.classList.remove('active'));
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.5 });
+
+    dcSteps.forEach(step => dcObserver.observe(step));
+
+    // Recursion Tree Node Highlight
+    function highlightRTBNode(node) {
+      document.querySelectorAll('.rtb-node').forEach(n => n.classList.remove('active'));
+      node.classList.add('active');
+
+      const size = node.dataset.size;
+      const isBase = node.classList.contains('base-case');
+
+      let message = '';
+      if (isBase) {
+        message = `T(1) = O(1) - Base case: single element, no work needed`;
+      } else {
+        message = `T(${size}) = 2T(${size/2}) + O(${size}) - Split into 2 subproblems of size ${size/2}, then merge ${size} elements`;
+      }
+
+      // Show tooltip or update a display area
+      console.log(message);
+    }
+
+    // ==================== ANIMATED RECURSION TREE BUILDER ====================
+    (function() {
+      const atbSteps = [
+        {
+          action: 'show-node',
+          level: 0,
+          node: '0-0',
+          desc: '<strong>Step 1:</strong> Start with the full array of 8 elements. We call merge_sort([38, 27, 43, 3, 9, 82, 10, 1]).'
+        },
+        {
+          action: 'show-level',
+          level: 0,
+          desc: '<strong>Step 2:</strong> This is level 0 of our recursion tree. The problem size is n = 8.'
+        },
+        {
+          action: 'show-connectors',
+          level: 0,
+          desc: '<strong>Step 3:</strong> We make TWO recursive calls - one for the left half, one for the right half.'
+        },
+        {
+          action: 'show-node',
+          level: 1,
+          node: '1-0',
+          desc: '<strong>Step 4:</strong> First recursive call: merge_sort([38, 27, 43, 3]) - the left half (size n/2 = 4).'
+        },
+        {
+          action: 'show-node',
+          level: 1,
+          node: '1-1',
+          desc: '<strong>Step 5:</strong> Second recursive call: merge_sort([9, 82, 10, 1]) - the right half (size n/2 = 4).'
+        },
+        {
+          action: 'show-level',
+          level: 1,
+          desc: '<strong>Step 6:</strong> Level 1 complete. Notice: 2 nodes × 4 elements each = 8 total elements. Work at this level is still n!'
+        },
+        {
+          action: 'show-connectors',
+          level: 1,
+          desc: '<strong>Step 7:</strong> Each of these nodes also makes two recursive calls...'
+        },
+        {
+          action: 'show-nodes-batch',
+          level: 2,
+          nodes: ['2-0', '2-1', '2-2', '2-3'],
+          desc: '<strong>Step 8:</strong> Level 2: Four nodes of size 2. Total work: 4 × 2 = 8 = n. The pattern continues!'
+        },
+        {
+          action: 'show-level',
+          level: 2,
+          desc: '<strong>Step 9:</strong> Work at level 2: 2 + 2 + 2 + 2 = 8 operations. Still O(n) work per level!'
+        },
+        {
+          action: 'show-connectors',
+          level: 2,
+          desc: '<strong>Step 10:</strong> Each size-2 problem splits into two size-1 problems (base cases).'
+        },
+        {
+          action: 'show-nodes-batch',
+          level: 3,
+          nodes: ['3-0', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7'],
+          desc: '<strong>Step 11:</strong> Base cases reached! Each T(1) returns immediately - a single element is already sorted.'
+        },
+        {
+          action: 'complete',
+          desc: '<strong>Complete!</strong> The tree has log₂(8) = 3 levels. Each level does O(n) work. Total: O(n) × O(log n) = <strong>O(n log n)</strong>.'
+        }
+      ];
+
+      let atbCurrentStep = -1;
+      let atbPlaying = false;
+      let atbInterval = null;
+
+      function atbReset() {
+        atbCurrentStep = -1;
+        atbPlaying = false;
+        clearInterval(atbInterval);
+        document.getElementById('atb-play').textContent = '▶ Play';
+
+        // Hide all elements
+        document.querySelectorAll('.atb-level').forEach(el => el.classList.remove('visible'));
+        document.querySelectorAll('.atb-node').forEach(el => {
+          el.classList.remove('visible', 'active', 'processing');
+        });
+        document.querySelectorAll('.atb-connectors').forEach(el => el.classList.remove('visible'));
+        document.querySelectorAll('.atb-level-work').forEach(el => el.classList.remove('visible'));
+
+        document.getElementById('atb-description').innerHTML = 'Click <strong>Play</strong> to watch the recursion tree unfold, or use <strong>Step</strong> to advance manually.';
+        document.getElementById('atb-progress-fill').style.width = '0%';
+        document.getElementById('atb-step-count').textContent = '0 / ' + atbSteps.length;
+      }
+
+      function atbExecuteStep(step) {
+        // Clear previous highlights
+        document.querySelectorAll('.atb-node').forEach(n => n.classList.remove('active', 'processing'));
+
+        switch(step.action) {
+          case 'show-node':
+            document.getElementById('atb-level-' + step.level).classList.add('visible');
+            const node = document.getElementById('atb-node-' + step.node);
+            node.classList.add('visible', 'active');
+            break;
+
+          case 'show-level':
+            document.getElementById('atb-level-' + step.level).classList.add('visible');
+            document.getElementById('atb-work-' + step.level).classList.add('visible');
+            document.querySelectorAll('#atb-level-' + step.level + ' .atb-node').forEach(n => {
+              n.classList.add('visible');
+            });
+            break;
+
+          case 'show-connectors':
+            document.getElementById('atb-conn-' + step.level).classList.add('visible');
+            break;
+
+          case 'show-nodes-batch':
+            document.getElementById('atb-level-' + step.level).classList.add('visible');
+            step.nodes.forEach((nodeId, i) => {
+              setTimeout(() => {
+                const node = document.getElementById('atb-node-' + nodeId);
+                node.classList.add('visible');
+                if (i === step.nodes.length - 1) {
+                  node.classList.add('active');
+                }
+              }, i * 100);
+            });
+            break;
+
+          case 'complete':
+            document.querySelectorAll('.atb-node').forEach(n => n.classList.add('completed'));
+            document.querySelectorAll('.atb-level-work').forEach(w => w.classList.add('visible'));
+            break;
+        }
+
+        document.getElementById('atb-description').innerHTML = step.desc;
+      }
+
+      function atbStepForward() {
+        if (atbCurrentStep < atbSteps.length - 1) {
+          atbCurrentStep++;
+          atbExecuteStep(atbSteps[atbCurrentStep]);
+          updateAtbProgress();
+        }
+      }
+
+      function atbStepBack() {
+        if (atbCurrentStep > 0) {
+          atbCurrentStep--;
+          atbReset();
+          for (let i = 0; i <= atbCurrentStep; i++) {
+            atbExecuteStep(atbSteps[i]);
+          }
+          updateAtbProgress();
+        } else if (atbCurrentStep === 0) {
+          atbReset();
+        }
+      }
+
+      function updateAtbProgress() {
+        const progress = ((atbCurrentStep + 1) / atbSteps.length) * 100;
+        document.getElementById('atb-progress-fill').style.width = progress + '%';
+        document.getElementById('atb-step-count').textContent = (atbCurrentStep + 1) + ' / ' + atbSteps.length;
+      }
+
+      function atbPlay() {
+        if (atbPlaying) {
+          atbPlaying = false;
+          clearInterval(atbInterval);
+          document.getElementById('atb-play').textContent = '▶ Play';
+        } else {
+          atbPlaying = true;
+          document.getElementById('atb-play').textContent = '⏸ Pause';
+          atbInterval = setInterval(() => {
+            if (atbCurrentStep < atbSteps.length - 1) {
+              atbStepForward();
+            } else {
+              atbPlaying = false;
+              clearInterval(atbInterval);
+              document.getElementById('atb-play').textContent = '▶ Play';
+            }
+          }, 1500);
+        }
+      }
+
+      // Event listeners
+      document.getElementById('atb-reset').addEventListener('click', atbReset);
+      document.getElementById('atb-step-back').addEventListener('click', atbStepBack);
+      document.getElementById('atb-step-forward').addEventListener('click', atbStepForward);
+      document.getElementById('atb-play').addEventListener('click', atbPlay);
+
+      // Initialize
+      atbReset();
+    })();
+
+    // ==================== CODE-TO-RECURRENCE MAPPER ====================
+    (function() {
+      const explanations = {
+        'base': '<strong>Base Case:</strong> When n ≤ 1, we return immediately. This takes O(1) time and stops the recursion. In the recurrence: T(1) = O(1).',
+        'calls': '<strong>2 Recursive Calls:</strong> We call merge_sort twice - once for the left half and once for the right half. This gives us the "2" coefficient in T(n) = <span style="color: var(--warning); font-weight: bold;">2</span>T(n/2) + O(n).',
+        'subproblem': '<strong>Subproblem Size n/2:</strong> Each recursive call gets half the array (arr[:mid] or arr[mid:]). This gives us T(<span style="color: var(--purple); font-weight: bold;">n/2</span>) in the recurrence.',
+        'work': '<strong>O(n) Merge Work:</strong> The merge function combines two sorted halves. It looks at each element once, taking O(n) time. This is the "+ <span style="color: var(--success); font-weight: bold;">O(n)</span>" term in T(n) = 2T(n/2) + O(n).',
+        'none': 'Hover over highlighted code lines or click the buttons to see how each part maps to the recurrence equation.'
+      };
+
+      function highlightMapping(target) {
+        // Reset all
+        document.querySelectorAll('.crm-code-line').forEach(line => {
+          line.classList.remove('highlight-base', 'highlight-calls', 'highlight-subproblem', 'highlight-work');
+        });
+        document.querySelectorAll('.crm-part').forEach(part => part.classList.remove('active'));
+        document.querySelectorAll('.crm-btn').forEach(btn => btn.classList.remove('active'));
+
+        if (target === 'none') {
+          document.getElementById('crm-explanation').innerHTML = '<span>' + explanations['none'] + '</span>';
+          return;
+        }
+
+        // Highlight code lines
+        document.querySelectorAll('.crm-code-line[data-map="' + target + '"]').forEach(line => {
+          line.classList.add('highlight-' + target);
+        });
+
+        // Highlight equation part
+        const partId = 'crm-part-' + target;
+        const partEl = document.getElementById(partId);
+        if (partEl) partEl.classList.add('active');
+
+        // Highlight button
+        document.querySelector('.crm-btn[data-target="' + target + '"]')?.classList.add('active');
+
+        // Update explanation
+        document.getElementById('crm-explanation').innerHTML = '<span>' + explanations[target] + '</span>';
+      }
+
+      // Code line hover events
+      document.querySelectorAll('.crm-code-line').forEach(line => {
+        line.addEventListener('mouseenter', () => {
+          const mapType = line.dataset.map;
+          if (mapType && mapType !== 'none') {
+            highlightMapping(mapType);
+          }
+        });
+        line.addEventListener('mouseleave', () => {
+          highlightMapping('none');
+        });
+      });
+
+      // Button click events
+      document.querySelectorAll('.crm-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          highlightMapping(btn.dataset.target);
+        });
+      });
+    })();
+
+    // ==================== WORK SUMMATION ANIMATION ====================
+    (function() {
+      let wsaStep = -1;
+      let wsaPlaying = false;
+      let wsaInterval = null;
+
+      const wsaLevels = ['wsa-level-0', 'wsa-level-1', 'wsa-level-2', 'wsa-level-3', 'wsa-level-4'];
+      const wsaCalcs = ['wsa-calc-0', 'wsa-calc-1', 'wsa-calc-2', 'wsa-calc-3', 'wsa-calc-4'];
+      const wsaFormulas = ['wsa-formula-0', 'wsa-formula-1', 'wsa-formula-2', 'wsa-formula-3', 'wsa-formula-4'];
+
+      function wsaReset() {
+        wsaStep = -1;
+        wsaPlaying = false;
+        clearInterval(wsaInterval);
+        document.getElementById('wsa-play').textContent = '▶ Animate Sum';
+
+        // Reset levels
+        wsaLevels.forEach(id => {
+          const el = document.getElementById(id);
+          el.classList.remove('highlight', 'counted');
+        });
+
+        // Reset calculations
+        wsaCalcs.forEach(id => {
+          document.getElementById(id).classList.remove('visible');
+        });
+
+        // Reset formulas
+        wsaFormulas.forEach(id => {
+          document.getElementById(id).classList.remove('visible');
+        });
+        document.getElementById('wsa-formula-result').classList.remove('visible');
+
+        // Reset running total
+        document.getElementById('wsa-running-value').textContent = '0';
+
+        // Reset final result
+        document.getElementById('wsa-final-result').classList.remove('visible');
+      }
+
+      function wsaExecuteStep() {
+        if (wsaStep > 0) {
+          // Remove highlight from previous level
+          document.getElementById(wsaLevels[wsaStep - 1]).classList.remove('highlight');
+          document.getElementById(wsaLevels[wsaStep - 1]).classList.add('counted');
+        }
+
+        if (wsaStep < wsaLevels.length) {
+          // Highlight current level
+          const levelEl = document.getElementById(wsaLevels[wsaStep]);
+          levelEl.classList.add('highlight');
+
+          // Show calculation
+          document.getElementById(wsaCalcs[wsaStep]).classList.add('visible');
+
+          // Show formula line
+          document.getElementById(wsaFormulas[wsaStep]).classList.add('visible');
+
+          // Update running total
+          document.getElementById('wsa-running-value').textContent = (wsaStep + 1);
+        } else {
+          // Show final result
+          document.getElementById('wsa-formula-result').classList.add('visible');
+          document.getElementById('wsa-final-result').classList.add('visible');
+          wsaPlaying = false;
+          clearInterval(wsaInterval);
+          document.getElementById('wsa-play').textContent = '▶ Animate Sum';
+        }
+      }
+
+      function wsaPlay() {
+        if (wsaPlaying) {
+          wsaPlaying = false;
+          clearInterval(wsaInterval);
+          document.getElementById('wsa-play').textContent = '▶ Animate Sum';
+        } else {
+          wsaPlaying = true;
+          document.getElementById('wsa-play').textContent = '⏸ Pause';
+          wsaInterval = setInterval(() => {
+            wsaStep++;
+            if (wsaStep <= wsaLevels.length) {
+              wsaExecuteStep();
+            } else {
+              wsaPlaying = false;
+              clearInterval(wsaInterval);
+              document.getElementById('wsa-play').textContent = '▶ Animate Sum';
+            }
+          }, 1000);
+        }
+      }
+
+      function wsaSkip() {
+        wsaReset();
+        // Show all at once
+        wsaLevels.forEach(id => {
+          document.getElementById(id).classList.add('counted');
+        });
+        wsaCalcs.forEach(id => {
+          document.getElementById(id).classList.add('visible');
+        });
+        wsaFormulas.forEach(id => {
+          document.getElementById(id).classList.add('visible');
+        });
+        document.getElementById('wsa-formula-result').classList.add('visible');
+        document.getElementById('wsa-running-value').textContent = 'log n';
+        document.getElementById('wsa-final-result').classList.add('visible');
+      }
+
+      // Event listeners
+      document.getElementById('wsa-reset').addEventListener('click', wsaReset);
+      document.getElementById('wsa-play').addEventListener('click', wsaPlay);
+      document.getElementById('wsa-skip').addEventListener('click', wsaSkip);
+
+      // Initialize
+      wsaReset();
+    })();
+
+    // ==================== RECURRENCE EXAMPLES TABS ====================
+    (function() {
+      const tabs = document.querySelectorAll('.rex-tab');
+      const contents = document.querySelectorAll('.rex-content');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Remove active from all
+          tabs.forEach(t => t.classList.remove('active'));
+          contents.forEach(c => c.classList.remove('active'));
+
+          // Add active to clicked
+          tab.classList.add('active');
+          document.getElementById('rex-' + tab.dataset.tab).classList.add('active');
+        });
+      });
+    })();
 
     // ==================== KATEX AUTO-RENDER ====================
     document.addEventListener('DOMContentLoaded', () => {
